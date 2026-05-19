@@ -573,6 +573,59 @@ function App() {
       { id: 1, label: '', type: 'number', unit: '', target: '', tolerance: '', required: true, note: '' },
     ],
     customNote: '',
+    // — Multi-Point Numeric —
+    multiPoint: {
+      pointCount: '10',
+      pointLabel: 'จุดที่',
+      perPointTarget: '',
+      perPointTolerance: '5',
+      aggregateRule: 'all_pass',   // 'all_pass' | 'mean' | 'rsd' | 'min_max'
+      aggregateLimit: '',
+    },
+    // — Calibration Check —
+    calibration: {
+      instrumentName: '',
+      instrumentId: '',
+      standardValue: '',
+      standardUnit: '',
+      toleranceType: 'absolute',   // 'absolute' | 'percent'
+      toleranceValue: '',
+      lastCalibrationDate: '',
+      nextDueDate: '',
+      requiresPriorPass: true,
+    },
+    // — Tare / Reference —
+    tare: {
+      referenceLabel: 'น้ำหนักภาชนะเปล่า',
+      referenceUnit: 'g',
+      storeAs: '',
+      acceptanceMin: '',
+      acceptanceMax: '',
+      expireAfter: 'batch',        // 'batch' | 'shift' | 'permanent'
+    },
+    // — Calculated (in-step formula) —
+    calculated: {
+      formula: '',
+      inputs: [
+        { id: 1, name: 'gross', source: 'this_step', fieldRef: '', criteriaCode: '' },
+        { id: 2, name: 'tare',  source: 'derived',   fieldRef: '', criteriaCode: '' },
+      ],
+      resultUnit: '',
+      resultMin: '',
+      resultMax: '',
+      displayDecimals: '2',
+    },
+    // — Use Context & SOP Step Reference (Basic Info additions) —
+    useContext: [],                // multi-select: routine | release | validation | troubleshoot | changeover | cleaning_verify | equipment_qual
+    sopStepRef: {
+      sopCode: '',
+      sopVersion: '',
+      stepNumber: '',
+      stepDescription: '',
+      link: '',
+    },
+    // — Derived Calculations (Section 5: cross-step) —
+    derivedCalcs: [],              // [{ id, label, formula, sources:[{criteriaCode, field, step}], resultUnit, triggerWhen, acceptanceMin, acceptanceMax, onFail, note }]
     referenceBatchSize: '100000',
     referenceBatchUnit: 'tablets',
     referenceBatchDurationHr: '8',
@@ -705,12 +758,108 @@ function App() {
     setForm(prev => ({ ...prev, visualChecklist: prev.visualChecklist.filter((_, i) => i !== idx) }));
   };
 
+  // ===== Nested-field setters for new criteria types =====
+  const setNested = (group, key, value) => {
+    setForm(prev => ({ ...prev, [group]: { ...prev[group], [key]: value } }));
+  };
+
+  // ===== Calculated inputs =====
+  const addCalcInput = () => {
+    setForm(p => ({
+      ...p,
+      calculated: {
+        ...p.calculated,
+        inputs: [...p.calculated.inputs, { id: Date.now() + Math.random(), name: '', source: 'this_step', fieldRef: '', criteriaCode: '' }],
+      }
+    }));
+  };
+  const updateCalcInput = (id, key, value) => {
+    setForm(p => ({
+      ...p,
+      calculated: { ...p.calculated, inputs: p.calculated.inputs.map(i => i.id === id ? { ...i, [key]: value } : i) }
+    }));
+  };
+  const removeCalcInput = (id) => {
+    setForm(p => ({ ...p, calculated: { ...p.calculated, inputs: p.calculated.inputs.filter(i => i.id !== id) } }));
+  };
+
+  // ===== Use Context multi-select =====
+  const toggleUseContext = (val) => {
+    setForm(p => ({
+      ...p,
+      useContext: p.useContext.includes(val) ? p.useContext.filter(c => c !== val) : [...p.useContext, val],
+    }));
+  };
+
+  // ===== Derived Calculations =====
+  const addDerivedCalc = () => {
+    setForm(p => ({
+      ...p,
+      derivedCalcs: [...p.derivedCalcs, {
+        id: Date.now() + Math.random(),
+        label: '',
+        formula: '',
+        sources: [{ id: Date.now() + Math.random(), criteriaCode: '', field: '', step: '' }],
+        resultUnit: '',
+        triggerWhen: 'batch_end',
+        acceptanceMin: '',
+        acceptanceMax: '',
+        onFail: 'investigate',
+        note: '',
+      }],
+    }));
+  };
+  const updateDerivedCalc = (id, key, value) => {
+    setForm(p => ({ ...p, derivedCalcs: p.derivedCalcs.map(d => d.id === id ? { ...d, [key]: value } : d) }));
+  };
+  const removeDerivedCalc = (id) => {
+    setForm(p => ({ ...p, derivedCalcs: p.derivedCalcs.filter(d => d.id !== id) }));
+  };
+  const addDerivedSource = (calcId) => {
+    setForm(p => ({
+      ...p,
+      derivedCalcs: p.derivedCalcs.map(d => d.id === calcId
+        ? { ...d, sources: [...d.sources, { id: Date.now() + Math.random(), criteriaCode: '', field: '', step: '' }] }
+        : d),
+    }));
+  };
+  const updateDerivedSource = (calcId, srcId, key, value) => {
+    setForm(p => ({
+      ...p,
+      derivedCalcs: p.derivedCalcs.map(d => d.id === calcId
+        ? { ...d, sources: d.sources.map(s => s.id === srcId ? { ...s, [key]: value } : s) }
+        : d),
+    }));
+  };
+  const removeDerivedSource = (calcId, srcId) => {
+    setForm(p => ({
+      ...p,
+      derivedCalcs: p.derivedCalcs.map(d => d.id === calcId
+        ? { ...d, sources: d.sources.filter(s => s.id !== srcId) }
+        : d),
+    }));
+  };
+
+  const useContextOptions = [
+    { value: 'routine',         label: 'Routine — ตรวจประจำระหว่างผลิต',                 color: 'emerald' },
+    { value: 'release',         label: 'Release — ใช้ตัดสินใจปล่อยล็อต',                  color: 'blue' },
+    { value: 'validation',      label: 'Validation — Process validation / qualification', color: 'violet' },
+    { value: 'troubleshoot',    label: 'Troubleshoot — เมื่อพบปัญหา / OOS',               color: 'amber' },
+    { value: 'changeover',      label: 'Changeover — หลังเปลี่ยนผลิตภัณฑ์',                color: 'slate' },
+    { value: 'cleaning_verify', label: 'Cleaning Verify — ยืนยันการล้าง',                  color: 'cyan' },
+    { value: 'equipment_qual',  label: 'Equipment Qual — IQ/OQ/PQ',                       color: 'indigo' },
+  ];
+
   const criteriaTypeMeta = {
-    numeric:    { wrap: 'bg-emerald-50 border-emerald-200', iconBg: 'bg-emerald-100 text-emerald-700', titleClr: 'text-emerald-800', subClr: 'text-emerald-700/70', label: 'Numeric', desc: 'วัดเป็นตัวเลข เทียบกับ Min/Max', icon: 'flask' },
-    pass_fail:  { wrap: 'bg-blue-50 border-blue-200',       iconBg: 'bg-blue-100 text-blue-700',       titleClr: 'text-blue-800',    subClr: 'text-blue-700/70',    label: 'Pass / Fail', desc: 'บันทึกผลเป็น ผ่าน หรือ ไม่ผ่าน', icon: 'shield' },
-    visual:     { wrap: 'bg-amber-50 border-amber-200',     iconBg: 'bg-amber-100 text-amber-700',     titleClr: 'text-amber-800',   subClr: 'text-amber-700/70',   label: 'Visual', desc: 'ตรวจด้วยสายตาตาม checklist', icon: 'info' },
-    text:       { wrap: 'bg-slate-50 border-slate-200',     iconBg: 'bg-slate-100 text-slate-700',     titleClr: 'text-slate-800',   subClr: 'text-slate-700/70',   label: 'Text', desc: 'บันทึกเป็นข้อความอิสระ', icon: 'file' },
-    custom:     { wrap: 'bg-violet-50 border-violet-200',   iconBg: 'bg-violet-100 text-violet-700',   titleClr: 'text-violet-800',  subClr: 'text-violet-700/70',  label: 'Custom Multi-Field', desc: 'กำหนดฟิลด์เอง — เหมาะกับ Calibration, หัวตอก, Component check', icon: 'cog' },
+    numeric:     { wrap: 'bg-emerald-50 border-emerald-200', iconBg: 'bg-emerald-100 text-emerald-700', titleClr: 'text-emerald-800', subClr: 'text-emerald-700/70', label: 'Numeric', desc: 'วัดเป็นตัวเลข เทียบกับ Min/Max', icon: 'flask' },
+    multi_point: { wrap: 'bg-teal-50 border-teal-200',       iconBg: 'bg-teal-100 text-teal-700',       titleClr: 'text-teal-800',    subClr: 'text-teal-700/70',    label: 'Multi-Point Numeric', desc: 'วัดค่าเดียวกันหลายจุด พร้อม aggregate rule (mean/RSD/min-max)', icon: 'dice' },
+    calibration: { wrap: 'bg-orange-50 border-orange-200',   iconBg: 'bg-orange-100 text-orange-700',   titleClr: 'text-orange-800',  subClr: 'text-orange-700/70',  label: 'Calibration Check', desc: 'สอบเทียบเครื่อง — ค่ามาตรฐาน vs ค่าที่อ่านได้', icon: 'cog' },
+    tare:        { wrap: 'bg-sky-50 border-sky-200',         iconBg: 'bg-sky-100 text-sky-700',         titleClr: 'text-sky-800',     subClr: 'text-sky-700/70',     label: 'Tare / Reference', desc: 'ชั่ง/วัด baseline เก็บไว้ใช้กับ step ถัดไป', icon: 'shield' },
+    calculated:  { wrap: 'bg-fuchsia-50 border-fuchsia-200', iconBg: 'bg-fuchsia-100 text-fuchsia-700', titleClr: 'text-fuchsia-800', subClr: 'text-fuchsia-700/70', label: 'Calculated', desc: 'ค่าที่ได้จากสูตรคำนวณ (เช่น Net = Gross − Tare)', icon: 'flask' },
+    pass_fail:   { wrap: 'bg-blue-50 border-blue-200',       iconBg: 'bg-blue-100 text-blue-700',       titleClr: 'text-blue-800',    subClr: 'text-blue-700/70',    label: 'Pass / Fail', desc: 'บันทึกผลเป็น ผ่าน หรือ ไม่ผ่าน', icon: 'shield' },
+    visual:      { wrap: 'bg-amber-50 border-amber-200',     iconBg: 'bg-amber-100 text-amber-700',     titleClr: 'text-amber-800',   subClr: 'text-amber-700/70',   label: 'Visual', desc: 'ตรวจด้วยสายตาตาม checklist', icon: 'info' },
+    text:        { wrap: 'bg-slate-50 border-slate-200',     iconBg: 'bg-slate-100 text-slate-700',     titleClr: 'text-slate-800',   subClr: 'text-slate-700/70',   label: 'Text', desc: 'บันทึกเป็นข้อความอิสระ', icon: 'file' },
+    custom:      { wrap: 'bg-violet-50 border-violet-200',   iconBg: 'bg-violet-100 text-violet-700',   titleClr: 'text-violet-800',  subClr: 'text-violet-700/70',  label: 'Custom Multi-Field', desc: 'กำหนดฟิลด์เอง — เหมาะกับ Calibration, หัวตอก, Component check', icon: 'cog' },
   };
   const meta = criteriaTypeMeta[form.criteriaType] || criteriaTypeMeta.numeric;
 
@@ -854,11 +1003,15 @@ function App() {
   };
 
   const criteriaTypes = [
-    { value: 'numeric', label: 'ตัวเลข (Numeric) — ใส่ค่าวัด + เทียบ Min/Max' },
-    { value: 'pass_fail', label: 'Pass/Fail — ผ่าน/ไม่ผ่าน' },
-    { value: 'visual', label: 'Visual — ตรวจด้วยสายตา' },
-    { value: 'text', label: 'Text — บันทึกข้อความ' },
-    { value: 'custom', label: 'Custom Multi-Field — กำหนดฟิลด์เอง (เช่น หัวตอกเครื่อง, calibration)' },
+    { value: 'numeric',     label: 'ตัวเลข (Numeric) — ใส่ค่าวัด + เทียบ Min/Max' },
+    { value: 'multi_point', label: 'Multi-Point Numeric — วัดหลายจุด + aggregate (mean/RSD)' },
+    { value: 'calibration', label: 'Calibration Check — สอบเทียบเครื่อง (ค่ามาตรฐาน vs อ่านได้)' },
+    { value: 'tare',        label: 'Tare / Reference — ชั่ง baseline เก็บไว้ใช้ต่อ' },
+    { value: 'calculated',  label: 'Calculated — ค่าที่ได้จากสูตรคำนวณ' },
+    { value: 'pass_fail',   label: 'Pass/Fail — ผ่าน/ไม่ผ่าน' },
+    { value: 'visual',      label: 'Visual — ตรวจด้วยสายตา' },
+    { value: 'text',        label: 'Text — บันทึกข้อความ' },
+    { value: 'custom',      label: 'Custom Multi-Field — กำหนดฟิลด์เอง (เช่น หัวตอกเครื่อง)' },
   ];
 
   const [testNames, setTestNames] = useState([
@@ -1058,6 +1211,268 @@ function App() {
   };
   const recommendedBatchSample = sqrtNplus1(form.referenceBatchSize);
 
+  // ===== Cross-field Validation Logic =====
+  const validationIssues = (() => {
+    const issues = [];
+    const t = form.criteriaType;
+
+    // V2: Numeric — target ต้องอยู่ในช่วง min/max
+    if (t === 'numeric' && form.target !== '' && !isNaN(parseFloat(form.target)) && hasCalc) {
+      // target อยู่ระหว่าง calcMin–calcMax อยู่แล้วโดยนิยาม, ตรวจขัดแย้งกับ minValue/maxValue ที่ user override
+      const mn = parseFloat(form.minValue), mx = parseFloat(form.maxValue);
+      const tg = parseFloat(form.target);
+      if (!isNaN(mn) && tg < mn) issues.push({ level: 'error', code: 'V2', msg: `Target (${tg}) น้อยกว่า Min Value (${mn})`, field: 'target' });
+      if (!isNaN(mx) && tg > mx) issues.push({ level: 'error', code: 'V2', msg: `Target (${tg}) มากกว่า Max Value (${mx})`, field: 'target' });
+    }
+
+    // V3: Min > Max ในจุดต่าง ๆ
+    const checkMinMax = (min, max, label) => {
+      const mn = parseFloat(min), mx = parseFloat(max);
+      if (!isNaN(mn) && !isNaN(mx) && mn > mx) {
+        issues.push({ level: 'error', code: 'V3', msg: `${label}: Min (${mn}) > Max (${mx})` });
+      }
+    };
+    if (t === 'tare')       checkMinMax(form.tare.acceptanceMin, form.tare.acceptanceMax, 'Tare acceptance');
+    if (t === 'calculated') checkMinMax(form.calculated.resultMin, form.calculated.resultMax, 'Calculated result');
+    form.derivedCalcs.forEach((dc, i) => checkMinMax(dc.acceptanceMin, dc.acceptanceMax, `Derived #${i + 1} (${dc.label || 'unnamed'})`));
+
+    // V1: criteriaType = calculated แต่ formula ว่าง
+    if (t === 'calculated' && !form.calculated.formula.trim()) {
+      issues.push({ level: 'error', code: 'V1', msg: 'Calculated type ต้องระบุ Formula' });
+    }
+
+    // V4: multi_point + rsd ต้อง pointCount ≥ 3
+    if (t === 'multi_point' && form.multiPoint.aggregateRule === 'rsd') {
+      const pc = parseInt(form.multiPoint.pointCount);
+      if (!pc || pc < 3) issues.push({ level: 'error', code: 'V4', msg: `RSD ต้องมีจุด ≥ 3 (ตอนนี้ ${pc || 0})` });
+    }
+
+    // V5: calculated.inputs มี derived ที่ไม่ใส่ criteriaCode
+    if (t === 'calculated') {
+      form.calculated.inputs.forEach((inp, i) => {
+        if (inp.source === 'derived' && !inp.criteriaCode.trim()) {
+          issues.push({ level: 'warn', code: 'V5', msg: `Input #${i + 1} (${inp.name || 'unnamed'}) อ้างถึง derived แต่ยังไม่ใส่ criteria code` });
+        }
+        if (inp.name && form.calculated.formula && !form.calculated.formula.includes(inp.name)) {
+          issues.push({ level: 'warn', code: 'V5', msg: `ตัวแปร "${inp.name}" ไม่ถูกใช้ใน formula` });
+        }
+      });
+    }
+
+    // V6: tare.storeAs ต้องไม่ว่าง
+    if (t === 'tare' && !form.tare.storeAs.trim()) {
+      issues.push({ level: 'error', code: 'V6', msg: 'Tare type ต้องระบุชื่อตัวแปร (Store As)' });
+    }
+
+    // V7: visual checklist ว่างหมด
+    if (t === 'visual') {
+      const items = form.visualChecklist.filter(c => c && c.trim());
+      if (items.length === 0 && !form.visualCriteria.trim()) {
+        issues.push({ level: 'error', code: 'V7', msg: 'Visual type ต้องมีคำอธิบาย หรือ checklist อย่างน้อย 1 รายการ' });
+      }
+    }
+
+    // V8: quantity trigger every > batch size
+    if (form.triggers.quantity.on) {
+      const every = parseFloat(form.triggers.quantity.every);
+      const bsize = parseFloat(form.referenceBatchSize);
+      if (every > 0 && bsize > 0 && every > bsize) {
+        issues.push({ level: 'warn', code: 'V8', msg: `Quantity trigger (${every}) มากกว่า batch size (${bsize}) → trigger จะไม่ทำงาน` });
+      }
+    }
+
+    // V9: stages cumulative > batch size
+    const totalSamples = form.stages.reduce((s, st) => s + (parseInt(st.sampleSize) || 0), 0);
+    const bsize = parseFloat(form.referenceBatchSize);
+    if (bsize > 0 && totalSamples > bsize) {
+      issues.push({ level: 'warn', code: 'V9', msg: `Total samples (${totalSamples}) มากกว่า batch size (${bsize})` });
+    }
+
+    // V10: useContext มี release แต่ critical = false
+    if (form.useContext.includes('release') && !form.critical) {
+      issues.push({ level: 'warn', code: 'V10', msg: 'Use Context = Release แต่ Critical Test ยังปิดอยู่' });
+    }
+
+    // V11: SOP code มี แต่ step number ว่าง
+    if (form.sopStepRef.sopCode.trim() && !form.sopStepRef.stepNumber.trim()) {
+      issues.push({ level: 'warn', code: 'V11', msg: `SOP "${form.sopStepRef.sopCode}" ยังไม่ระบุ Step Number` });
+    }
+
+    // V12: calibration.requiresPriorPass = true แต่ไม่มี nextDueDate
+    if (t === 'calibration' && form.calibration.requiresPriorPass && !form.calibration.nextDueDate) {
+      issues.push({ level: 'warn', code: 'V12', msg: 'เปิด "Block ใช้งานถ้า Fail" แล้ว ควรใส่ Next Due Date' });
+    }
+
+    // V13: derivedCalcs source ที่ criteriaCode ว่าง
+    form.derivedCalcs.forEach((dc, i) => {
+      dc.sources.forEach((src, j) => {
+        if (!src.criteriaCode.trim()) {
+          issues.push({ level: 'warn', code: 'V13', msg: `Derived #${i + 1} source #${j + 1} ยังไม่ใส่ Criteria Code` });
+        }
+      });
+      if (!dc.formula.trim()) {
+        issues.push({ level: 'error', code: 'V13', msg: `Derived #${i + 1} (${dc.label || 'unnamed'}) ไม่มี Formula` });
+      }
+    });
+
+    return issues;
+  })();
+
+  const errorCount = validationIssues.filter(i => i.level === 'error').length;
+  const warnCount  = validationIssues.filter(i => i.level === 'warn').length;
+
+  // ===== Demo presets from BPR (PD-BPR-001: การบรรจุผงยาลงแคปซูล) =====
+  const loadDemoPreset = (which) => {
+    if (which === 'empty_capsule_weight') {
+      // 8.1 บันทึกน้ำหนักแคปซูลเปล่า 10 แคปซูล → ค่าเฉลี่ย
+      setForm(prev => ({
+        ...prev,
+        code: 'IPC-CAP-TARE-001',
+        testName: 'capsule_empty_weight',
+        unit: 'g',
+        dosageForm: 'capsule',
+        criteriaType: 'multi_point',
+        useContext: ['routine'],
+        sopStepRef: {
+          sopCode: 'PD-BPR-001',
+          sopVersion: '00',
+          stepNumber: '8.1',
+          stepDescription: 'บันทึกน้ำหนักแคปซูลเปล่า — สุ่ม 10 แคปซูล หาค่าเฉลี่ย',
+          link: '',
+        },
+        multiPoint: {
+          pointCount: '10',
+          pointLabel: 'ลำดับแคปซูล',
+          perPointTarget: '0.096',         // ขนาด 00 ทั่วไป ~96 mg
+          perPointTolerance: '10',
+          aggregateRule: 'mean',
+          aggregateLimit: '0.090-0.102',
+        },
+        target: '',
+        tolerance: '0',
+        triggers: {
+          ...prev.triggers,
+          oncePerBatch: { on: true },
+          time: { ...prev.triggers.time, on: false },
+          quantity: { ...prev.triggers.quantity, on: false },
+          milestone: {
+            ...prev.triggers.milestone,
+            on: true,
+            options: prev.triggers.milestone.options.map(o =>
+              o.id === 'batch_start' ? { ...o, on: true } : { ...o, on: false }
+            ),
+          },
+        },
+        critical: false,
+        active: true,
+        samplingMethod: 'random',
+        stages: [
+          { id: 1, sampleSize: '10', failureTolerance: '0', onFail: 'next', note: 'สุ่ม 10 แคปซูลเปล่า หาค่าเฉลี่ย' },
+          { id: 2, sampleSize: '10', failureTolerance: '0', onFail: 'reject', note: 'ถ้า mean นอกช่วง → reject lot แคปซูล' },
+        ],
+        derivedCalcs: [{
+          id: Date.now(),
+          label: 'น้ำหนักแคปซูลเปล่าเฉลี่ย (สำหรับใช้หักลบ Net weight)',
+          formula: 'mean(IPC-CAP-TARE-001.point[1..10])',
+          sources: [
+            { id: Date.now()+1, criteriaCode: 'IPC-CAP-TARE-001', field: 'point[*]', step: 'pre-fill' },
+          ],
+          resultUnit: 'g',
+          triggerWhen: 'on_demand',
+          acceptanceMin: '0.090',
+          acceptanceMax: '0.102',
+          onFail: 'investigate',
+          note: 'ค่าเฉลี่ยนี้จะถูกหักออกจากน้ำหนักรวมในขั้นถัดไป เพื่อคำนวณน้ำหนักผงยาสุทธิ',
+        }],
+      }));
+    } else if (which === 'punch_force') {
+      // 8.2 บันทึกค่าตั้งหัวตอก 6 หัว × หลายครั้ง
+      setForm(prev => ({
+        ...prev,
+        code: 'IPC-CAP-PUNCH-001',
+        testName: 'capsule_filler_punch_force',
+        unit: 'count',
+        dosageForm: 'capsule',
+        criteriaType: 'multi_point',
+        useContext: ['routine', 'changeover'],
+        sopStepRef: {
+          sopCode: 'PD-BPR-001',
+          sopVersion: '00',
+          stepNumber: '8.2',
+          stepDescription: 'บันทึกค่าการตอกหัวตอก 1-6 (ค่าตั้ง 15-25) ทุกครั้งที่ตั้งเครื่อง',
+          link: '',
+        },
+        multiPoint: {
+          pointCount: '6',
+          pointLabel: 'หัวตอกที่',
+          perPointTarget: '20',
+          perPointTolerance: '25',
+          aggregateRule: 'min_max',
+          aggregateLimit: '15-25',
+        },
+        target: '',
+        tolerance: '0',
+        triggers: {
+          ...prev.triggers,
+          time: { ...prev.triggers.time, on: false },
+          quantity: { ...prev.triggers.quantity, on: false },
+          oncePerBatch: { on: false },
+          milestone: {
+            ...prev.triggers.milestone,
+            on: true,
+            options: prev.triggers.milestone.options.map(o =>
+              o.id === 'batch_start' ? { ...o, on: true } : o
+            ),
+          },
+          event: {
+            ...prev.triggers.event,
+            on: true,
+            options: prev.triggers.event.options.map(o =>
+              o.id === 'changeover' || o.id === 'param' || o.id === 'maintenance'
+                ? { ...o, on: true }
+                : { ...o, on: false }
+            ),
+          },
+        },
+        critical: true,
+        active: true,
+        samplingMethod: 'systematic',
+        stages: [
+          { id: 1, sampleSize: '6', failureTolerance: '0', onFail: 'next', note: 'วัดทุกหัวตอก (6 หัว) — ค่าต้องอยู่ในช่วง 15-25' },
+          { id: 2, sampleSize: '6', failureTolerance: '0', onFail: 'deviation', note: 'ถ้ามีหัวตอกใดเกินช่วง → หยุดเครื่อง ปรับใหม่' },
+        ],
+        derivedCalcs: [{
+          id: Date.now() + 100,
+          label: 'อัตราการบรรจุเฉลี่ย (capsules/min)',
+          formula: 'cap_count / elapsed_minutes',
+          sources: [
+            { id: Date.now()+101, criteriaCode: 'IPC-CAP-OUT-001', field: 'cap_count',       step: 'filling' },
+            { id: Date.now()+102, criteriaCode: 'IPC-CAP-TIME-001', field: 'elapsed_minutes', step: 'filling' },
+          ],
+          resultUnit: 'capsules/min',
+          triggerWhen: 'every_check',
+          acceptanceMin: '300',
+          acceptanceMax: '400',
+          onFail: 'investigate',
+          note: 'BPR ระบุ "ค่าความเร็วที่ใช้ 300-400 แคปซูล/นาที"',
+        }],
+      }));
+    } else if (which === 'reset') {
+      // Reset to defaults — quick way
+      setForm(prev => ({
+        ...prev,
+        code: '',
+        testName: '',
+        unit: '',
+        criteriaType: 'numeric',
+        useContext: [],
+        sopStepRef: { sopCode: '', sopVersion: '', stepNumber: '', stepDescription: '', link: '' },
+        derivedCalcs: [],
+      }));
+    }
+    setAutoFilled(new Set());
+  };
+
   const addTestName = ({ name, thaiName, reference }) => {
     const parts = [name];
     if (thaiName) parts.push(thaiName);
@@ -1103,9 +1518,49 @@ function App() {
               <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
                 <Icon name="flask" className="w-5 h-5" />
               </div>
-              <div>
+              <div className="flex-1">
                 <h2 className="font-semibold text-slate-900">Criteria Information</h2>
                 <p className="text-xs text-slate-500">กรอกข้อมูลเกณฑ์การควบคุมคุณภาพในกระบวนการ</p>
+              </div>
+            </div>
+
+            {/* Demo Loader — โหลดตัวอย่างจาก BPR PD-BPR-001 */}
+            <div className="mb-6 rounded-xl border border-dashed border-amber-300 bg-amber-50/60 p-3">
+              <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">🧪</span>
+                  <span className="text-xs font-semibold text-amber-900">Demo — โหลดตัวอย่างจาก BPR <span className="font-mono">PD-BPR-001</span> (การบรรจุผงยาลงแคปซูล)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a href="/record.html"
+                    className="text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-full flex items-center gap-1">
+                    👷 เปิดหน้าบันทึกผล (Operator) →
+                  </a>
+                  <button type="button" onClick={() => loadDemoPreset('reset')}
+                    className="text-[11px] text-slate-500 hover:text-slate-700 underline">↺ reset</button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button type="button" onClick={() => loadDemoPreset('empty_capsule_weight')}
+                  className="text-left rounded-lg bg-white border border-amber-300 hover:border-amber-500 hover:shadow-sm p-3 transition-all group">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-mono font-bold bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded">8.1</span>
+                    <span className="text-xs font-semibold text-slate-900 group-hover:text-amber-900">น้ำหนักแคปซูลเปล่า — 10 จุด</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 leading-relaxed">
+                    Multi-Point Numeric · aggregate = <span className="font-mono text-teal-700">mean</span> · ส่งค่าเฉลี่ยต่อให้ Derived Calc
+                  </div>
+                </button>
+                <button type="button" onClick={() => loadDemoPreset('punch_force')}
+                  className="text-left rounded-lg bg-white border border-amber-300 hover:border-amber-500 hover:shadow-sm p-3 transition-all group">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-mono font-bold bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded">8.2</span>
+                    <span className="text-xs font-semibold text-slate-900 group-hover:text-amber-900">ค่าตั้งหัวตอก — 6 หัว ทุกครั้งที่ตั้งเครื่อง</span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 leading-relaxed">
+                    Multi-Point Numeric · aggregate = <span className="font-mono text-teal-700">min_max</span> 15-25 · Critical + trigger เมื่อ changeover
+                  </div>
+                </button>
               </div>
             </div>
 
@@ -1196,6 +1651,76 @@ function App() {
                   options={criteriaTypes} placeholder="Select criteria type" />
               </div>
 
+              {/* Use Context — multi-select chips */}
+              <div className="col-span-2">
+                <label className="field-label flex items-center gap-1.5">
+                  Use Context <span className="text-[10px] font-normal text-slate-500">(บริบทการใช้งาน — เลือกได้หลายข้อ)</span>
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {useContextOptions.map(opt => {
+                    const on = form.useContext.includes(opt.value);
+                    const palette = {
+                      emerald: on ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-300',
+                      blue:    on ? 'bg-blue-100 border-blue-400 text-blue-800'         : 'bg-white border-slate-200 text-slate-500 hover:border-blue-300',
+                      violet:  on ? 'bg-violet-100 border-violet-400 text-violet-800'   : 'bg-white border-slate-200 text-slate-500 hover:border-violet-300',
+                      amber:   on ? 'bg-amber-100 border-amber-400 text-amber-800'      : 'bg-white border-slate-200 text-slate-500 hover:border-amber-300',
+                      slate:   on ? 'bg-slate-200 border-slate-400 text-slate-800'      : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400',
+                      cyan:    on ? 'bg-cyan-100 border-cyan-400 text-cyan-800'         : 'bg-white border-slate-200 text-slate-500 hover:border-cyan-300',
+                      indigo:  on ? 'bg-indigo-100 border-indigo-400 text-indigo-800'   : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300',
+                    };
+                    return (
+                      <button type="button" key={opt.value} onClick={() => toggleUseContext(opt.value)}
+                        className={`px-3 py-1.5 rounded-full border text-[11px] font-medium transition-all ${palette[opt.color]}`}>
+                        {on && <span className="mr-1">✓</span>}{opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="helper">ช่วยให้ระบบจัดกลุ่ม criteria ตามจุดประสงค์ และเช็คความสอดคล้องกับ Critical flag</p>
+              </div>
+
+              {/* SOP Step Reference */}
+              <div className="col-span-2">
+                <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Icon name="file" className="w-4 h-4 text-slate-600" />
+                    <h4 className="font-semibold text-slate-800 text-sm">SOP Step Reference <span className="text-[11px] font-normal text-slate-500">— เชื่อมโยงกับขั้นตอนใน SOP</span></h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-[11px] text-slate-500 uppercase font-medium">SOP Code</label>
+                      <input className="field-input text-sm" placeholder="เช่น SOP-PROD-001"
+                        value={form.sopStepRef.sopCode}
+                        onChange={e => setNested('sopStepRef', 'sopCode', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-slate-500 uppercase font-medium">Version</label>
+                      <input className="field-input text-sm" placeholder="เช่น v3.2"
+                        value={form.sopStepRef.sopVersion}
+                        onChange={e => setNested('sopStepRef', 'sopVersion', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-slate-500 uppercase font-medium">Step Number</label>
+                      <input className="field-input text-sm" placeholder="เช่น 5.2.3"
+                        value={form.sopStepRef.stepNumber}
+                        onChange={e => setNested('sopStepRef', 'stepNumber', e.target.value)} />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="text-[11px] text-slate-500 uppercase font-medium">Step Description</label>
+                      <input className="field-input text-sm" placeholder="เช่น Compression — ตรวจน้ำหนักเม็ดทุก 30 นาที"
+                        value={form.sopStepRef.stepDescription}
+                        onChange={e => setNested('sopStepRef', 'stepDescription', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-slate-500 uppercase font-medium">Document Link</label>
+                      <input className="field-input text-sm" placeholder="https://..."
+                        value={form.sopStepRef.link}
+                        onChange={e => setNested('sopStepRef', 'link', e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Section 2 — Specification */}
               <div className="col-span-2 flex items-center gap-3 mt-3">
                 <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">2</span>
@@ -1278,6 +1803,364 @@ function App() {
                     </div>
                   </div>
                 </>
+              )}
+
+              {/* === MULTI-POINT NUMERIC === */}
+              {form.criteriaType === 'multi_point' && (() => {
+                const mp = form.multiPoint;
+                const pc = parseInt(mp.pointCount) || 0;
+                const tNum = parseFloat(mp.perPointTarget);
+                const tolNum = parseFloat(mp.perPointTolerance);
+                const mpHasCalc = !isNaN(tNum) && !isNaN(tolNum);
+                const mpMin = mpHasCalc ? +(tNum - tNum * tolNum / 100).toFixed(4) : '';
+                const mpMax = mpHasCalc ? +(tNum + tNum * tolNum / 100).toFixed(4) : '';
+                return (
+                  <div className="col-span-2 p-5 mt-2 rounded-xl border-2 border-dashed border-teal-200 bg-teal-50/40">
+                    <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <Icon name="dice" className="w-4 h-4 text-teal-700" />
+                        <h3 className="font-semibold text-teal-800 text-sm">Multi-Point Numeric Specification</h3>
+                      </div>
+                      <span className="text-[11px] text-teal-700 bg-white/60 px-2 py-0.5 rounded-full border border-teal-200">
+                        {pc} จุด × {mp.aggregateRule === 'all_pass' ? 'ทุกจุดต้องผ่าน' : 'aggregate'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="field-label">จำนวนจุด (Point Count)<span className="req">*</span></label>
+                        <input className="field-input" type="number" min="2" placeholder="เช่น 10"
+                          value={mp.pointCount}
+                          onChange={e => setNested('multiPoint', 'pointCount', e.target.value)} />
+                        <p className="helper">จำนวนตำแหน่งที่ต้องวัด (≥ 2)</p>
+                      </div>
+                      <div>
+                        <label className="field-label">คำนำหน้า Label</label>
+                        <input className="field-input" placeholder="เช่น จุดที่ / Position / Punch"
+                          value={mp.pointLabel}
+                          onChange={e => setNested('multiPoint', 'pointLabel', e.target.value)} />
+                        <p className="helper">Auto generate: "{mp.pointLabel} 1", "{mp.pointLabel} 2"…</p>
+                      </div>
+                      <div>
+                        <label className="field-label">Target ต่อจุด<span className="req">*</span></label>
+                        <input className="field-input" type="number" placeholder="เช่น 5.5"
+                          value={mp.perPointTarget}
+                          onChange={e => setNested('multiPoint', 'perPointTarget', e.target.value)} />
+                      </div>
+                      <div>
+                        <label className="field-label">±% Tolerance ต่อจุด</label>
+                        <div className="relative">
+                          <input className="field-input pr-8" type="number" placeholder="5"
+                            value={mp.perPointTolerance}
+                            onChange={e => setNested('multiPoint', 'perPointTolerance', e.target.value)} />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
+                        </div>
+                      </div>
+                      <div className="col-span-2">
+                        <label className="field-label">Aggregate Rule (เกณฑ์รวม)</label>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {[
+                            { v: 'all_pass', l: 'All Pass', d: 'ทุกจุดต้องผ่าน' },
+                            { v: 'mean',     l: 'Mean',     d: 'เฉลี่ยอยู่ในช่วง' },
+                            { v: 'rsd',      l: 'RSD ≤',    d: 'ความเบี่ยงเบนต่ำ' },
+                            { v: 'min_max',  l: 'Min/Max',  d: 'ขอบเขต min-max' },
+                          ].map(opt => (
+                            <button type="button" key={opt.v}
+                              onClick={() => setNested('multiPoint', 'aggregateRule', opt.v)}
+                              className={`px-3 py-2 rounded-lg text-xs font-medium border text-left transition-all ${
+                                mp.aggregateRule === opt.v
+                                  ? 'bg-teal-100 border-teal-400 text-teal-800'
+                                  : 'bg-white border-slate-200 text-slate-500 hover:border-teal-300'
+                              }`}>
+                              <div className="font-bold">{opt.l}</div>
+                              <div className="text-[10px] opacity-80">{opt.d}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      {(mp.aggregateRule === 'rsd' || mp.aggregateRule === 'mean' || mp.aggregateRule === 'min_max') && (
+                        <div className="col-span-2">
+                          <label className="field-label">
+                            {mp.aggregateRule === 'rsd' && 'RSD limit (%)'}
+                            {mp.aggregateRule === 'mean' && 'Mean acceptance range (เช่น 95-105)'}
+                            {mp.aggregateRule === 'min_max' && 'Allowed individual range (เช่น 95-105)'}
+                          </label>
+                          <input className="field-input"
+                            placeholder={mp.aggregateRule === 'rsd' ? '≤ 6.0' : '95-105'}
+                            value={mp.aggregateLimit}
+                            onChange={e => setNested('multiPoint', 'aggregateLimit', e.target.value)} />
+                        </div>
+                      )}
+                      {mpHasCalc && (
+                        <div className="col-span-2 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-white border border-teal-300 text-sm text-teal-800">
+                          <span className="font-semibold">ช่วงต่อจุด:</span>
+                          <span className="font-mono font-bold text-teal-700">{mpMin}</span>
+                          <span className="text-teal-500">≤</span>
+                          <span className="font-mono text-slate-500">point[i]</span>
+                          <span className="text-teal-500">≤</span>
+                          <span className="font-mono font-bold text-teal-700">{mpMax}</span>
+                          <span className="text-teal-600 text-xs ml-2">× {pc} จุด</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* === CALIBRATION CHECK === */}
+              {form.criteriaType === 'calibration' && (
+                <div className="col-span-2 p-5 mt-2 rounded-xl border-2 border-dashed border-orange-200 bg-orange-50/40">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Icon name="cog" className="w-4 h-4 text-orange-700" />
+                    <h3 className="font-semibold text-orange-800 text-sm">Calibration Check Specification</h3>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="field-label">Instrument Name<span className="req">*</span></label>
+                      <input className="field-input" placeholder="เช่น Balance OHAUS PA214"
+                        value={form.calibration.instrumentName}
+                        onChange={e => setNested('calibration', 'instrumentName', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="field-label">Instrument ID / Asset Tag</label>
+                      <input className="field-input" placeholder="เช่น BAL-001 / S/N 123456"
+                        value={form.calibration.instrumentId}
+                        onChange={e => setNested('calibration', 'instrumentId', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="field-label">Standard Value (ค่ามาตรฐาน)<span className="req">*</span></label>
+                      <input className="field-input" type="number" placeholder="เช่น 100"
+                        value={form.calibration.standardValue}
+                        onChange={e => setNested('calibration', 'standardValue', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="field-label">Standard Unit</label>
+                      <input className="field-input" placeholder="เช่น g, pH, °C"
+                        value={form.calibration.standardUnit}
+                        onChange={e => setNested('calibration', 'standardUnit', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="field-label">Tolerance Type</label>
+                      <div className="flex gap-2">
+                        {[
+                          { v: 'absolute', l: '± ค่าสัมบูรณ์' },
+                          { v: 'percent',  l: '± %' },
+                        ].map(opt => (
+                          <button type="button" key={opt.v}
+                            onClick={() => setNested('calibration', 'toleranceType', opt.v)}
+                            className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
+                              form.calibration.toleranceType === opt.v
+                                ? 'bg-orange-50 border-orange-400 text-orange-800'
+                                : 'bg-white border-slate-200 text-slate-500'
+                            }`}>{opt.l}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="field-label">Tolerance Value<span className="req">*</span></label>
+                      <div className="relative">
+                        <input className="field-input pr-10" type="number" placeholder={form.calibration.toleranceType === 'percent' ? '1.0' : '0.001'}
+                          value={form.calibration.toleranceValue}
+                          onChange={e => setNested('calibration', 'toleranceValue', e.target.value)} />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
+                          {form.calibration.toleranceType === 'percent' ? '%' : form.calibration.standardUnit}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="field-label">Last Calibration Date</label>
+                      <input className="field-input" type="date"
+                        value={form.calibration.lastCalibrationDate}
+                        onChange={e => setNested('calibration', 'lastCalibrationDate', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="field-label">Next Due Date</label>
+                      <input className="field-input" type="date"
+                        value={form.calibration.nextDueDate}
+                        onChange={e => setNested('calibration', 'nextDueDate', e.target.value)} />
+                    </div>
+                    <div className="col-span-2">
+                      <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${form.calibration.requiresPriorPass ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200'}`}>
+                        <Toggle value={form.calibration.requiresPriorPass} onChange={v => setNested('calibration', 'requiresPriorPass', v)} label="" />
+                        <div>
+                          <div className="text-sm font-semibold text-slate-900">Block ใช้งานเครื่องถ้า Calibration Fail</div>
+                          <div className="text-[11px] text-slate-500">ถ้าเปิด → operator ใช้เครื่องไม่ได้จนกว่าจะ pass</div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* === TARE / REFERENCE === */}
+              {form.criteriaType === 'tare' && (
+                <div className="col-span-2 p-5 mt-2 rounded-xl border-2 border-dashed border-sky-200 bg-sky-50/40">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Icon name="shield" className="w-4 h-4 text-sky-700" />
+                    <h3 className="font-semibold text-sky-800 text-sm">Tare / Reference Specification</h3>
+                  </div>
+                  <div className="bg-white rounded-lg border border-sky-200 p-2.5 mb-4 text-[11px] text-sky-900 flex items-start gap-2">
+                    <span>💡</span>
+                    <div>
+                      <strong>ใช้สำหรับ:</strong> Tare ขวดก่อนบรรจุ, Empty bag weight ก่อน fill, Blank absorbance ใน UV — ค่าที่บันทึกจะถูกเก็บไว้ให้ <strong>Calculated</strong> หรือ <strong>Derived Calculations</strong> เรียกใช้
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="field-label">Reference Label<span className="req">*</span></label>
+                      <input className="field-input" placeholder="เช่น น้ำหนักภาชนะเปล่า"
+                        value={form.tare.referenceLabel}
+                        onChange={e => setNested('tare', 'referenceLabel', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="field-label">Unit</label>
+                      <input className="field-input" placeholder="เช่น g, ml, AU"
+                        value={form.tare.referenceUnit}
+                        onChange={e => setNested('tare', 'referenceUnit', e.target.value)} />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="field-label flex items-center gap-1.5">
+                        Store As (ชื่อตัวแปร)<span className="req">*</span>
+                        <span className="text-[10px] font-normal text-slate-500">— ใช้อ้างอิงใน formula</span>
+                      </label>
+                      <input className="field-input font-mono text-sm" placeholder="เช่น tare_weight, blank_absorbance"
+                        value={form.tare.storeAs}
+                        onChange={e => setNested('tare', 'storeAs', e.target.value.replace(/\s+/g, '_').toLowerCase())} />
+                      <p className="helper">ตัวพิมพ์เล็ก + _ เท่านั้น — ต้องไม่ซ้ำกับ criteria อื่น</p>
+                    </div>
+                    <div>
+                      <label className="field-label">Acceptance Min (กัน Tare ผิดภาชนะ)</label>
+                      <input className="field-input" type="number" placeholder="—"
+                        value={form.tare.acceptanceMin}
+                        onChange={e => setNested('tare', 'acceptanceMin', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="field-label">Acceptance Max</label>
+                      <input className="field-input" type="number" placeholder="—"
+                        value={form.tare.acceptanceMax}
+                        onChange={e => setNested('tare', 'acceptanceMax', e.target.value)} />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="field-label">Expire After (อายุของค่า reference)</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { v: 'batch',     l: 'ต่อ Batch',    d: 'ค่าใช้ได้ใน batch เดียว' },
+                          { v: 'shift',     l: 'ต่อกะ',         d: 'รีเซ็ตทุกกะการทำงาน' },
+                          { v: 'permanent', l: 'ถาวร',          d: 'ใช้ได้จนกว่าจะ recalibrate' },
+                        ].map(opt => (
+                          <button type="button" key={opt.v}
+                            onClick={() => setNested('tare', 'expireAfter', opt.v)}
+                            className={`px-3 py-2 rounded-lg text-xs font-medium border text-left transition-all ${
+                              form.tare.expireAfter === opt.v
+                                ? 'bg-sky-100 border-sky-400 text-sky-800'
+                                : 'bg-white border-slate-200 text-slate-500 hover:border-sky-300'
+                            }`}>
+                            <div className="font-bold">{opt.l}</div>
+                            <div className="text-[10px] opacity-80">{opt.d}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* === CALCULATED === */}
+              {form.criteriaType === 'calculated' && (
+                <div className="col-span-2 p-5 mt-2 rounded-xl border-2 border-dashed border-fuchsia-200 bg-fuchsia-50/40">
+                  <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <Icon name="flask" className="w-4 h-4 text-fuchsia-700" />
+                      <h3 className="font-semibold text-fuchsia-800 text-sm">Calculated Specification</h3>
+                    </div>
+                    <span className="text-[11px] text-fuchsia-700 bg-white/60 px-2 py-0.5 rounded-full border border-fuchsia-200">
+                      {form.calculated.inputs.length} ตัวแปร
+                    </span>
+                  </div>
+                  <div className="bg-white rounded-lg border border-fuchsia-200 p-2.5 mb-4 text-[11px] text-fuchsia-900 flex items-start gap-2">
+                    <span>💡</span>
+                    <div>
+                      <strong>ตัวอย่าง:</strong> Net weight = <code className="bg-fuchsia-50 px-1 rounded">gross - tare</code> · %LOD = <code className="bg-fuchsia-50 px-1 rounded">(wet - dry) / wet * 100</code> · Yield = <code className="bg-fuchsia-50 px-1 rounded">output / input * 100</code>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="field-label flex items-center gap-1.5">
+                      Formula (สูตรคำนวณ)<span className="req">*</span>
+                    </label>
+                    <input className="field-input font-mono text-sm" placeholder="เช่น (gross - tare) / batch_size * 100"
+                      value={form.calculated.formula}
+                      onChange={e => setNested('calculated', 'formula', e.target.value)} />
+                    <p className="helper">ใช้ชื่อตัวแปรจากรายการด้านล่าง · รองรับ + − × ÷ ( )</p>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="field-label flex items-center justify-between">
+                      <span>ตัวแปร (Inputs)</span>
+                      <button type="button" onClick={addCalcInput}
+                        className="text-[11px] text-fuchsia-700 hover:text-fuchsia-900 font-medium flex items-center gap-1">
+                        <Icon name="plus" className="w-3 h-3" /> เพิ่มตัวแปร
+                      </button>
+                    </label>
+                    <div className="space-y-2">
+                      {form.calculated.inputs.map((inp, idx) => (
+                        <div key={inp.id} className="rounded-xl bg-white border border-fuchsia-200 p-3">
+                          <div className="grid grid-cols-12 gap-2 items-center">
+                            <span className="col-span-1 w-6 h-6 rounded-md bg-fuchsia-100 text-fuchsia-700 flex items-center justify-center text-[11px] font-bold">{idx + 1}</span>
+                            <input className="field-input col-span-3 text-sm font-mono"
+                              placeholder="ชื่อตัวแปร"
+                              value={inp.name}
+                              onChange={e => updateCalcInput(inp.id, 'name', e.target.value.replace(/\s+/g, '_').toLowerCase())} />
+                            <select className="field-input col-span-3 text-sm cursor-pointer"
+                              value={inp.source}
+                              onChange={e => updateCalcInput(inp.id, 'source', e.target.value)}>
+                              <option value="this_step">📍 This step</option>
+                              <option value="derived">🔗 Derived (other criteria)</option>
+                              <option value="constant">🔢 Constant</option>
+                            </select>
+                            <input className="field-input col-span-4 text-sm"
+                              placeholder={inp.source === 'derived' ? 'อ้างถึง code เช่น IPC-TARE-001' : inp.source === 'constant' ? 'ค่าคงที่' : 'field name'}
+                              value={inp.source === 'derived' ? inp.criteriaCode : inp.fieldRef}
+                              onChange={e => updateCalcInput(inp.id, inp.source === 'derived' ? 'criteriaCode' : 'fieldRef', e.target.value)} />
+                            {form.calculated.inputs.length > 1 && (
+                              <button type="button"
+                                onClick={() => removeCalcInput(inp.id)}
+                                className="col-span-1 p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50">
+                                <Icon name="trash" className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className="field-label">Result Unit</label>
+                      <input className="field-input text-sm" placeholder="g, %, mg/ml"
+                        value={form.calculated.resultUnit}
+                        onChange={e => setNested('calculated', 'resultUnit', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="field-label">Decimals</label>
+                      <input className="field-input text-sm" type="number" min="0" max="6" placeholder="2"
+                        value={form.calculated.displayDecimals}
+                        onChange={e => setNested('calculated', 'displayDecimals', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="field-label">Result Min</label>
+                      <input className="field-input text-sm" type="number" placeholder="—"
+                        value={form.calculated.resultMin}
+                        onChange={e => setNested('calculated', 'resultMin', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="field-label">Result Max</label>
+                      <input className="field-input text-sm" type="number" placeholder="—"
+                        value={form.calculated.resultMax}
+                        onChange={e => setNested('calculated', 'resultMax', e.target.value)} />
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* === PASS / FAIL === */}
@@ -2190,6 +3073,152 @@ function App() {
                   </div>
                 </label>
               </div>
+
+              {/* Section 5 — Derived Calculations */}
+              <div className="col-span-2 flex items-center gap-3 mt-3">
+                <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">5</span>
+                <h3 className="font-semibold text-slate-900 text-sm">การคำนวณข้าม Step <span className="text-slate-400 font-normal">— Derived Calculations</span></h3>
+                <div className="flex-1 h-px bg-slate-100"></div>
+              </div>
+
+              <div className="col-span-2 sub-panel p-5">
+                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <Icon name="flask" className="w-4 h-4 text-emerald-700" />
+                    <h3 className="font-semibold text-emerald-800 text-sm">ค่าคำนวณจากหลาย Step</h3>
+                  </div>
+                  <span className="text-[11px] text-emerald-700 bg-white/60 px-2 py-0.5 rounded-full border border-emerald-200">
+                    {form.derivedCalcs.length} สูตร
+                  </span>
+                </div>
+                <div className="bg-white rounded-lg border border-emerald-200 p-2.5 mb-3 text-[11px] text-emerald-900 flex items-start gap-2">
+                  <span>ⓘ</span>
+                  <div>
+                    <strong>ต่างจาก Calculated type อย่างไร:</strong> Calculated type ใช้คำนวณ <em>ภายใน criteria เดียว</em> · Derived Calculations ใช้คำนวณ <em>ข้าม criteria/step</em> ทั้ง batch (เช่น Total Yield % จาก dispensing + filling step)
+                  </div>
+                </div>
+
+                {form.derivedCalcs.length === 0 && (
+                  <div className="text-center py-6 text-slate-400 text-sm">
+                    ยังไม่มีสูตรคำนวณข้าม step
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  {form.derivedCalcs.map((dc, idx) => (
+                    <div key={dc.id} className="rounded-xl bg-white border border-emerald-200 p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="w-7 h-7 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">D{idx + 1}</span>
+                        <input className="field-input flex-1 text-sm font-semibold"
+                          placeholder="ชื่อค่าคำนวณ เช่น Total Yield %, Mass Balance"
+                          value={dc.label}
+                          onChange={e => updateDerivedCalc(dc.id, 'label', e.target.value)} />
+                        <button type="button"
+                          onClick={() => removeDerivedCalc(dc.id)}
+                          className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50">
+                          <Icon name="trash" className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                        <div className="sm:col-span-3">
+                          <label className="text-[11px] text-slate-500 uppercase font-medium">Formula</label>
+                          <input className="field-input text-sm font-mono"
+                            placeholder="(IPC-FILL-001.net_weight / IPC-WEIGH-001.batch_weight) * 100"
+                            value={dc.formula}
+                            onChange={e => updateDerivedCalc(dc.id, 'formula', e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-slate-500 uppercase font-medium">Result Unit</label>
+                          <input className="field-input text-sm" placeholder="%"
+                            value={dc.resultUnit}
+                            onChange={e => updateDerivedCalc(dc.id, 'resultUnit', e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-slate-500 uppercase font-medium">Trigger</label>
+                          <select className="field-input text-sm cursor-pointer"
+                            value={dc.triggerWhen}
+                            onChange={e => updateDerivedCalc(dc.id, 'triggerWhen', e.target.value)}>
+                            <option value="batch_end">⏹ จบ Batch</option>
+                            <option value="on_demand">▶️ On-demand</option>
+                            <option value="every_check">🔁 ทุกครั้งที่ตรวจ</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-slate-500 uppercase font-medium">On Fail</label>
+                          <select className="field-input text-sm cursor-pointer"
+                            value={dc.onFail}
+                            onChange={e => updateDerivedCalc(dc.id, 'onFail', e.target.value)}>
+                            <option value="warn">⚠ Warn</option>
+                            <option value="investigate">🔍 Investigate</option>
+                            <option value="reject">✕ Reject Batch</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-slate-500 uppercase font-medium">Accept Min</label>
+                          <input className="field-input text-sm" type="number" placeholder="98"
+                            value={dc.acceptanceMin}
+                            onChange={e => updateDerivedCalc(dc.id, 'acceptanceMin', e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-slate-500 uppercase font-medium">Accept Max</label>
+                          <input className="field-input text-sm" type="number" placeholder="102"
+                            value={dc.acceptanceMax}
+                            onChange={e => updateDerivedCalc(dc.id, 'acceptanceMax', e.target.value)} />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-[11px] text-slate-500 uppercase font-medium">Sources (Criteria อ้างอิง)</label>
+                          <button type="button" onClick={() => addDerivedSource(dc.id)}
+                            className="text-[11px] text-emerald-700 hover:text-emerald-900 font-medium flex items-center gap-1">
+                            <Icon name="plus" className="w-3 h-3" /> เพิ่ม source
+                          </button>
+                        </div>
+                        <div className="space-y-1.5">
+                          {dc.sources.map((src) => (
+                            <div key={src.id} className="grid grid-cols-12 gap-2 items-center">
+                              <input className="field-input col-span-4 text-xs font-mono"
+                                placeholder="Criteria Code"
+                                value={src.criteriaCode}
+                                onChange={e => updateDerivedSource(dc.id, src.id, 'criteriaCode', e.target.value)} />
+                              <input className="field-input col-span-3 text-xs font-mono"
+                                placeholder="field name"
+                                value={src.field}
+                                onChange={e => updateDerivedSource(dc.id, src.id, 'field', e.target.value)} />
+                              <input className="field-input col-span-4 text-xs"
+                                placeholder="step (เช่น filling, dispensing)"
+                                value={src.step}
+                                onChange={e => updateDerivedSource(dc.id, src.id, 'step', e.target.value)} />
+                              {dc.sources.length > 1 && (
+                                <button type="button"
+                                  onClick={() => removeDerivedSource(dc.id, src.id)}
+                                  className="col-span-1 p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50">
+                                  <Icon name="trash" className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="mt-3">
+                        <label className="text-[11px] text-slate-500 uppercase font-medium">Note</label>
+                        <input className="field-input text-sm"
+                          placeholder="หมายเหตุ (optional)"
+                          value={dc.note}
+                          onChange={e => updateDerivedCalc(dc.id, 'note', e.target.value)} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button type="button" onClick={addDerivedCalc}
+                  className="mt-3 w-full py-2.5 rounded-lg border-2 border-dashed border-emerald-300 text-emerald-700 text-xs font-medium hover:bg-emerald-50 transition-all flex items-center justify-center gap-1">
+                  <Icon name="plus" className="w-3.5 h-3.5" /> เพิ่ม Derived Calculation
+                </button>
+              </div>
             </div>
           </div>
             </div>
@@ -2272,6 +3301,51 @@ function App() {
                         <div className="font-mono text-slate-700">{form.textFormat || <span className="italic text-slate-400">—</span>}</div>
                       </div>
                     )}
+                    {form.criteriaType === 'multi_point' && (
+                      <div className="bg-teal-50 rounded-lg p-2.5 text-[11px]">
+                        <div className="font-semibold text-teal-700 mb-1">🎯 Multi-Point Numeric</div>
+                        <div className="text-teal-900/80">
+                          <span className="font-mono font-bold">{form.multiPoint.pointCount}</span> จุด · Target <span className="font-mono">{form.multiPoint.perPointTarget || '—'}</span> ± {form.multiPoint.perPointTolerance}%
+                        </div>
+                        <div className="mt-1 text-[10px] text-teal-700">
+                          Rule: <span className="font-semibold uppercase">{form.multiPoint.aggregateRule.replace('_', ' ')}</span>
+                          {form.multiPoint.aggregateLimit && <span> · limit {form.multiPoint.aggregateLimit}</span>}
+                        </div>
+                      </div>
+                    )}
+                    {form.criteriaType === 'calibration' && (
+                      <div className="bg-orange-50 rounded-lg p-2.5 text-[11px]">
+                        <div className="font-semibold text-orange-700 mb-1">⚙️ Calibration</div>
+                        <div className="text-orange-900/80 truncate">{form.calibration.instrumentName || <span className="italic">— เครื่อง —</span>}</div>
+                        <div className="mt-1 text-[10px] text-orange-700">
+                          Std: <span className="font-mono">{form.calibration.standardValue || '—'} {form.calibration.standardUnit}</span> ± <span className="font-mono">{form.calibration.toleranceValue || '—'}{form.calibration.toleranceType === 'percent' ? '%' : ''}</span>
+                        </div>
+                        {form.calibration.requiresPriorPass && <div className="mt-1 text-[10px] text-red-700 font-semibold">⛔ Block use on fail</div>}
+                      </div>
+                    )}
+                    {form.criteriaType === 'tare' && (
+                      <div className="bg-sky-50 rounded-lg p-2.5 text-[11px]">
+                        <div className="font-semibold text-sky-700 mb-1">⚖️ Tare / Reference</div>
+                        <div className="text-sky-900/80 truncate">{form.tare.referenceLabel}</div>
+                        <div className="mt-1 text-[10px] text-sky-700">
+                          Store as <span className="font-mono font-bold">{form.tare.storeAs || '<unset>'}</span>
+                          {form.tare.referenceUnit && <span> · {form.tare.referenceUnit}</span>}
+                        </div>
+                        <div className="text-[10px] text-sky-700 mt-0.5">Expire: {form.tare.expireAfter}</div>
+                      </div>
+                    )}
+                    {form.criteriaType === 'calculated' && (
+                      <div className="bg-fuchsia-50 rounded-lg p-2.5 text-[11px]">
+                        <div className="font-semibold text-fuchsia-700 mb-1">🧮 Calculated</div>
+                        <div className="font-mono text-fuchsia-900/80 truncate">{form.calculated.formula || <span className="italic">— ยังไม่มีสูตร —</span>}</div>
+                        <div className="mt-1 text-[10px] text-fuchsia-700">
+                          {form.calculated.inputs.length} ตัวแปร
+                          {(form.calculated.resultMin || form.calculated.resultMax) && (
+                            <span> · range <span className="font-mono">{form.calculated.resultMin || '—'}–{form.calculated.resultMax || '—'}</span> {form.calculated.resultUnit}</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     {form.criteriaType === 'custom' && (
                       <div className="bg-violet-50 rounded-lg p-2.5 text-[11px]">
                         <div className="font-semibold text-violet-700 mb-1.5">⚙️ {form.customFields.length} ฟิลด์</div>
@@ -2329,6 +3403,50 @@ function App() {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* Validation Panel */}
+                <div className="panel p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-1">
+                      <span>🛡</span> Validation
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {errorCount > 0 && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-red-100 text-red-700 border-red-300">
+                          {errorCount} error
+                        </span>
+                      )}
+                      {warnCount > 0 && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-amber-100 text-amber-700 border-amber-300">
+                          {warnCount} warn
+                        </span>
+                      )}
+                      {errorCount === 0 && warnCount === 0 && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-emerald-100 text-emerald-700 border-emerald-300">
+                          ✓ Clean
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {validationIssues.length === 0 ? (
+                    <div className="text-[11px] text-slate-400 italic">ไม่พบปัญหา cross-field</div>
+                  ) : (
+                    <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1 scrollbar">
+                      {validationIssues.map((iss, i) => (
+                        <div key={i} className={`flex items-start gap-2 p-2 rounded-lg border text-[11px] ${
+                          iss.level === 'error'
+                            ? 'bg-red-50 border-red-200 text-red-800'
+                            : 'bg-amber-50 border-amber-200 text-amber-800'
+                        }`}>
+                          <span className={`flex-shrink-0 w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-bold ${
+                            iss.level === 'error' ? 'bg-red-200 text-red-700' : 'bg-amber-200 text-amber-700'
+                          }`}>{iss.code}</span>
+                          <span className="flex-1">{iss.msg}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* GMP Compliance Check */}
@@ -2417,7 +3535,10 @@ function App() {
             </div>
             <div className="flex gap-2 sm:gap-3 flex-shrink-0">
               <button className="btn btn-ghost flex-1 sm:flex-initial">CANCEL</button>
-              <button className="btn btn-primary flex-1 sm:flex-initial" disabled={!form.testName || !form.code}>CREATE</button>
+              <button className="btn btn-primary flex-1 sm:flex-initial" disabled={!form.testName || !form.code || errorCount > 0}
+                title={errorCount > 0 ? `มี ${errorCount} error ต้องแก้ก่อน` : ''}>
+                CREATE{errorCount > 0 && <span className="ml-1 text-[10px]">({errorCount} err)</span>}
+              </button>
             </div>
           </div>
         </div>
