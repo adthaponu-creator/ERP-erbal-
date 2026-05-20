@@ -26,13 +26,11 @@
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: contain;
   }
-  /* Touch-friendly: minimum 44px tap targets */
-  .tap { min-height: 56px; min-width: 56px; }
-  .tap-lg { min-height: 72px; min-width: 72px; }
+  .tap { min-height: 48px; min-width: 48px; }
+  .tap-lg { min-height: 64px; min-width: 64px; }
 
-  /* Numpad button */
   .numpad-btn {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
     background: white;
     border: 2px solid #e2e8f0;
@@ -42,81 +40,33 @@
   }
   .numpad-btn:active { transform: scale(0.94); background: #ecfdf5; border-color: var(--brand); }
 
-  /* Result cell states */
   .cell-empty   { background: white;       border-color: #e2e8f0; color: #94a3b8; }
   .cell-active  { background: #fef3c7;     border-color: #f59e0b; color: #92400e; box-shadow: 0 0 0 3px rgba(245,158,11,.25); }
   .cell-pass    { background: #ecfdf5;     border-color: #10b981; color: #065f46; }
   .cell-fail    { background: #fee2e2;     border-color: #ef4444; color: #991b1b; }
-  .cell-pending { background: #f8fafc;     border-color: #cbd5e1; color: #475569; }
 
-  /* Hide tap-to-zoom on number inputs */
   input[type="number"]::-webkit-outer-spin-button,
   input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   input[type="number"] { -moz-appearance: textfield; }
 
-  .tab-active { background: var(--brand); color: white; box-shadow: 0 4px 12px rgba(16,185,129,.35); }
-  .tab-inactive { background: white; color: #475569; }
-
-  @keyframes pulse-ring {
-    0% { box-shadow: 0 0 0 0 rgba(245,158,11,.6); }
-    100% { box-shadow: 0 0 0 12px rgba(245,158,11,0); }
-  }
-  .pulse-active { animation: pulse-ring 1.4s infinite; }
-
   .scrollbar::-webkit-scrollbar { width: 8px; }
   .scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+  .type-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
 </style>
 </head>
 <body>
 <div id="root"></div>
 
 <script type="text/babel" data-presets="react">
-const { useState, useMemo, useEffect, useRef } = React;
-
-/* =========================================================
-   Two demo criteria — match index.html demo presets (8.1, 8.2)
-   ========================================================= */
-const CRITERIA = [
-  {
-    id: 'cap-tare',
-    code: 'IPC-CAP-TARE-001',
-    bprStep: '8.1',
-    title: 'น้ำหนักแคปซูลเปล่า',
-    subtitle: 'สุ่ม 10 แคปซูล หาค่าเฉลี่ย',
-    type: 'multi_point',
-    unit: 'g',
-    pointCount: 10,
-    pointLabel: 'ลำดับแคปซูล',
-    perPointTarget: 0.096,
-    perPointTolerance: 10,      // ±10%
-    aggregateRule: 'mean',
-    aggregateMin: 0.090,
-    aggregateMax: 0.102,
-    critical: false,
-    decimals: 4,
-    instructions: 'สุ่มแคปซูลเปล่า 10 แคปซูล ชั่งทีละแคปซูล บันทึกน้ำหนัก ระบบจะคำนวณค่าเฉลี่ยอัตโนมัติ',
-  },
-  {
-    id: 'cap-punch',
-    code: 'IPC-CAP-PUNCH-001',
-    bprStep: '8.2',
-    title: 'ค่าตั้งหัวตอก',
-    subtitle: 'วัดทุกหัว (6 หัว) ทุกครั้งที่ตั้งเครื่อง',
-    type: 'multi_point',
-    unit: '',
-    pointCount: 6,
-    pointLabel: 'หัวตอก',
-    perPointTarget: 20,
-    perPointTolerance: 25,      // ±25%
-    aggregateRule: 'min_max',
-    aggregateMin: 15,
-    aggregateMax: 25,
-    critical: true,
-    decimals: 0,
-    multiRound: true,           // อนุญาตให้ตั้งหลายครั้ง (รอบที่ 1, 2, 3...)
-    instructions: 'วัดค่าหัวตอกทุกหัว (1-6) ค่าต้องอยู่ในช่วง 15-25 ทุกหัว ถ้าหัวใดผิด → หยุดเครื่อง ปรับใหม่',
-  },
-];
+const { useState, useMemo, useEffect } = React;
 
 /* ============================ ICONS ============================ */
 const Icon = ({ name, className = "w-5 h-5" }) => {
@@ -131,8 +81,54 @@ const Icon = ({ name, className = "w-5 h-5" }) => {
     flask:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 3h6v4l5 9a3 3 0 0 1-3 5H7a3 3 0 0 1-3-5l5-9V3z"/><path d="M9 3h6"/></svg>,
     user:     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
     refresh:  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15A9 9 0 1 1 5.64 5.64L1 10"/></svg>,
+    empty:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>,
+    grid:     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
   };
   return <span className={className}>{icons[name]}</span>;
+};
+
+/* ============================ TYPE METADATA ============================ */
+const TYPE_META = {
+  numeric:           { label: 'Numeric',          color: 'emerald', desc: 'ค่าตัวเลข ± Tolerance' },
+  pass_fail:         { label: 'Pass / Fail',      color: 'blue',    desc: 'ผ่าน / ไม่ผ่าน' },
+  visual:            { label: 'Visual',           color: 'amber',   desc: 'ตรวจสายตา checklist' },
+  text:              { label: 'Text',             color: 'slate',   desc: 'บันทึกข้อความ' },
+  multi_point:       { label: 'Multi-Point',      color: 'teal',    desc: 'หลายจุด' },
+  custom_multi_field:{ label: 'Multi-Field',      color: 'violet',  desc: 'หลายฟิลด์' },
+  calibration:       { label: 'Calibration',      color: 'indigo',  desc: 'ตรวจสอบเครื่องวัด' },
+  tare:              { label: 'Tare / Ref',       color: 'cyan',    desc: 'ค่าอ้างอิง' },
+  calculated:        { label: 'Calculated',       color: 'fuchsia', desc: 'คำนวณจากสูตร' },
+};
+
+const colorClass = (color, kind) => {
+  const map = {
+    emerald: { bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-700', solid: 'bg-emerald-600', chip: 'bg-emerald-100 text-emerald-700' },
+    blue:    { bg: 'bg-blue-50',    border: 'border-blue-300',    text: 'text-blue-700',    solid: 'bg-blue-600',    chip: 'bg-blue-100 text-blue-700' },
+    amber:   { bg: 'bg-amber-50',   border: 'border-amber-300',   text: 'text-amber-700',   solid: 'bg-amber-600',   chip: 'bg-amber-100 text-amber-700' },
+    slate:   { bg: 'bg-slate-50',   border: 'border-slate-300',   text: 'text-slate-700',   solid: 'bg-slate-600',   chip: 'bg-slate-100 text-slate-700' },
+    teal:    { bg: 'bg-teal-50',    border: 'border-teal-300',    text: 'text-teal-700',    solid: 'bg-teal-600',    chip: 'bg-teal-100 text-teal-700' },
+    violet:  { bg: 'bg-violet-50',  border: 'border-violet-300',  text: 'text-violet-700',  solid: 'bg-violet-600',  chip: 'bg-violet-100 text-violet-700' },
+    indigo:  { bg: 'bg-indigo-50',  border: 'border-indigo-300',  text: 'text-indigo-700',  solid: 'bg-indigo-600',  chip: 'bg-indigo-100 text-indigo-700' },
+    cyan:    { bg: 'bg-cyan-50',    border: 'border-cyan-300',    text: 'text-cyan-700',    solid: 'bg-cyan-600',    chip: 'bg-cyan-100 text-cyan-700' },
+    fuchsia: { bg: 'bg-fuchsia-50', border: 'border-fuchsia-300', text: 'text-fuchsia-700', solid: 'bg-fuchsia-600', chip: 'bg-fuchsia-100 text-fuchsia-700' },
+  };
+  return map[color]?.[kind] || '';
+};
+
+/* ============================ STORAGE ============================ */
+const STORAGE_CRITERIA = 'ipc_criteria_list';
+const STORAGE_RESULTS  = 'ipc_results';
+
+const loadCriteria = () => {
+  try { return JSON.parse(localStorage.getItem(STORAGE_CRITERIA) || '[]'); }
+  catch { return []; }
+};
+const loadResults = () => {
+  try { return JSON.parse(localStorage.getItem(STORAGE_RESULTS) || '{}'); }
+  catch { return {}; }
+};
+const saveResults = (data) => {
+  localStorage.setItem(STORAGE_RESULTS, JSON.stringify(data));
 };
 
 /* ============================ NUMPAD ============================ */
@@ -141,12 +137,16 @@ function Numpad({ value, onChange, onConfirm, onCancel, allowDecimal = true, lab
     if (k === 'C') return onChange('');
     if (k === '⌫') return onChange(value.slice(0, -1));
     if (k === '.' && (!allowDecimal || value.includes('.'))) return;
+    if (k === '-') {
+      if (value.startsWith('-')) return onChange(value.slice(1));
+      return onChange('-' + value);
+    }
     if (value === '0' && k !== '.') return onChange(k);
     onChange((value || '') + k);
   };
   const keys = ['7','8','9','4','5','6','1','2','3'];
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 animate-in" onClick={onCancel}>
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-3" onClick={onCancel}>
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="bg-emerald-600 text-white px-5 py-3 flex items-center justify-between">
           <div>
@@ -170,7 +170,9 @@ function Numpad({ value, onChange, onConfirm, onCancel, allowDecimal = true, lab
             ))}
             {allowDecimal ? (
               <button onClick={() => handleKey('.')} className="numpad-btn tap-lg">·</button>
-            ) : <div />}
+            ) : (
+              <button onClick={() => handleKey('-')} className="numpad-btn tap-lg">±</button>
+            )}
             <button onClick={() => handleKey('0')} className="numpad-btn tap-lg">0</button>
             <button onClick={() => handleKey('⌫')} className="numpad-btn tap-lg text-amber-600">⌫</button>
           </div>
@@ -187,256 +189,16 @@ function Numpad({ value, onChange, onConfirm, onCancel, allowDecimal = true, lab
   );
 }
 
-/* ============================ HEADER ============================ */
-function Header({ batch, operator, shift }) {
-  return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
-      <div className="max-w-5xl mx-auto px-3 sm:px-5 py-2.5 flex items-center gap-3">
-        <a href="/" className="tap flex items-center gap-1.5 text-slate-500 hover:text-slate-800 px-2 -ml-2">
-          <Icon name="back" className="w-5 h-5" /> <span className="text-sm font-medium hidden sm:inline">Setup</span>
-        </a>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="font-mono font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">{batch}</span>
-            <span className="text-slate-400">·</span>
-            <span className="text-slate-600">{shift}</span>
-            <span className="text-slate-400">·</span>
-            <span className="text-slate-600 flex items-center gap-1">
-              <Icon name="user" className="w-3 h-3" /> {operator}
-            </span>
-          </div>
-          <div className="text-[15px] font-bold text-slate-900 leading-tight">บันทึกผล IPC — การบรรจุผงยาลงแคปซูล</div>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-/* ============================ MULTI-POINT — MEAN (8.1) ============================ */
-function MultiPointMean({ criteria, points, setPoints, openPad }) {
-  const numericVals = points.map(v => parseFloat(v)).filter(v => !isNaN(v));
-  const mean = numericVals.length ? numericVals.reduce((a, b) => a + b, 0) / numericVals.length : null;
-  const meanOK = mean !== null && mean >= criteria.aggregateMin && mean <= criteria.aggregateMax;
-  const filled = numericVals.length;
-  const pct = (filled / criteria.pointCount) * 100;
-
-  return (
-    <div className="space-y-4">
-      <InstructionsBox text={criteria.instructions} />
-
-      <SpecBanner
-        label="ค่าเฉลี่ยที่ยอมรับ"
-        range={`${criteria.aggregateMin} – ${criteria.aggregateMax} ${criteria.unit}`}
-        sub={`(target ${criteria.perPointTarget} ± ${criteria.perPointTolerance}%)`}
-      />
-
-      <div className="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-bold text-slate-900 text-base">บันทึกน้ำหนัก ({filled}/{criteria.pointCount})</h3>
-          <div className="text-xs text-slate-500">{Math.round(pct)}%</div>
-        </div>
-        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-4">
-          <div className="h-full bg-emerald-500 transition-all" style={{ width: `${pct}%` }} />
-        </div>
-
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-          {Array.from({ length: criteria.pointCount }, (_, i) => {
-            const v = points[i] || '';
-            const num = parseFloat(v);
-            const isEmpty = v === '';
-            const inRange = !isEmpty && !isNaN(num)
-              && num >= criteria.perPointTarget * (1 - criteria.perPointTolerance / 100)
-              && num <= criteria.perPointTarget * (1 + criteria.perPointTolerance / 100);
-            const state = isEmpty ? 'cell-empty' : (inRange ? 'cell-pass' : 'cell-fail');
-            return (
-              <button key={i}
-                onClick={() => openPad({
-                  index: i,
-                  value: v,
-                  label: `${criteria.pointLabel} ${i + 1}`,
-                  unit: criteria.unit,
-                  onSave: (val) => {
-                    const next = [...points]; next[i] = val; setPoints(next);
-                  },
-                })}
-                className={`tap-lg rounded-xl border-2 ${state} p-3 flex flex-col items-start justify-between text-left transition-all active:scale-95`}>
-                <span className="text-[11px] uppercase tracking-wider opacity-70">
-                  {criteria.pointLabel} {i + 1}
-                </span>
-                <span className="w-full flex items-baseline justify-between gap-1">
-                  <span className="text-2xl font-bold font-mono">
-                    {isEmpty ? '—' : v}
-                  </span>
-                  {!isEmpty && (
-                    <span className="text-base">
-                      {inRange ? '✓' : '✕'}
-                    </span>
-                  )}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <AggregateResult
-        label="น้ำหนักแคปซูลเปล่าเฉลี่ย 10 แคปซูล"
-        value={mean !== null ? mean.toFixed(criteria.decimals) : null}
-        unit={criteria.unit}
-        ok={meanOK}
-        spec={`${criteria.aggregateMin} ≤ mean ≤ ${criteria.aggregateMax}`}
-        progress={filled === criteria.pointCount}
-      />
-    </div>
-  );
-}
-
-/* ============================ MULTI-POINT — MIN/MAX, MULTI-ROUND (8.2) ============================ */
-function MultiPointMatrix({ criteria, rounds, setRounds, openPad }) {
-  const allRoundResults = rounds.map((round, ri) => {
-    const vals = round.map(v => parseFloat(v));
-    const filled = vals.filter(v => !isNaN(v)).length;
-    const failedCount = vals.filter(v => !isNaN(v) && (v < criteria.aggregateMin || v > criteria.aggregateMax)).length;
-    return {
-      filled,
-      failedCount,
-      complete: filled === criteria.pointCount,
-      pass: filled === criteria.pointCount && failedCount === 0,
-    };
-  });
-
-  const addRound = () => {
-    setRounds([...rounds, Array(criteria.pointCount).fill('')]);
-  };
-  const removeRound = (idx) => {
-    setRounds(rounds.filter((_, i) => i !== idx));
-  };
-
-  return (
-    <div className="space-y-4">
-      <InstructionsBox text={criteria.instructions} criticalNote={criteria.critical ? 'หัวข้อนี้เป็น CRITICAL — ถ้าค่าผิดต้องหยุดเครื่องทันที' : null} />
-
-      <SpecBanner
-        label="ค่าตั้งที่ยอมรับต่อหัว"
-        range={`${criteria.aggregateMin} – ${criteria.aggregateMax}`}
-        sub="ทุกหัวต้องอยู่ในช่วง"
-      />
-
-      {rounds.map((round, ri) => {
-        const r = allRoundResults[ri];
-        return (
-          <div key={ri} className="bg-white rounded-2xl border-2 border-slate-200 p-3 sm:p-4">
-            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-              <div className="flex items-center gap-2">
-                <span className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm ${
-                  r.complete
-                    ? (r.pass ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700')
-                    : 'bg-amber-100 text-amber-700'
-                }`}>R{ri + 1}</span>
-                <div>
-                  <div className="font-bold text-slate-900 text-base">ครั้งที่ตั้งค่า {ri + 1}</div>
-                  <div className="text-xs text-slate-500">
-                    {r.filled}/{criteria.pointCount} หัว
-                    {r.complete && (r.pass
-                      ? <span className="text-emerald-600 font-semibold ml-1">· ผ่าน ✓</span>
-                      : <span className="text-red-600 font-semibold ml-1">· มี {r.failedCount} หัวผิด ✕</span>)}
-                  </div>
-                </div>
-              </div>
-              {rounds.length > 1 && (
-                <button onClick={() => removeRound(ri)} className="tap text-slate-400 hover:text-red-500 px-2">
-                  <Icon name="trash" className="w-5 h-5" />
-                </button>
-              )}
-            </div>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-              {Array.from({ length: criteria.pointCount }, (_, pi) => {
-                const v = round[pi] || '';
-                const num = parseFloat(v);
-                const isEmpty = v === '';
-                const inRange = !isEmpty && !isNaN(num) && num >= criteria.aggregateMin && num <= criteria.aggregateMax;
-                const state = isEmpty ? 'cell-empty' : (inRange ? 'cell-pass' : 'cell-fail');
-                return (
-                  <button key={pi}
-                    onClick={() => openPad({
-                      value: v,
-                      label: `รอบ ${ri + 1} · ${criteria.pointLabel}ที่ ${pi + 1}`,
-                      unit: '',
-                      onSave: (val) => {
-                        const next = rounds.map((rr, i) => i === ri ? rr.map((vv, j) => j === pi ? val : vv) : rr);
-                        setRounds(next);
-                      },
-                    })}
-                    className={`tap-lg rounded-xl border-2 ${state} p-2 flex flex-col items-center justify-center transition-all active:scale-95`}>
-                    <span className="text-[10px] uppercase tracking-wider opacity-70">{criteria.pointLabel} {pi + 1}</span>
-                    <span className="text-xl sm:text-2xl font-bold font-mono mt-0.5">
-                      {isEmpty ? '—' : v}
-                    </span>
-                    {!isEmpty && (
-                      <span className="text-xs font-bold">{inRange ? '✓' : '✕ ผิด'}</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-            {r.complete && !r.pass && (
-              <div className="mt-3 p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2">
-                <Icon name="alert" className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-red-900">
-                  <div className="font-bold mb-0.5">มีหัวตอกค่าผิดช่วง</div>
-                  <div className="text-xs">หยุดเครื่อง → ปรับใหม่ → กด "+ ตั้งค่าใหม่อีกครั้ง" ด้านล่างเพื่อบันทึกรอบใหม่</div>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
-
-      <button onClick={addRound}
-        className="w-full tap rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/50 text-emerald-700 font-semibold flex items-center justify-center gap-2 hover:bg-emerald-50 active:bg-emerald-100">
-        <Icon name="plus" className="w-5 h-5" /> ตั้งค่าใหม่อีกครั้ง (เพิ่มรอบ {rounds.length + 1})
-      </button>
-
-      <FinalSummary8_2 rounds={rounds} results={allRoundResults} criteria={criteria} />
-    </div>
-  );
-}
-
-function FinalSummary8_2({ rounds, results, criteria }) {
-  const total = results.length;
-  const passed = results.filter(r => r.complete && r.pass).length;
-  const failed = results.filter(r => r.complete && !r.pass).length;
-  const lastComplete = results.filter(r => r.complete).slice(-1)[0];
-  const ok = lastComplete?.pass;
-
-  return (
-    <div className={`rounded-2xl border-2 p-4 ${
-      ok ? 'bg-emerald-50 border-emerald-300' : (lastComplete ? 'bg-red-50 border-red-300' : 'bg-slate-50 border-slate-200')
-    }`}>
-      <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-1">สรุปผลสุดท้าย</div>
-      <div className="flex items-baseline justify-between flex-wrap gap-2">
-        <div className="font-bold text-lg text-slate-900">
-          {!lastComplete ? 'ยังไม่มีรอบที่ครบ' : (ok
-            ? '✓ ผ่าน — ใช้ค่าตั้งจากรอบสุดท้าย'
-            : '✕ รอบล่าสุดยังไม่ผ่าน — ตั้งใหม่')}
-        </div>
-        <div className="text-sm text-slate-500 font-medium">
-          {total} รอบ · ผ่าน {passed} · ไม่ผ่าน {failed}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ============================ SHARED ============================ */
+/* ============================ SHARED UI ============================ */
 function InstructionsBox({ text, criticalNote }) {
+  if (!text && !criticalNote) return null;
   return (
     <div className="rounded-2xl bg-sky-50 border border-sky-200 p-4">
       <div className="flex items-start gap-2">
         <span className="text-xl flex-shrink-0">ⓘ</span>
         <div className="flex-1">
           <div className="font-semibold text-sky-900 text-sm mb-1">วิธีปฏิบัติ</div>
-          <p className="text-[13px] text-sky-900/90 leading-relaxed">{text}</p>
+          {text && <p className="text-[13px] text-sky-900/90 leading-relaxed whitespace-pre-line">{text}</p>}
           {criticalNote && (
             <div className="mt-2 px-3 py-2 rounded-lg bg-red-100 border border-red-300 text-red-800 text-xs font-semibold flex items-center gap-1.5">
               <Icon name="alert" className="w-4 h-4" /> {criticalNote}
@@ -448,178 +210,1190 @@ function InstructionsBox({ text, criticalNote }) {
   );
 }
 
-function SpecBanner({ label, range, sub }) {
+function SpecBanner({ label, range, sub, color = 'emerald' }) {
+  const palette = {
+    emerald: 'from-emerald-600 to-emerald-700 shadow-emerald-200',
+    blue: 'from-blue-600 to-blue-700 shadow-blue-200',
+    amber: 'from-amber-600 to-amber-700 shadow-amber-200',
+    slate: 'from-slate-600 to-slate-700 shadow-slate-200',
+    teal: 'from-teal-600 to-teal-700 shadow-teal-200',
+    violet: 'from-violet-600 to-violet-700 shadow-violet-200',
+    indigo: 'from-indigo-600 to-indigo-700 shadow-indigo-200',
+    cyan: 'from-cyan-600 to-cyan-700 shadow-cyan-200',
+    fuchsia: 'from-fuchsia-600 to-fuchsia-700 shadow-fuchsia-200',
+  }[color] || 'from-emerald-600 to-emerald-700 shadow-emerald-200';
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 text-white p-4 shadow-lg shadow-emerald-200">
+    <div className={`rounded-2xl bg-gradient-to-br ${palette} text-white p-4 shadow-lg`}>
       <div className="text-[11px] uppercase tracking-widest opacity-80 font-semibold">Spec — {label}</div>
-      <div className="font-mono text-2xl font-bold mt-1">{range}</div>
+      <div className="font-mono text-2xl font-bold mt-1 break-all">{range}</div>
       {sub && <div className="text-xs opacity-90 mt-0.5">{sub}</div>}
     </div>
   );
 }
 
-function AggregateResult({ label, value, unit, ok, spec, progress }) {
-  const hasValue = value !== null;
+function ResultBanner({ ok, label, sub }) {
   return (
-    <div className={`rounded-2xl border-2 p-4 transition-all ${
-      !progress
-        ? 'bg-slate-50 border-slate-200'
-        : (ok ? 'bg-emerald-50 border-emerald-300' : 'bg-red-50 border-red-300')
-    }`}>
-      <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-1">ผลรวม (auto)</div>
-      <div className="font-semibold text-slate-900 text-sm mb-2">{label}</div>
-      <div className="flex items-baseline justify-between gap-2 flex-wrap">
-        <div className="flex items-baseline gap-2">
-          <span className={`text-3xl sm:text-4xl font-bold font-mono ${
-            !progress ? 'text-slate-400' : (ok ? 'text-emerald-700' : 'text-red-700')
-          }`}>
-            {hasValue ? value : '—'}
-          </span>
-          {unit && hasValue && <span className="text-lg font-semibold text-slate-500">{unit}</span>}
+    <div className={`rounded-2xl border-2 p-4 ${ok ? 'bg-emerald-50 border-emerald-300' : 'bg-red-50 border-red-300'}`}>
+      <div className="flex items-center gap-2.5">
+        <span className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-lg ${ok ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}`}>
+          {ok ? '✓' : '✕'}
+        </span>
+        <div>
+          <div className={`font-bold ${ok ? 'text-emerald-800' : 'text-red-800'}`}>{label}</div>
+          {sub && <div className={`text-xs ${ok ? 'text-emerald-700' : 'text-red-700'}`}>{sub}</div>}
         </div>
-        {progress && (
-          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-            ok ? 'bg-emerald-200 text-emerald-800' : 'bg-red-200 text-red-800'
-          }`}>{ok ? '✓ ผ่าน' : '✕ ไม่ผ่าน'}</span>
-        )}
       </div>
-      <div className="text-[11px] text-slate-500 font-mono mt-2 border-t border-slate-200/60 pt-2">{spec}</div>
     </div>
   );
 }
 
-/* ============================ APP ============================ */
-function App() {
-  const [tab, setTab] = useState('cap-tare');
-  const [points81, setPoints81] = useState(Array(10).fill(''));
-  const [rounds82, setRounds82] = useState([Array(6).fill('')]);
-  const [pad, setPad] = useState(null);     // { value, label, unit, onSave }
-  const [lastSaved, setLastSaved] = useState(null);
-  const [showSubmit, setShowSubmit] = useState(false);
-
-  // Autosave (mock — localStorage)
-  useEffect(() => {
-    localStorage.setItem('ipc-record-demo', JSON.stringify({ points81, rounds82 }));
-    setLastSaved(new Date());
-  }, [points81, rounds82]);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem('ipc-record-demo') || 'null');
-      if (saved?.points81?.length === 10) setPoints81(saved.points81);
-      if (saved?.rounds82?.length) setRounds82(saved.rounds82);
-    } catch {}
-  }, []);
-
-  const current = CRITERIA.find(c => c.id === tab);
-  const c81 = CRITERIA[0];
-  const c82 = CRITERIA[1];
-
-  // Status pills for tab badges
-  const status81 = (() => {
-    const filled = points81.filter(v => v !== '').length;
-    if (filled === 0) return { color: 'slate', label: 'ยังไม่เริ่ม' };
-    if (filled < c81.pointCount) return { color: 'amber', label: `${filled}/${c81.pointCount}` };
-    const vals = points81.map(parseFloat);
-    const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
-    const ok = mean >= c81.aggregateMin && mean <= c81.aggregateMax;
-    return { color: ok ? 'emerald' : 'red', label: ok ? '✓' : '✕' };
-  })();
-
-  const status82 = (() => {
-    if (rounds82.length === 0 || rounds82.every(r => r.every(v => v === ''))) return { color: 'slate', label: 'ยังไม่เริ่ม' };
-    const lastComplete = rounds82.map(round => {
-      const vals = round.map(parseFloat);
-      const filled = vals.filter(v => !isNaN(v)).length;
-      if (filled !== c82.pointCount) return null;
-      const failed = vals.some(v => v < c82.aggregateMin || v > c82.aggregateMax);
-      return { ok: !failed };
-    }).filter(Boolean).slice(-1)[0];
-    if (!lastComplete) return { color: 'amber', label: `${rounds82.length} รอบ` };
-    return { color: lastComplete.ok ? 'emerald' : 'red', label: lastComplete.ok ? '✓' : '✕' };
-  })();
-
-  const reset = () => {
-    if (confirm('ล้างข้อมูลที่บันทึกไปแล้ว?')) {
-      setPoints81(Array(10).fill(''));
-      setRounds82([Array(6).fill('')]);
-    }
-  };
-
-  const submit = () => setShowSubmit(true);
+/* ============================ RECORDER — NUMERIC ============================ */
+function NumericRecorder({ criteria, value, setValue, openPad }) {
+  const target = parseFloat(criteria.target);
+  const tol = parseFloat(criteria.tolerance) || 0;
+  const hasSpec = !isNaN(target);
+  const min = hasSpec ? target * (1 - tol / 100) : null;
+  const max = hasSpec ? target * (1 + tol / 100) : null;
+  const num = parseFloat(value);
+  const hasValue = !isNaN(num);
+  const ok = hasValue && hasSpec && num >= min && num <= max;
+  const decimals = (criteria.unit === 'count') ? 0 : 2;
 
   return (
-    <div className="min-h-screen flex flex-col pb-24">
-      <Header batch="CS-2569-018" operator="คุณวรรณา" shift="กะเช้า 08:00-16:00" />
+    <div className="space-y-4">
+      {hasSpec && (
+        <SpecBanner
+          label="ค่าที่ยอมรับ"
+          range={`${min.toFixed(decimals)} – ${max.toFixed(decimals)} ${criteria.unit || ''}`}
+          sub={`Target ${target} ± ${tol}%`}
+        />
+      )}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5">
+        <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-2">บันทึกค่า</div>
+        <button
+          onClick={() => openPad({
+            value: value || '',
+            label: criteria.testLabel || criteria.code,
+            unit: criteria.unit,
+            onSave: setValue,
+          })}
+          className={`w-full tap-lg rounded-2xl border-2 p-5 transition-all active:scale-[0.98] text-left ${
+            !hasValue ? 'cell-empty' : (ok ? 'cell-pass' : 'cell-fail')
+          }`}>
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="text-4xl sm:text-5xl font-bold font-mono">
+              {hasValue ? value : '—'}
+            </span>
+            {criteria.unit && hasValue && <span className="text-xl font-semibold opacity-70">{criteria.unit}</span>}
+          </div>
+          {hasValue && hasSpec && (
+            <div className="mt-2 text-sm font-semibold">
+              {ok ? '✓ อยู่ในเกณฑ์' : '✕ นอกเกณฑ์'}
+            </div>
+          )}
+          {!hasValue && <div className="text-sm mt-1">แตะเพื่อกรอกค่า</div>}
+        </button>
+      </div>
+    </div>
+  );
+}
 
-      {/* Tab switcher */}
-      <div className="bg-white border-b border-slate-200 sticky top-[60px] z-20">
-        <div className="max-w-5xl mx-auto px-2 sm:px-4 py-2 flex gap-2">
-          {[c81, c82].map((c, i) => {
-            const isActive = tab === c.id;
-            const st = i === 0 ? status81 : status82;
-            const palette = {
-              slate:   'bg-slate-200 text-slate-600',
-              amber:   'bg-amber-200 text-amber-800',
-              emerald: 'bg-emerald-200 text-emerald-800',
-              red:     'bg-red-200 text-red-800',
-            }[st.color];
+/* ============================ RECORDER — PASS/FAIL ============================ */
+function PassFailRecorder({ criteria, value, setValue }) {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {criteria.passDefinition && (
+          <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3">
+            <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider mb-1">เกณฑ์ผ่าน</div>
+            <div className="text-sm text-emerald-900">{criteria.passDefinition}</div>
+          </div>
+        )}
+        {criteria.failDefinition && (
+          <div className="rounded-2xl bg-red-50 border border-red-200 p-3">
+            <div className="text-[11px] font-bold text-red-700 uppercase tracking-wider mb-1">เกณฑ์ไม่ผ่าน</div>
+            <div className="text-sm text-red-900">{criteria.failDefinition}</div>
+          </div>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <button onClick={() => setValue('pass')}
+          className={`tap-lg rounded-2xl border-2 p-6 flex flex-col items-center justify-center transition-all active:scale-95 ${
+            value === 'pass' ? 'bg-emerald-600 border-emerald-700 text-white shadow-lg shadow-emerald-200' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-400'
+          }`}>
+          <div className="text-3xl mb-1">✓</div>
+          <div className="font-bold text-lg">PASS</div>
+          <div className="text-xs opacity-80">ผ่านเกณฑ์</div>
+        </button>
+        <button onClick={() => setValue('fail')}
+          className={`tap-lg rounded-2xl border-2 p-6 flex flex-col items-center justify-center transition-all active:scale-95 ${
+            value === 'fail' ? 'bg-red-600 border-red-700 text-white shadow-lg shadow-red-200' : 'bg-white border-slate-200 text-slate-700 hover:border-red-400'
+          }`}>
+          <div className="text-3xl mb-1">✕</div>
+          <div className="font-bold text-lg">FAIL</div>
+          <div className="text-xs opacity-80">ไม่ผ่านเกณฑ์</div>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ RECORDER — VISUAL ============================ */
+function VisualRecorder({ criteria, checks, setChecks }) {
+  const list = criteria.visualChecklist || [];
+  const toggle = (i) => {
+    const next = { ...checks, [i]: !checks[i] };
+    setChecks(next);
+  };
+  const allPassed = list.length > 0 && list.every((_, i) => checks[i]);
+  const passedCount = list.filter((_, i) => checks[i]).length;
+
+  return (
+    <div className="space-y-4">
+      {criteria.visualCriteria && (
+        <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3">
+          <div className="text-[11px] font-bold text-amber-800 uppercase tracking-wider mb-1">เกณฑ์การตรวจ</div>
+          <div className="text-sm text-amber-900">{criteria.visualCriteria}</div>
+        </div>
+      )}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-bold text-slate-900">Checklist ({passedCount}/{list.length})</h3>
+          {allPassed && <span className="text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">✓ ครบทุกข้อ</span>}
+        </div>
+        <div className="space-y-2">
+          {list.map((item, i) => (
+            <button key={i} onClick={() => toggle(i)}
+              className={`w-full tap rounded-xl border-2 p-3 flex items-center gap-3 transition-all active:scale-[0.98] text-left ${
+                checks[i] ? 'bg-emerald-50 border-emerald-300' : 'bg-white border-slate-200'
+              }`}>
+              <span className={`w-6 h-6 rounded-md flex-shrink-0 flex items-center justify-center font-bold ${
+                checks[i] ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400 border-2 border-slate-300'
+              }`}>{checks[i] ? '✓' : ''}</span>
+              <span className={`text-sm flex-1 ${checks[i] ? 'text-emerald-900 font-semibold' : 'text-slate-700'}`}>{item}</span>
+            </button>
+          ))}
+          {list.length === 0 && (
+            <div className="text-center py-6 text-slate-400 text-sm">ไม่มีรายการ checklist</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ RECORDER — TEXT ============================ */
+function TextRecorder({ criteria, value, setValue }) {
+  return (
+    <div className="space-y-4">
+      {(criteria.textFormat || criteria.textExample) && (
+        <div className="rounded-2xl bg-slate-50 border border-slate-200 p-3 space-y-1.5">
+          {criteria.textFormat && (
+            <div>
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">รูปแบบ</div>
+              <div className="text-sm text-slate-800 font-mono">{criteria.textFormat}</div>
+            </div>
+          )}
+          {criteria.textExample && (
+            <div>
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">ตัวอย่าง</div>
+              <div className="text-sm text-slate-800">{criteria.textExample}</div>
+            </div>
+          )}
+        </div>
+      )}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4">
+        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 block">บันทึกข้อความ</label>
+        <textarea value={value || ''} onChange={e => setValue(e.target.value)}
+          placeholder="พิมพ์ข้อความที่ต้องการบันทึก..."
+          rows={5}
+          className="w-full rounded-xl border-2 border-slate-200 focus:border-emerald-400 focus:ring-0 p-3 text-sm resize-y" />
+        <div className="text-xs text-slate-400 mt-2">{(value || '').length} ตัวอักษร</div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ RECORDER — MULTI-POINT ============================ */
+function MultiPointRecorder({ criteria, points, setPoints, openPad }) {
+  const mp = criteria.multiPoint || {};
+  const pc = parseInt(mp.pointCount) || 0;
+  const target = parseFloat(mp.perPointTarget);
+  const tol = parseFloat(mp.perPointTolerance) || 0;
+  const hasSpec = !isNaN(target);
+  const pMin = hasSpec ? target * (1 - tol / 100) : null;
+  const pMax = hasSpec ? target * (1 + tol / 100) : null;
+
+  // Tare lookup — find latest submitted round mean of tare criteria
+  const tareInfo = (() => {
+    if (!mp.tareSource) return null;
+    const allCriteria = loadCriteria();
+    const tareC = allCriteria.find(c => c.code === mp.tareSource);
+    if (!tareC) return { error: `ไม่พบ Tare criteria ${mp.tareSource}` };
+    const allResults = loadResults();
+    const entry = allResults[tareC.id];
+    if (!entry) return { error: `ยังไม่มีการบันทึกค่า ${mp.tareSource}`, tareC };
+    const submitted = (entry.rounds || []).filter(r => r.submittedAt);
+    if (submitted.length === 0) return { error: `ยังไม่มีรอบที่ส่งผลของ ${mp.tareSource}`, tareC };
+    const lastRound = submitted[submitted.length - 1];
+    const tarePoints = (lastRound.data?.points || []).map(parseFloat).filter(v => !isNaN(v));
+    if (tarePoints.length === 0) return { error: `รอบล่าสุดไม่มีข้อมูล`, tareC };
+    const tareMean = tarePoints.reduce((a, b) => a + b, 0) / tarePoints.length;
+    return {
+      tareC,
+      tareMean,
+      tareUnit: tareC.unit,
+      tareLabel: tareC.testLabel || tareC.testName,
+      submittedAt: lastRound.submittedAt,
+    };
+  })();
+
+  const tare = tareInfo && !tareInfo.error ? tareInfo.tareMean : null;
+  const useNet = tare !== null;
+
+  const numericVals = points.map(v => parseFloat(v)).filter(v => !isNaN(v));
+  // For aggregation, use net values if tare is applied
+  const adjustedVals = useNet ? numericVals.map(v => v - tare) : numericVals;
+  const mean = adjustedVals.length ? adjustedVals.reduce((a, b) => a + b, 0) / adjustedVals.length : null;
+  const filled = numericVals.length;
+  const pct = pc > 0 ? (filled / pc) * 100 : 0;
+
+  // Helper to convert raw value to net (subtract tare if applicable)
+  const toNet = (raw) => {
+    const n = parseFloat(raw);
+    if (isNaN(n)) return NaN;
+    return useNet ? n - tare : n;
+  };
+
+  // Aggregate check (operates on NET values when tare is applied)
+  let aggregateOk = null;
+  let aggregateLabel = '';
+  const rule = mp.aggregateRule;
+  if (filled === pc && pc > 0) {
+    const netVals = points.map(toNet);
+    if (rule === 'all_pass') {
+      aggregateOk = netVals.every(n =>
+        !isNaN(n) && (!hasSpec || (n >= pMin && n <= pMax))
+      );
+      aggregateLabel = 'ทุกจุดต้องผ่าน';
+    } else if (rule === 'mean') {
+      const [aMin, aMax] = (mp.aggregateLimit || '').split('-').map(s => parseFloat(s.trim()));
+      if (!isNaN(aMin) && !isNaN(aMax)) {
+        aggregateOk = mean >= aMin && mean <= aMax;
+        aggregateLabel = `Mean ${aMin}–${aMax}`;
+      } else {
+        aggregateOk = netVals.every(n => !isNaN(n));
+        aggregateLabel = 'Mean (no limit)';
+      }
+    } else if (rule === 'rsd') {
+      const limit = parseFloat(mp.aggregateLimit);
+      if (!isNaN(limit) && mean) {
+        const sd = Math.sqrt(adjustedVals.reduce((a, b) => a + (b - mean) ** 2, 0) / adjustedVals.length);
+        const rsd = (sd / mean) * 100;
+        aggregateOk = rsd <= limit;
+        aggregateLabel = `RSD ≤ ${limit}%`;
+      }
+    } else if (rule === 'min_max') {
+      const [aMin, aMax] = (mp.aggregateLimit || '').split('-').map(s => parseFloat(s.trim()));
+      if (!isNaN(aMin) && !isNaN(aMax)) {
+        aggregateOk = netVals.every(n => !isNaN(n) && n >= aMin && n <= aMax);
+        aggregateLabel = `Each in ${aMin}–${aMax}`;
+      }
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Debug panel — collapsible */}
+      <details className="rounded-xl bg-slate-100 border border-slate-300 text-xs">
+        <summary className="cursor-pointer px-3 py-2 font-mono font-bold text-slate-700 select-none">
+          🔧 Debug: Tare linkage [{mp.tareSource ? `linked → ${mp.tareSource}` : 'NOT LINKED'}]
+        </summary>
+        <div className="px-3 pb-3 pt-1 font-mono text-[11px] text-slate-700 space-y-0.5">
+          <div><b>criteria.code:</b> {criteria.code}</div>
+          <div><b>criteria.unit:</b> {criteria.unit || '(empty)'}</div>
+          <div><b>multiPoint.tareSource:</b> <span className={mp.tareSource ? 'text-emerald-700' : 'text-red-600'}>{mp.tareSource || '(empty — ไม่ได้เลือก Tare ตอนสร้าง)'}</span></div>
+          <div><b>tareInfo:</b> <span className={tareInfo?.error ? 'text-red-600' : tareInfo ? 'text-emerald-700' : 'text-slate-400'}>
+            {tareInfo === null ? 'null (mp.tareSource is empty)' :
+             tareInfo.error ? `ERROR: ${tareInfo.error}` :
+             `OK · mean=${tareInfo.tareMean} unit=${tareInfo.tareUnit}`}
+          </span></div>
+          <div><b>useNet:</b> <span className={useNet ? 'text-emerald-700' : 'text-red-600'}>{String(useNet)}</span></div>
+          <div><b>tare value (subtracted):</b> {tare === null ? 'null' : tare}</div>
+          {!mp.tareSource && (
+            <div className="mt-2 p-2 rounded bg-amber-100 border border-amber-300 text-amber-900 text-[11px]">
+              💡 ไม่ได้เลือก Tare ตอนสร้าง criteria นี้ — กลับไปที่ <a href="index.html" className="underline font-bold">index.html</a> สร้างใหม่ และอย่าลืมเลือก "⚖️ หัก Tare → IPC-CAP-TARE-001"
+            </div>
+          )}
+        </div>
+      </details>
+
+      {/* Tare info banner */}
+      {mp.tareSource && (
+        tareInfo?.error ? (
+          <div className="rounded-2xl bg-amber-50 border-2 border-amber-300 p-3.5 flex items-start gap-3">
+            <span className="text-2xl flex-shrink-0">⚠️</span>
+            <div className="flex-1 min-w-0">
+              <div className="font-bold text-amber-900 text-sm">ต้องมีค่า Tare ก่อนบันทึก</div>
+              <div className="text-xs text-amber-800 mt-0.5">{tareInfo.error}</div>
+              <div className="text-[11px] text-amber-700 mt-1">
+                Tare criteria: <span className="font-mono font-semibold">{mp.tareSource}</span>
+                {tareInfo.tareC && <span> — {tareInfo.tareC.testLabel || tareInfo.tareC.testName}</span>}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl bg-cyan-50 border border-cyan-300 p-3.5 flex items-start gap-3">
+            <span className="text-2xl flex-shrink-0">⚖️</span>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-semibold text-cyan-800 uppercase tracking-wider">Tare หักลบอัตโนมัติ</div>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="font-mono text-2xl font-bold text-cyan-900">{tareInfo.tareMean.toFixed(4)}</span>
+                <span className="text-sm text-cyan-700">{tareInfo.tareUnit}</span>
+              </div>
+              <div className="text-[11px] text-cyan-700 mt-0.5">
+                จาก <span className="font-mono font-semibold">{tareInfo.tareC.code}</span> — {tareInfo.tareLabel} (รอบล่าสุด)
+                <span className="block text-cyan-600/80 mt-0.5">Net = Gross − {tareInfo.tareMean.toFixed(4)} {tareInfo.tareUnit}</span>
+              </div>
+            </div>
+          </div>
+        )
+      )}
+
+      {hasSpec && (
+        <SpecBanner color="teal"
+          label={useNet ? "ค่า NET ที่ยอมรับต่อจุด" : "ค่าที่ยอมรับต่อจุด"}
+          range={`${pMin?.toFixed(4)} – ${pMax?.toFixed(4)} ${criteria.unit || ''}`}
+          sub={`Target ${target} ± ${tol}% · ${pc} จุด · ${rule || 'all_pass'}${useNet ? ' · เช็คกับ NET weight' : ''}`}
+        />
+      )}
+
+      <div className="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-bold text-slate-900 text-base">บันทึก ({filled}/{pc})</h3>
+          <div className="text-xs text-slate-500">{Math.round(pct)}%</div>
+        </div>
+        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-4">
+          <div className="h-full bg-emerald-500 transition-all" style={{ width: `${pct}%` }} />
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+          {Array.from({ length: pc }, (_, i) => {
+            const v = points[i] || '';
+            const num = parseFloat(v);
+            const isEmpty = v === '';
+            const net = useNet && !isEmpty && !isNaN(num) ? num - tare : null;
+            const checkVal = useNet ? net : num;
+            const inRange = !isEmpty && !isNaN(num) && (!hasSpec || (checkVal !== null && checkVal >= pMin && checkVal <= pMax));
+            const state = isEmpty ? 'cell-empty' : (inRange ? 'cell-pass' : 'cell-fail');
+            const label = `${mp.pointLabel || 'จุดที่'} ${i + 1}`;
             return (
-              <button key={c.id} onClick={() => setTab(c.id)}
-                className={`tap flex-1 rounded-xl px-3 py-2 transition-all ${isActive ? 'tab-active' : 'tab-inactive border border-slate-200'} active:scale-[0.97]`}>
-                <div className="flex items-center gap-2 justify-center">
-                  <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${isActive ? 'bg-white/20' : 'bg-emerald-100 text-emerald-700'}`}>{c.bprStep}</span>
-                  <span className="font-semibold text-sm truncate">{c.title}</span>
-                  {c.critical && <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${isActive ? 'bg-red-400 text-white' : 'bg-red-100 text-red-700'}`}>!</span>}
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : palette}`}>{st.label}</span>
-                </div>
+              <button key={i}
+                onClick={() => openPad({
+                  value: v,
+                  label: useNet ? `${label} (Gross)` : label,
+                  unit: criteria.unit,
+                  onSave: (val) => {
+                    const next = [...points]; next[i] = val; setPoints(next);
+                  },
+                })}
+                className={`tap-lg rounded-xl border-2 ${state} p-3 flex flex-col items-start justify-between text-left transition-all active:scale-95`}>
+                <span className="text-[10px] uppercase tracking-wider opacity-70 flex items-center gap-1 w-full justify-between">
+                  <span>{label}</span>
+                  {!isEmpty && <span>{inRange ? '✓' : '✕'}</span>}
+                </span>
+                {useNet ? (
+                  <div className="w-full">
+                    <div className="flex items-baseline justify-between text-[10px] opacity-70">
+                      <span>Gross</span>
+                      <span className="font-mono font-semibold">{isEmpty ? '—' : v}</span>
+                    </div>
+                    <div className="flex items-baseline justify-between mt-0.5">
+                      <span className="text-[10px] font-bold opacity-80">Net</span>
+                      <span className="text-lg sm:text-xl font-bold font-mono">
+                        {net !== null ? net.toFixed(4) : '—'}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="w-full">
+                    <span className="text-xl sm:text-2xl font-bold font-mono">
+                      {isEmpty ? '—' : v}
+                    </span>
+                  </span>
+                )}
               </button>
             );
           })}
         </div>
       </div>
 
-      <main className="flex-1 max-w-5xl mx-auto w-full px-3 sm:px-5 py-4 sm:py-6">
-        {/* Criteria card header */}
-        <div className="mb-4 flex items-baseline justify-between flex-wrap gap-2">
-          <div>
-            <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold flex items-center gap-1.5">
-              <span className="font-mono font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">{current.code}</span>
-              <span>·</span>
-              <span>BPR ข้อ {current.bprStep}</span>
+      {/* Aggregate result */}
+      {filled === pc && pc > 0 && (
+        <div className={`rounded-2xl border-2 p-4 ${
+          aggregateOk === null ? 'bg-slate-50 border-slate-200' :
+          aggregateOk ? 'bg-emerald-50 border-emerald-300' : 'bg-red-50 border-red-300'
+        }`}>
+          <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-1">
+            ผลรวม (auto) — {aggregateLabel}{useNet && ' · เทียบกับ NET'}
+          </div>
+          <div className="flex items-baseline justify-between gap-2 flex-wrap">
+            {mean !== null && (
+              <div className="space-y-0.5">
+                {useNet && (() => {
+                  const grossMean = numericVals.reduce((a, b) => a + b, 0) / numericVals.length;
+                  return (
+                    <div className="flex items-baseline gap-2 text-slate-500">
+                      <span className="text-xs">Mean (Gross):</span>
+                      <span className="text-base font-mono">{grossMean.toFixed(4)}</span>
+                      {criteria.unit && <span className="text-xs">{criteria.unit}</span>}
+                    </div>
+                  );
+                })()}
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xs text-slate-500">{useNet ? 'Mean (Net):' : 'Mean:'}</span>
+                  <span className="text-2xl font-bold font-mono text-slate-900">{mean.toFixed(4)}</span>
+                  {criteria.unit && <span className="text-sm text-slate-500">{criteria.unit}</span>}
+                </div>
+              </div>
+            )}
+            {aggregateOk !== null && (
+              <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                aggregateOk ? 'bg-emerald-200 text-emerald-800' : 'bg-red-200 text-red-800'
+              }`}>{aggregateOk ? '✓ ผ่าน' : '✕ ไม่ผ่าน'}</span>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================ RECORDER — CUSTOM MULTI-FIELD ============================ */
+function CustomFieldsRecorder({ criteria, values, setValues, openPad }) {
+  const fields = criteria.customFields || [];
+
+  const setVal = (id, v) => setValues({ ...values, [id]: v });
+
+  const checkField = (f) => {
+    const v = values[f.id];
+    if (v === undefined || v === '') return null;
+    if (f.type === 'number') {
+      const num = parseFloat(v);
+      const t = parseFloat(f.target);
+      const tol = parseFloat(f.tolerance) || 0;
+      if (!isNaN(t) && !isNaN(num)) {
+        const min = t * (1 - tol / 100);
+        const max = t * (1 + tol / 100);
+        return num >= min && num <= max;
+      }
+    }
+    return true;
+  };
+
+  return (
+    <div className="space-y-3">
+      {criteria.customNote && (
+        <div className="rounded-2xl bg-violet-50 border border-violet-200 p-3 text-sm text-violet-900">
+          {criteria.customNote}
+        </div>
+      )}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
+        {fields.map((f) => {
+          const v = values[f.id] || '';
+          const ok = checkField(f);
+          const isEmpty = v === '';
+          const state = isEmpty ? 'cell-empty' : (ok === false ? 'cell-fail' : 'cell-pass');
+          return (
+            <div key={f.id}>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-sm font-semibold text-slate-800">
+                  {f.label || `Field ${f.id}`}
+                  {f.required && <span className="text-red-500 ml-0.5">*</span>}
+                </label>
+                {f.type === 'number' && f.target && (
+                  <span className="text-[10px] text-slate-500 font-mono">target {f.target} ± {f.tolerance || 0}%</span>
+                )}
+              </div>
+              {f.type === 'number' ? (
+                <button onClick={() => openPad({
+                  value: v,
+                  label: f.label || `Field ${f.id}`,
+                  unit: f.unit,
+                  onSave: (val) => setVal(f.id, val),
+                })}
+                className={`w-full tap rounded-xl border-2 p-3 text-left transition-all active:scale-[0.98] ${state}`}>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-xl font-bold font-mono">{v || '—'}</span>
+                    <span className="text-sm font-semibold opacity-70">{f.unit || ''}</span>
+                  </div>
+                </button>
+              ) : f.type === 'text' ? (
+                <input value={v} onChange={e => setVal(f.id, e.target.value)}
+                  className="w-full rounded-xl border-2 border-slate-200 focus:border-emerald-400 focus:ring-0 p-3 text-sm"
+                  placeholder={f.note || ''} />
+              ) : (
+                <input value={v} onChange={e => setVal(f.id, e.target.value)}
+                  className="w-full rounded-xl border-2 border-slate-200 focus:border-emerald-400 focus:ring-0 p-3 text-sm" />
+              )}
+              {f.note && <div className="text-[11px] text-slate-500 mt-1">{f.note}</div>}
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">{current.title}</h2>
-            <div className="text-sm text-slate-500">{current.subtitle}</div>
+          );
+        })}
+        {fields.length === 0 && <div className="text-center py-4 text-slate-400 text-sm">ไม่มีฟิลด์</div>}
+      </div>
+    </div>
+  );
+}
+
+/* ============================ RECORDER — CALIBRATION ============================ */
+function CalibrationRecorder({ criteria, value, setValue, openPad }) {
+  const cal = criteria.calibration || {};
+  const std = parseFloat(cal.standardValue);
+  const tolVal = parseFloat(cal.toleranceValue);
+  const num = parseFloat(value);
+  const hasValue = !isNaN(num);
+
+  let min = null, max = null, ok = null;
+  if (!isNaN(std) && !isNaN(tolVal)) {
+    if (cal.toleranceType === 'percent') {
+      min = std * (1 - tolVal / 100);
+      max = std * (1 + tolVal / 100);
+    } else {
+      min = std - tolVal;
+      max = std + tolVal;
+    }
+    if (hasValue) ok = num >= min && num <= max;
+  }
+
+  return (
+    <div className="space-y-4">
+      {(cal.instrumentName || cal.instrumentId) && (
+        <div className="rounded-2xl bg-indigo-50 border border-indigo-200 p-3">
+          <div className="text-[10px] font-bold text-indigo-700 uppercase tracking-wider">เครื่องวัด</div>
+          <div className="text-sm font-semibold text-indigo-900">{cal.instrumentName} {cal.instrumentId && <span className="font-mono">({cal.instrumentId})</span>}</div>
+        </div>
+      )}
+      {!isNaN(std) && (
+        <SpecBanner color="indigo"
+          label="Standard"
+          range={`${std} ${cal.standardUnit || ''}`}
+          sub={min !== null ? `ยอมรับ ${min.toFixed(2)} – ${max.toFixed(2)} ${cal.standardUnit || ''}` : null}
+        />
+      )}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4">
+        <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-2">ค่าที่อ่านได้</div>
+        <button onClick={() => openPad({
+          value: value || '',
+          label: `ค่าอ่าน ${cal.instrumentName || ''}`,
+          unit: cal.standardUnit,
+          onSave: setValue,
+        })}
+        className={`w-full tap-lg rounded-2xl border-2 p-5 transition-all active:scale-[0.98] text-left ${
+          !hasValue ? 'cell-empty' : (ok === true ? 'cell-pass' : ok === false ? 'cell-fail' : 'cell-empty')
+        }`}>
+          <div className="flex items-baseline justify-between">
+            <span className="text-4xl font-bold font-mono">{hasValue ? value : '—'}</span>
+            {cal.standardUnit && hasValue && <span className="text-xl font-semibold opacity-70">{cal.standardUnit}</span>}
+          </div>
+          {ok === true && <div className="mt-2 text-sm font-semibold">✓ ผ่าน calibration</div>}
+          {ok === false && <div className="mt-2 text-sm font-semibold">✕ นอกช่วงยอมรับ — ต้องสอบเทียบใหม่</div>}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ RECORDER — TARE ============================ */
+function TareRecorder({ criteria, value, setValue, openPad }) {
+  const tare = criteria.tare || {};
+  const num = parseFloat(value);
+  const hasValue = !isNaN(num);
+  const aMin = parseFloat(tare.acceptanceMin);
+  const aMax = parseFloat(tare.acceptanceMax);
+  const hasRange = !isNaN(aMin) && !isNaN(aMax);
+  const ok = hasValue && hasRange ? (num >= aMin && num <= aMax) : null;
+
+  return (
+    <div className="space-y-4">
+      {hasRange && (
+        <SpecBanner color="cyan"
+          label={tare.referenceLabel || 'น้ำหนักอ้างอิง'}
+          range={`${aMin} – ${aMax} ${tare.referenceUnit || ''}`}
+        />
+      )}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4">
+        <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-2">{tare.referenceLabel || 'ค่าอ้างอิง'}</div>
+        <button onClick={() => openPad({
+          value: value || '',
+          label: tare.referenceLabel || criteria.testLabel,
+          unit: tare.referenceUnit,
+          onSave: setValue,
+        })}
+        className={`w-full tap-lg rounded-2xl border-2 p-5 transition-all active:scale-[0.98] text-left ${
+          !hasValue ? 'cell-empty' : (ok === true ? 'cell-pass' : ok === false ? 'cell-fail' : 'cell-empty')
+        }`}>
+          <div className="flex items-baseline justify-between">
+            <span className="text-4xl font-bold font-mono">{hasValue ? value : '—'}</span>
+            {tare.referenceUnit && hasValue && <span className="text-xl font-semibold opacity-70">{tare.referenceUnit}</span>}
+          </div>
+          {tare.storeAs && hasValue && (
+            <div className="text-xs text-slate-500 mt-2">เก็บค่าไว้ใช้ในชื่อ: <span className="font-mono font-bold">{tare.storeAs}</span></div>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ RECORDER — CALCULATED ============================ */
+function CalculatedRecorder({ criteria, inputs, setInputs, openPad }) {
+  const calc = criteria.calculated || {};
+  const inputDefs = calc.inputs || [];
+
+  const setVal = (id, v) => setInputs({ ...inputs, [id]: v });
+
+  const evalFormula = () => {
+    if (!calc.formula) return null;
+    try {
+      let expr = calc.formula;
+      inputDefs.forEach(i => {
+        const v = parseFloat(inputs[i.id]);
+        if (isNaN(v)) throw new Error('missing');
+        expr = expr.replaceAll(i.name, `(${v})`);
+      });
+      const fn = new Function(`return (${expr})`);
+      const result = fn();
+      if (typeof result !== 'number' || !isFinite(result)) return null;
+      return result;
+    } catch { return null; }
+  };
+
+  const result = evalFormula();
+  const min = parseFloat(calc.resultMin);
+  const max = parseFloat(calc.resultMax);
+  const hasRange = !isNaN(min) && !isNaN(max);
+  const ok = result !== null && hasRange ? (result >= min && result <= max) : null;
+  const decimals = parseInt(calc.displayDecimals) || 2;
+
+  return (
+    <div className="space-y-4">
+      {hasRange && (
+        <SpecBanner color="fuchsia"
+          label="ผลลัพธ์ที่ยอมรับ"
+          range={`${min} – ${max} ${calc.resultUnit || ''}`}
+          sub={calc.formula ? `สูตร: ${calc.formula}` : null}
+        />
+      )}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
+        <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">ค่า input</div>
+        {inputDefs.map(i => {
+          const v = inputs[i.id] || '';
+          return (
+            <div key={i.id}>
+              <div className="text-xs text-slate-600 mb-1 font-medium">
+                <span className="font-mono">{i.name}</span>
+                {i.source && <span className="ml-2 text-[10px] text-slate-400">({i.source})</span>}
+              </div>
+              <button onClick={() => openPad({
+                value: v,
+                label: i.name,
+                unit: calc.resultUnit,
+                onSave: (val) => setVal(i.id, val),
+              })}
+              className={`w-full tap rounded-xl border-2 p-3 text-left transition-all active:scale-[0.98] ${
+                v === '' ? 'cell-empty' : 'cell-pass'
+              }`}>
+                <span className="text-xl font-bold font-mono">{v || '—'}</span>
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      <div className={`rounded-2xl border-2 p-4 ${
+        ok === null ? 'bg-slate-50 border-slate-200' :
+        ok ? 'bg-emerald-50 border-emerald-300' : 'bg-red-50 border-red-300'
+      }`}>
+        <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-1">ผลคำนวณ (auto)</div>
+        <div className="flex items-baseline justify-between flex-wrap gap-2">
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold font-mono text-slate-900">{result !== null ? result.toFixed(decimals) : '—'}</span>
+            {calc.resultUnit && <span className="text-base text-slate-500">{calc.resultUnit}</span>}
+          </div>
+          {ok !== null && (
+            <span className={`text-xs font-bold px-3 py-1 rounded-full ${ok ? 'bg-emerald-200 text-emerald-800' : 'bg-red-200 text-red-800'}`}>
+              {ok ? '✓ ผ่าน' : '✕ ไม่ผ่าน'}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ EMPTY STATE ============================ */
+function EmptyState() {
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="max-w-md text-center">
+        <div className="w-20 h-20 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-4">
+          <Icon name="empty" className="w-12 h-12" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900 mb-2">ยังไม่มี IPC Criteria</h2>
+        <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+          ยังไม่มีการตั้งค่าเกณฑ์การควบคุมคุณภาพ — กรุณาไปที่หน้า "สร้าง IPC Criteria ใหม่" เพื่อสร้างเกณฑ์ก่อนเริ่มบันทึกผล
+        </p>
+        <a href="index.html"
+          className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl px-5 py-3 shadow-lg shadow-emerald-200">
+          <Icon name="plus" className="w-5 h-5" /> สร้าง IPC Criteria
+        </a>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ LIST VIEW ============================ */
+function ListView({ criteriaList, results, onSelect, onClearAll, onNewRound }) {
+  const [newRoundFor, setNewRoundFor] = useState(null); // criteria object
+  const [newRoundReason, setNewRoundReason] = useState('');
+
+  const confirmNewRound = () => {
+    onNewRound(newRoundFor, newRoundReason.trim());
+    setNewRoundFor(null);
+    setNewRoundReason('');
+  };
+
+  return (
+    <div className="min-h-screen pb-10">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div className="max-w-5xl mx-auto px-3 sm:px-5 py-3 flex items-center gap-3 flex-wrap">
+          <div className="flex-1 min-w-0">
+            <div className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold">IPC Recording</div>
+            <h1 className="text-lg sm:text-xl font-bold text-slate-900">เลือกเกณฑ์ที่ต้องการบันทึกผล</h1>
+            <div className="text-xs text-slate-500 mt-0.5">มี {criteriaList.length} เกณฑ์ที่ตั้งค่าไว้</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <a href="index.html"
+              className="tap text-xs font-semibold bg-white border-2 border-slate-200 hover:border-emerald-400 text-slate-700 hover:text-emerald-700 rounded-xl px-3 flex items-center gap-1.5">
+              <Icon name="plus" className="w-4 h-4" /> สร้าง Criteria ใหม่
+            </a>
+            {criteriaList.length > 0 && (
+              <button onClick={onClearAll}
+                className="tap text-xs font-semibold text-slate-400 hover:text-red-600 px-2">
+                ล้างทั้งหมด
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-3 sm:px-5 py-4 sm:py-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {criteriaList.map(c => {
+            const meta = TYPE_META[c.criteriaType] || TYPE_META.numeric;
+            const r = results[c.id];
+            const rounds = r?.rounds || (r?.data ? [{ submittedAt: r.submittedAt }] : []);
+            const submittedCount = rounds.filter(x => x.submittedAt).length;
+            const inProgressCount = rounds.length - submittedCount;
+            const hasInProgress = inProgressCount > 0;
+            return (
+              <div key={c.id}
+                className="bg-white rounded-2xl border-2 border-slate-200 hover:border-emerald-400 hover:shadow-md transition-all overflow-hidden">
+                <button onClick={() => onSelect(c)}
+                  className="w-full p-4 text-left active:scale-[0.99] transition-transform">
+                  <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
+                    <span className="font-mono text-[11px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">{c.code}</span>
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <span className={`type-badge ${colorClass(meta.color, 'chip')}`}>{meta.label}</span>
+                      {c.critical && <span className="type-badge bg-red-100 text-red-700">! Critical</span>}
+                      {submittedCount > 0 && <span className="type-badge bg-emerald-200 text-emerald-800">✓ {submittedCount} รอบ</span>}
+                      {inProgressCount > 0 && <span className="type-badge bg-amber-200 text-amber-800">• กำลังบันทึก</span>}
+                    </div>
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-base mb-1 leading-tight">{c.testLabel || c.testName}</h3>
+                  <div className="text-xs text-slate-500">{meta.desc}{c.unit && ` · ${c.unit}`}</div>
+                  {c.sopStepRef?.stepNumber && (
+                    <div className="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+                      <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded">{c.sopStepRef.sopCode || 'BPR'} · {c.sopStepRef.stepNumber}</span>
+                    </div>
+                  )}
+                </button>
+                <div className="border-t border-slate-100 px-3 py-2 bg-slate-50/50 flex items-center justify-between gap-2">
+                  <button onClick={() => onSelect(c)}
+                    className="tap flex-1 text-xs font-semibold text-slate-600 hover:text-emerald-700 flex items-center justify-center gap-1.5 rounded-lg hover:bg-white px-2">
+                    {hasInProgress ? 'ดำเนินการต่อ' : rounds.length === 0 ? 'เริ่มบันทึก' : 'ดูรอบทั้งหมด'} →
+                  </button>
+                  <span className="text-slate-300">|</span>
+                  <button onClick={() => setNewRoundFor(c)}
+                    className="tap flex-1 text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center justify-center gap-1 rounded-lg hover:bg-emerald-50 px-2">
+                    <Icon name="plus" className="w-3.5 h-3.5" /> รอบใหม่
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </main>
+
+      {newRoundFor && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setNewRoundFor(null)}>
+          <div className="bg-white max-w-md w-full rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-900 mb-1">เริ่มรอบบันทึกใหม่</h3>
+            <p className="text-sm text-slate-600 mb-4">
+              <span className="font-mono text-emerald-700">{newRoundFor.code}</span> — {newRoundFor.testLabel || newRoundFor.testName}
+            </p>
+            <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block mb-1.5">เหตุผล (ไม่บังคับ)</label>
+            <textarea value={newRoundReason} onChange={e => setNewRoundReason(e.target.value)}
+              rows={3}
+              placeholder="เช่น น้ำหนักแคปซูลเบี่ยงเบนเกิน → ปรับหัวตอกใหม่"
+              autoFocus
+              className="w-full rounded-xl border-2 border-slate-200 focus:border-emerald-400 focus:ring-0 p-3 text-sm" />
+            <p className="text-[11px] text-slate-500 mt-2 mb-4">รอบใหม่จะถูกสร้างทันที พร้อมพาเข้าหน้าบันทึก</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => { setNewRoundFor(null); setNewRoundReason(''); }}
+                className="tap rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">
+                ยกเลิก
+              </button>
+              <button onClick={confirmNewRound}
+                className="tap rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+                เริ่มบันทึก →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================ RECORD VIEW ============================ */
+function RecordView({ criteria, onBack, onSave }) {
+  // Load all rounds for this criteria (back-compat with old single-result schema)
+  const initialRounds = (() => {
+    const all = loadResults();
+    const entry = all[criteria.id];
+    if (!entry) return [];
+    if (Array.isArray(entry.rounds)) return entry.rounds;
+    // back-compat: convert old { data: {...} } to one-round array
+    if (entry.data) {
+      return [{
+        id: `round_${Date.now()}`,
+        startedAt: entry.updatedAt || new Date().toISOString(),
+        submittedAt: entry.submittedAt || null,
+        reason: '',
+        data: entry.data,
+      }];
+    }
+    return [];
+  })();
+
+  const emptyData = () => ({
+    type: criteria.criteriaType,
+    value: '',
+    points: Array(parseInt(criteria.multiPoint?.pointCount) || 0).fill(''),
+    checks: {},
+    values: {},
+    inputs: {},
+  });
+
+  const [rounds, setRounds] = useState(initialRounds);
+  // Active round index — default to last unsubmitted, else start a new one if empty
+  const [activeIdx, setActiveIdx] = useState(() => {
+    if (initialRounds.length === 0) return 0;
+    const lastUnsubmittedIdx = initialRounds.findIndex(r => !r.submittedAt);
+    return lastUnsubmittedIdx >= 0 ? lastUnsubmittedIdx : initialRounds.length - 1;
+  });
+
+  // Ensure there's always at least one round
+  useEffect(() => {
+    if (rounds.length === 0) {
+      setRounds([{
+        id: `round_${Date.now()}`,
+        startedAt: new Date().toISOString(),
+        submittedAt: null,
+        reason: '',
+        data: emptyData(),
+      }]);
+      setActiveIdx(0);
+    }
+  }, []);
+
+  const [pad, setPad] = useState(null);
+  const [showSubmit, setShowSubmit] = useState(false);
+  const [showNewRound, setShowNewRound] = useState(false);
+  const [newRoundReason, setNewRoundReason] = useState('');
+  const [lastSaved, setLastSaved] = useState(null);
+
+  const active = rounds[activeIdx] || { data: emptyData() };
+  const activeData = active.data || emptyData();
+  const isLocked = !!active.submittedAt;
+
+  // Helpers to update active round's data
+  const setActiveData = (patch) => {
+    setRounds(prev => prev.map((r, i) => i === activeIdx ? {
+      ...r,
+      data: { ...r.data, ...patch },
+    } : r));
+  };
+  const setSingleValue = (v) => setActiveData({ value: v });
+  const setPfValue = (v) => setActiveData({ value: v });
+  const setTextValue = (v) => setActiveData({ value: v });
+  const setPoints = (v) => setActiveData({ points: v });
+  const setVisualChecks = (v) => setActiveData({ checks: v });
+  const setCustomValues = (v) => setActiveData({ values: v });
+  const setCalcInputs = (v) => setActiveData({ inputs: v });
+
+  // Persist on every change
+  useEffect(() => {
+    if (rounds.length === 0) return;
+    const all = loadResults();
+    all[criteria.id] = {
+      criteriaId: criteria.id,
+      criteriaCode: criteria.code,
+      updatedAt: new Date().toISOString(),
+      rounds,
+    };
+    saveResults(all);
+    setLastSaved(new Date());
+  }, [rounds]);
+
+  const validateRound = () => {
+    const d = activeData;
+    const t = criteria.criteriaType;
+    if (t === 'numeric' || t === 'calibration' || t === 'tare') {
+      const v = (d.value || '').toString().trim();
+      if (v === '') return { ok: false, reason: 'ยังไม่ได้กรอกค่า' };
+      if (isNaN(parseFloat(v))) return { ok: false, reason: 'ค่าต้องเป็นตัวเลข' };
+      return { ok: true };
+    }
+    if (t === 'pass_fail') {
+      if (d.value !== 'pass' && d.value !== 'fail') return { ok: false, reason: 'เลือก PASS หรือ FAIL ก่อน' };
+      return { ok: true };
+    }
+    if (t === 'visual') {
+      const list = criteria.visualChecklist || [];
+      if (list.length === 0) return { ok: true };
+      const ticked = list.filter((_, i) => d.checks?.[i]).length;
+      if (ticked < list.length) return { ok: false, reason: `เหลือ ${list.length - ticked}/${list.length} ข้อยังไม่ติ๊ก` };
+      return { ok: true };
+    }
+    if (t === 'text') {
+      if (!d.value || !d.value.trim()) return { ok: false, reason: 'ยังไม่ได้กรอกข้อความ' };
+      return { ok: true };
+    }
+    if (t === 'multi_point') {
+      const pc = parseInt(criteria.multiPoint?.pointCount) || 0;
+      const filled = (d.points || []).filter(v => v !== '' && !isNaN(parseFloat(v))).length;
+      if (filled < pc) return { ok: false, reason: `กรอกแล้ว ${filled}/${pc} จุด — ยังไม่ครบ` };
+      return { ok: true };
+    }
+    if (t === 'custom_multi_field') {
+      const fields = criteria.customFields || [];
+      const required = fields.filter(f => f.required);
+      const missing = required.filter(f => {
+        const v = d.values?.[f.id];
+        return v === undefined || v === '' || (f.type === 'number' && isNaN(parseFloat(v)));
+      });
+      if (missing.length > 0) return { ok: false, reason: `เหลือ ${missing.length} ฟิลด์จำเป็น` };
+      return { ok: true };
+    }
+    if (t === 'calculated') {
+      const inputs = criteria.calculated?.inputs || [];
+      const missing = inputs.filter(i => {
+        const v = d.inputs?.[i.id];
+        return v === undefined || v === '' || isNaN(parseFloat(v));
+      });
+      if (missing.length > 0) return { ok: false, reason: `เหลือ ${missing.length} ค่า input` };
+      return { ok: true };
+    }
+    return { ok: true };
+  };
+
+  const validation = validateRound();
+
+  const handleSubmit = () => {
+    if (!validation.ok) return;
+    setRounds(prev => prev.map((r, i) => i === activeIdx ? {
+      ...r,
+      submittedAt: new Date().toISOString(),
+    } : r));
+    setShowSubmit(true);
+  };
+
+  const startNewRound = () => {
+    const newRound = {
+      id: `round_${Date.now()}`,
+      startedAt: new Date().toISOString(),
+      submittedAt: null,
+      reason: newRoundReason.trim(),
+      data: emptyData(),
+    };
+    setRounds(prev => [...prev, newRound]);
+    setActiveIdx(rounds.length);
+    setNewRoundReason('');
+    setShowNewRound(false);
+  };
+
+  // Convenient aliases for renderers
+  const singleValue = activeData.value || '';
+  const pfValue = activeData.value || '';
+  const textValue = activeData.value || '';
+  const points = activeData.points || Array(parseInt(criteria.multiPoint?.pointCount) || 0).fill('');
+  const visualChecks = activeData.checks || {};
+  const customValues = activeData.values || {};
+  const calcInputs = activeData.inputs || {};
+
+  const meta = TYPE_META[criteria.criteriaType] || TYPE_META.numeric;
+  const allowDecimal = criteria.unit !== 'count';
+  const submittedCount = rounds.filter(r => r.submittedAt).length;
+
+  return (
+    <div className="min-h-screen flex flex-col pb-24">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div className="max-w-5xl mx-auto px-3 sm:px-5 py-3 flex items-center gap-3">
+          <button onClick={onBack} className="tap flex items-center gap-1.5 text-slate-500 hover:text-slate-800 px-2 -ml-2">
+            <Icon name="back" className="w-5 h-5" /> <span className="text-sm font-medium hidden sm:inline">รายการ</span>
+          </button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 text-xs flex-wrap">
+              <span className="font-mono font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">{criteria.code}</span>
+              <span className={`type-badge ${colorClass(meta.color, 'chip')}`}>{meta.label}</span>
+              {criteria.critical && <span className="type-badge bg-red-100 text-red-700">! Critical</span>}
+            </div>
+            <div className="text-[15px] font-bold text-slate-900 leading-tight mt-0.5 truncate">{criteria.testLabel || criteria.testName}</div>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1 max-w-3xl mx-auto w-full px-3 sm:px-5 py-4 sm:py-6">
+        {criteria.sopStepRef?.stepDescription && (
+          <InstructionsBox text={criteria.sopStepRef.stepDescription}
+            criticalNote={criteria.critical ? 'หัวข้อนี้เป็น CRITICAL — ถ้าค่าผิดต้องหยุดและรายงานทันที' : null} />
+        )}
+
+        {/* Round selector */}
+        <div className="mt-4 bg-white rounded-2xl border border-slate-200 p-3">
+          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+            <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              รอบการบันทึก ({submittedCount}/{rounds.length} ส่งแล้ว)
+            </div>
+            <button onClick={() => setShowNewRound(true)}
+              className="tap text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-700 rounded-lg px-3 flex items-center gap-1 border border-emerald-200">
+              <Icon name="plus" className="w-3.5 h-3.5" /> บันทึกรอบใหม่
+            </button>
+          </div>
+          <div className="flex gap-2 overflow-x-auto scrollbar pb-1 -mx-1 px-1">
+            {rounds.map((r, i) => {
+              const isActive = i === activeIdx;
+              const submitted = !!r.submittedAt;
+              const time = r.startedAt ? new Date(r.startedAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : '';
+              return (
+                <button key={r.id} onClick={() => setActiveIdx(i)}
+                  className={`flex-shrink-0 tap rounded-xl border-2 px-3 py-1.5 text-left transition-all ${
+                    isActive
+                      ? 'bg-emerald-600 border-emerald-700 text-white shadow-md'
+                      : submitted
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100'
+                        : 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
+                  }`}>
+                  <div className="text-[10px] uppercase opacity-80 font-bold">รอบ {i + 1}</div>
+                  <div className="text-xs font-semibold">{time} · {submitted ? '✓ ส่งแล้ว' : '• กำลังบันทึก'}</div>
+                  {r.reason && <div className={`text-[10px] mt-0.5 max-w-[160px] truncate ${isActive ? 'opacity-90' : 'opacity-70'}`}>เหตุผล: {r.reason}</div>}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {tab === 'cap-tare'   && <MultiPointMean   criteria={c81} points={points81} setPoints={setPoints81} openPad={setPad} />}
-        {tab === 'cap-punch'  && <MultiPointMatrix criteria={c82} rounds={rounds82} setRounds={setRounds82} openPad={setPad} />}
+        {isLocked && (
+          <div className="mt-3 rounded-xl bg-slate-50 border border-slate-200 p-3 text-xs text-slate-600 flex items-start gap-2">
+            <span className="text-lg">🔒</span>
+            <div>
+              รอบนี้ส่งผลไปแล้วเมื่อ <span className="font-semibold">{new Date(active.submittedAt).toLocaleString('th-TH', { hour12: false })}</span> — ดูได้แต่แก้ไขไม่ได้
+              <div className="mt-1">ถ้าต้องการบันทึกใหม่ กดปุ่ม <span className="font-semibold text-emerald-700">+ บันทึกรอบใหม่</span> ด้านบน</div>
+            </div>
+          </div>
+        )}
+
+        <div className={`mt-4 ${isLocked ? 'pointer-events-none opacity-70' : ''}`}>
+          {criteria.criteriaType === 'numeric' && (
+            <NumericRecorder criteria={criteria} value={singleValue} setValue={setSingleValue} openPad={setPad} />
+          )}
+          {criteria.criteriaType === 'pass_fail' && (
+            <PassFailRecorder criteria={criteria} value={pfValue} setValue={setPfValue} />
+          )}
+          {criteria.criteriaType === 'visual' && (
+            <VisualRecorder criteria={criteria} checks={visualChecks} setChecks={setVisualChecks} />
+          )}
+          {criteria.criteriaType === 'text' && (
+            <TextRecorder criteria={criteria} value={textValue} setValue={setTextValue} />
+          )}
+          {criteria.criteriaType === 'multi_point' && (
+            <MultiPointRecorder criteria={criteria} points={points} setPoints={setPoints} openPad={setPad} />
+          )}
+          {criteria.criteriaType === 'custom_multi_field' && (
+            <CustomFieldsRecorder criteria={criteria} values={customValues} setValues={setCustomValues} openPad={setPad} />
+          )}
+          {criteria.criteriaType === 'calibration' && (
+            <CalibrationRecorder criteria={criteria} value={singleValue} setValue={setSingleValue} openPad={setPad} />
+          )}
+          {criteria.criteriaType === 'tare' && (
+            <TareRecorder criteria={criteria} value={singleValue} setValue={setSingleValue} openPad={setPad} />
+          )}
+          {criteria.criteriaType === 'calculated' && (
+            <CalculatedRecorder criteria={criteria} inputs={calcInputs} setInputs={setCalcInputs} openPad={setPad} />
+          )}
+        </div>
       </main>
 
-      {/* Sticky footer */}
       <footer className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur border-t border-slate-200 px-3 sm:px-5 py-3 z-30">
         <div className="max-w-5xl mx-auto flex items-center gap-3">
           <div className="flex-1 text-xs text-slate-500 truncate">
             {lastSaved ? (
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                บันทึกอัตโนมัติเมื่อ {lastSaved.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                บันทึกอัตโนมัติ {lastSaved.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </span>
             ) : 'พร้อมบันทึก'}
           </div>
-          <button onClick={reset} className="tap rounded-xl border-2 border-slate-200 text-slate-600 hover:bg-slate-50 active:bg-slate-100 px-4 text-sm font-semibold flex items-center gap-1.5">
-            <Icon name="refresh" className="w-4 h-4" /> ล้าง
-          </button>
-          <button onClick={submit}
-            className="tap rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-5 sm:px-7 font-bold text-sm sm:text-base flex items-center gap-2 shadow-lg shadow-emerald-300">
-            <Icon name="save" className="w-5 h-5" /> ส่งผล
+          {!isLocked && !validation.ok && (
+            <span className="hidden sm:inline text-[11px] text-amber-700 font-medium">⚠ {validation.reason}</span>
+          )}
+          <button onClick={handleSubmit} disabled={isLocked || !validation.ok}
+            title={!validation.ok ? validation.reason : ''}
+            className="tap rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-5 sm:px-7 font-bold text-sm sm:text-base flex items-center gap-2 shadow-lg shadow-emerald-300 disabled:shadow-none">
+            <Icon name="save" className="w-5 h-5" /> {isLocked ? 'ส่งแล้ว' : 'ส่งผล'}
           </button>
         </div>
       </footer>
 
-      {/* Numpad modal */}
+      {showNewRound && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowNewRound(false)}>
+          <div className="bg-white max-w-md w-full rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-900 mb-1">เริ่มรอบบันทึกใหม่</h3>
+            <p className="text-sm text-slate-600 mb-4">
+              บันทึกรอบที่ <span className="font-bold">{rounds.length + 1}</span> สำหรับ <span className="font-mono text-emerald-700">{criteria.code}</span>
+            </p>
+            <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block mb-1.5">เหตุผล (ไม่บังคับ)</label>
+            <textarea value={newRoundReason} onChange={e => setNewRoundReason(e.target.value)}
+              rows={3}
+              placeholder="เช่น น้ำหนักแคปซูลเบี่ยงเบนเกิน → ปรับหัวตอกใหม่"
+              className="w-full rounded-xl border-2 border-slate-200 focus:border-emerald-400 focus:ring-0 p-3 text-sm" />
+            <p className="text-[11px] text-slate-500 mt-2 mb-4">รอบเก่าจะถูกล็อกไว้ (ดูได้แต่แก้ไขไม่ได้) เพื่อรักษา audit trail</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => { setShowNewRound(false); setNewRoundReason(''); }}
+                className="tap rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">
+                ยกเลิก
+              </button>
+              <button onClick={startNewRound}
+                className="tap rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+                เริ่มรอบใหม่
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {pad && (
         <Numpad
           value={pad.value || ''}
@@ -628,30 +1402,118 @@ function App() {
           onCancel={() => setPad(null)}
           label={pad.label}
           unit={pad.unit}
-          allowDecimal={current.decimals > 0}
+          allowDecimal={allowDecimal}
         />
       )}
 
-      {/* Submit confirm */}
       {showSubmit && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowSubmit(false)}>
           <div className="bg-white max-w-md w-full rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
             <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4">
               <Icon name="check" className="w-7 h-7" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">ส่งผลเรียบร้อย (Demo)</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">ส่งผล รอบ {activeIdx + 1} เรียบร้อย</h3>
             <p className="text-sm text-slate-600 mb-5">
-              ในระบบจริง ผลจะถูกส่งไปยัง BPR record ของ batch <span className="font-mono font-bold">CS-2569-018</span> และ trigger Derived Calculation ที่ผูกอยู่
+              ผลถูกล็อกแล้ว — รหัส <span className="font-mono font-bold">{criteria.code}</span>
+              <br/>หากต้องการบันทึกซ้ำ (เช่น หลังปรับเครื่อง) กด "เริ่มรอบใหม่"
             </p>
-            <button onClick={() => setShowSubmit(false)}
-              className="tap w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold">
-              ตกลง
-            </button>
+            <div className="grid grid-cols-1 gap-2">
+              <button onClick={() => { setShowSubmit(false); setShowNewRound(true); }}
+                className="tap rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
+                + เริ่มรอบใหม่ทันที
+              </button>
+              <button onClick={() => { setShowSubmit(false); onBack(); }}
+                className="tap rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">
+                กลับรายการ
+              </button>
+              <button onClick={() => setShowSubmit(false)}
+                className="tap rounded-xl text-slate-500 hover:text-slate-700 text-sm">
+                ปิด
+              </button>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
+}
+
+/* ============================ APP ============================ */
+function App() {
+  const [criteriaList, setCriteriaList] = useState(() => loadCriteria());
+  const [results, setResults] = useState(() => loadResults());
+  const [selected, setSelected] = useState(null);
+
+  // Refresh on focus (in case user added criteria in another tab)
+  useEffect(() => {
+    const refresh = () => {
+      setCriteriaList(loadCriteria());
+      setResults(loadResults());
+    };
+    window.addEventListener('focus', refresh);
+    window.addEventListener('storage', refresh);
+    return () => {
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('storage', refresh);
+    };
+  }, []);
+
+  const clearAll = () => {
+    if (confirm('ลบ IPC Criteria ทั้งหมดและผลที่บันทึกไว้?')) {
+      localStorage.removeItem(STORAGE_CRITERIA);
+      localStorage.removeItem(STORAGE_RESULTS);
+      setCriteriaList([]);
+      setResults({});
+      setSelected(null);
+    }
+  };
+
+  const handleNewRoundFromList = (criteria, reason) => {
+    const all = loadResults();
+    const existing = all[criteria.id];
+    const prevRounds = existing?.rounds || (existing?.data ? [{
+      id: `round_legacy`,
+      startedAt: existing.updatedAt || new Date().toISOString(),
+      submittedAt: existing.submittedAt || null,
+      reason: '',
+      data: existing.data,
+    }] : []);
+    const pc = parseInt(criteria.multiPoint?.pointCount) || 0;
+    const newRound = {
+      id: `round_${Date.now()}`,
+      startedAt: new Date().toISOString(),
+      submittedAt: null,
+      reason: reason || '',
+      data: {
+        type: criteria.criteriaType,
+        value: '',
+        points: Array(pc).fill(''),
+        checks: {},
+        values: {},
+        inputs: {},
+      },
+    };
+    all[criteria.id] = {
+      criteriaId: criteria.id,
+      criteriaCode: criteria.code,
+      updatedAt: new Date().toISOString(),
+      rounds: [...prevRounds, newRound],
+    };
+    saveResults(all);
+    setResults(loadResults());
+    setSelected(criteria);
+  };
+
+  if (criteriaList.length === 0) return <EmptyState />;
+
+  if (selected) {
+    return <RecordView criteria={selected}
+      onBack={() => { setSelected(null); setResults(loadResults()); }}
+      onSave={() => setResults(loadResults())} />;
+  }
+
+  return <ListView criteriaList={criteriaList} results={results}
+    onSelect={setSelected} onClearAll={clearAll} onNewRound={handleNewRoundFromList} />;
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
