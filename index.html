@@ -550,6 +550,15 @@ function SearchableSelect({ value, onChange, options, placeholder, onAddNew, add
 const Select = SearchableSelect;
 
 function App() {
+  const [existingCriteria, setExistingCriteria] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('ipc_criteria_list') || '[]'); }
+    catch { return []; }
+  });
+  const refreshExisting = () => {
+    try { setExistingCriteria(JSON.parse(localStorage.getItem('ipc_criteria_list') || '[]')); }
+    catch { setExistingCriteria([]); }
+  };
+
   const [form, setForm] = useState({
     code: '',
     unit: '',
@@ -581,6 +590,7 @@ function App() {
       perPointTolerance: '5',
       aggregateRule: 'all_pass',   // 'all_pass' | 'mean' | 'rsd' | 'min_max'
       aggregateLimit: '',
+      tareSource: '',              // criteria code ของ Tare ที่จะหักลบ (ว่าง = ไม่ใช้)
     },
     // — Calibration Check —
     calibration: {
@@ -659,6 +669,25 @@ function App() {
   });
 
   const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
+
+  // Auto-sync aggregateLimit from per-point Target ± Tolerance when rule is mean/min_max
+  useEffect(() => {
+    const mp = form.multiPoint;
+    const rule = mp.aggregateRule;
+    if (rule !== 'mean' && rule !== 'min_max') return;
+    const t = parseFloat(mp.perPointTarget);
+    const tol = parseFloat(mp.perPointTolerance);
+    if (isNaN(t) || isNaN(tol)) return;
+    const lo = +(t - t * tol / 100).toFixed(4);
+    const hi = +(t + t * tol / 100).toFixed(4);
+    const next = `${lo}-${hi}`;
+    if (mp.aggregateLimit !== next) {
+      setForm(prev => ({
+        ...prev,
+        multiPoint: { ...prev.multiPoint, aggregateLimit: next },
+      }));
+    }
+  }, [form.multiPoint.aggregateRule, form.multiPoint.perPointTarget, form.multiPoint.perPointTolerance]);
 
   const updateStage = (id, key, value) => {
     setForm(prev => ({
@@ -1321,156 +1350,103 @@ function App() {
   const errorCount = validationIssues.filter(i => i.level === 'error').length;
   const warnCount  = validationIssues.filter(i => i.level === 'warn').length;
 
-  // ===== Demo presets from BPR (PD-BPR-001: การบรรจุผงยาลงแคปซูล) =====
-  const loadDemoPreset = (which) => {
-    if (which === 'empty_capsule_weight') {
-      // 8.1 บันทึกน้ำหนักแคปซูลเปล่า 10 แคปซูล → ค่าเฉลี่ย
-      setForm(prev => ({
-        ...prev,
-        code: 'IPC-CAP-TARE-001',
-        testName: 'capsule_empty_weight',
-        unit: 'g',
-        dosageForm: 'capsule',
-        criteriaType: 'multi_point',
-        useContext: ['routine'],
-        sopStepRef: {
-          sopCode: 'PD-BPR-001',
-          sopVersion: '00',
-          stepNumber: '8.1',
-          stepDescription: 'บันทึกน้ำหนักแคปซูลเปล่า — สุ่ม 10 แคปซูล หาค่าเฉลี่ย',
-          link: '',
-        },
-        multiPoint: {
-          pointCount: '10',
-          pointLabel: 'ลำดับแคปซูล',
-          perPointTarget: '0.096',         // ขนาด 00 ทั่วไป ~96 mg
-          perPointTolerance: '10',
-          aggregateRule: 'mean',
-          aggregateLimit: '0.090-0.102',
-        },
-        target: '',
-        tolerance: '0',
-        triggers: {
-          ...prev.triggers,
-          oncePerBatch: { on: true },
-          time: { ...prev.triggers.time, on: false },
-          quantity: { ...prev.triggers.quantity, on: false },
-          milestone: {
-            ...prev.triggers.milestone,
-            on: true,
-            options: prev.triggers.milestone.options.map(o =>
-              o.id === 'batch_start' ? { ...o, on: true } : { ...o, on: false }
-            ),
-          },
-        },
-        critical: false,
-        active: true,
-        samplingMethod: 'random',
-        stages: [
-          { id: 1, sampleSize: '10', failureTolerance: '0', onFail: 'next', note: 'สุ่ม 10 แคปซูลเปล่า หาค่าเฉลี่ย' },
-          { id: 2, sampleSize: '10', failureTolerance: '0', onFail: 'reject', note: 'ถ้า mean นอกช่วง → reject lot แคปซูล' },
-        ],
-        derivedCalcs: [{
-          id: Date.now(),
-          label: 'น้ำหนักแคปซูลเปล่าเฉลี่ย (สำหรับใช้หักลบ Net weight)',
-          formula: 'mean(IPC-CAP-TARE-001.point[1..10])',
-          sources: [
-            { id: Date.now()+1, criteriaCode: 'IPC-CAP-TARE-001', field: 'point[*]', step: 'pre-fill' },
-          ],
-          resultUnit: 'g',
-          triggerWhen: 'on_demand',
-          acceptanceMin: '0.090',
-          acceptanceMax: '0.102',
-          onFail: 'investigate',
-          note: 'ค่าเฉลี่ยนี้จะถูกหักออกจากน้ำหนักรวมในขั้นถัดไป เพื่อคำนวณน้ำหนักผงยาสุทธิ',
-        }],
-      }));
-    } else if (which === 'punch_force') {
-      // 8.2 บันทึกค่าตั้งหัวตอก 6 หัว × หลายครั้ง
-      setForm(prev => ({
-        ...prev,
-        code: 'IPC-CAP-PUNCH-001',
-        testName: 'capsule_filler_punch_force',
-        unit: 'count',
-        dosageForm: 'capsule',
-        criteriaType: 'multi_point',
-        useContext: ['routine', 'changeover'],
-        sopStepRef: {
-          sopCode: 'PD-BPR-001',
-          sopVersion: '00',
-          stepNumber: '8.2',
-          stepDescription: 'บันทึกค่าการตอกหัวตอก 1-6 (ค่าตั้ง 15-25) ทุกครั้งที่ตั้งเครื่อง',
-          link: '',
-        },
-        multiPoint: {
-          pointCount: '6',
-          pointLabel: 'หัวตอกที่',
-          perPointTarget: '20',
-          perPointTolerance: '25',
-          aggregateRule: 'min_max',
-          aggregateLimit: '15-25',
-        },
-        target: '',
-        tolerance: '0',
-        triggers: {
-          ...prev.triggers,
-          time: { ...prev.triggers.time, on: false },
-          quantity: { ...prev.triggers.quantity, on: false },
-          oncePerBatch: { on: false },
-          milestone: {
-            ...prev.triggers.milestone,
-            on: true,
-            options: prev.triggers.milestone.options.map(o =>
-              o.id === 'batch_start' ? { ...o, on: true } : o
-            ),
-          },
-          event: {
-            ...prev.triggers.event,
-            on: true,
-            options: prev.triggers.event.options.map(o =>
-              o.id === 'changeover' || o.id === 'param' || o.id === 'maintenance'
-                ? { ...o, on: true }
-                : { ...o, on: false }
-            ),
-          },
-        },
-        critical: true,
-        active: true,
-        samplingMethod: 'systematic',
-        stages: [
-          { id: 1, sampleSize: '6', failureTolerance: '0', onFail: 'next', note: 'วัดทุกหัวตอก (6 หัว) — ค่าต้องอยู่ในช่วง 15-25' },
-          { id: 2, sampleSize: '6', failureTolerance: '0', onFail: 'deviation', note: 'ถ้ามีหัวตอกใดเกินช่วง → หยุดเครื่อง ปรับใหม่' },
-        ],
-        derivedCalcs: [{
-          id: Date.now() + 100,
-          label: 'อัตราการบรรจุเฉลี่ย (capsules/min)',
-          formula: 'cap_count / elapsed_minutes',
-          sources: [
-            { id: Date.now()+101, criteriaCode: 'IPC-CAP-OUT-001', field: 'cap_count',       step: 'filling' },
-            { id: Date.now()+102, criteriaCode: 'IPC-CAP-TIME-001', field: 'elapsed_minutes', step: 'filling' },
-          ],
-          resultUnit: 'capsules/min',
-          triggerWhen: 'every_check',
-          acceptanceMin: '300',
-          acceptanceMax: '400',
-          onFail: 'investigate',
-          note: 'BPR ระบุ "ค่าความเร็วที่ใช้ 300-400 แคปซูล/นาที"',
-        }],
-      }));
-    } else if (which === 'reset') {
-      // Reset to defaults — quick way
-      setForm(prev => ({
-        ...prev,
-        code: '',
-        testName: '',
-        unit: '',
-        criteriaType: 'numeric',
-        useContext: [],
-        sopStepRef: { sopCode: '', sopVersion: '', stepNumber: '', stepDescription: '', link: '' },
-        derivedCalcs: [],
-      }));
-    }
+  const [toast, setToast] = useState(null);
+
+  const handleCreate = () => {
+    if (!form.testName || !form.code || errorCount > 0) return;
+    const existing = (() => {
+      try { return JSON.parse(localStorage.getItem('ipc_criteria_list') || '[]'); }
+      catch { return []; }
+    })();
+    const testLabel = (testNames.find(t => t.value === form.testName)?.label) || form.testName;
+    const record = {
+      id: `crit_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      code: form.code,
+      testName: form.testName,
+      testLabel,
+      unit: form.unit,
+      dosageForm: form.dosageForm,
+      criteriaType: form.criteriaType,
+      critical: !!form.critical,
+      active: !!form.active,
+      target: form.target,
+      tolerance: form.tolerance,
+      passDefinition: form.passDefinition,
+      failDefinition: form.failDefinition,
+      defaultExpected: form.defaultExpected,
+      visualChecklist: form.visualChecklist,
+      visualCriteria: form.visualCriteria,
+      visualReference: form.visualReference,
+      textFormat: form.textFormat,
+      textExample: form.textExample,
+      textRequired: form.textRequired,
+      customFields: form.customFields,
+      customNote: form.customNote,
+      multiPoint: form.multiPoint,
+      calibration: form.calibration,
+      tare: form.tare,
+      calculated: form.calculated,
+      stages: form.stages,
+      samplingMethod: form.samplingMethod,
+      useContext: form.useContext,
+      sopStepRef: form.sopStepRef,
+      derivedCalcs: form.derivedCalcs,
+    };
+    const next = [...existing.filter(r => r.code !== record.code), record];
+    localStorage.setItem('ipc_criteria_list', JSON.stringify(next));
+    refreshExisting();
+    setToast({
+      type: 'success',
+      title: 'สร้าง IPC Criteria เรียบร้อย',
+      message: `บันทึก ${record.code} แล้ว — รวมทั้งหมด ${next.length} รายการ`,
+      savedCode: record.code,
+    });
+  };
+
+  const resetFormForNew = () => {
+    setForm(prev => ({
+      ...prev,
+      code: '',
+      testName: '',
+      unit: '',
+      dosageForm: '',
+      criteriaType: 'numeric',
+      target: '',
+      tolerance: '0',
+      passDefinition: '',
+      failDefinition: '',
+      defaultExpected: 'pass',
+      visualCriteria: '',
+      visualChecklist: ['ผิวเรียบ ไม่มีรอยร้าว', 'สีสม่ำเสมอตามมาตรฐาน', 'ไม่มีสิ่งแปลกปลอม'],
+      visualReference: '',
+      textFormat: '',
+      textExample: '',
+      textRequired: true,
+      customFields: [{ id: 1, label: '', type: 'number', unit: '', target: '', tolerance: '', required: true, note: '' }],
+      customNote: '',
+      multiPoint: {
+        pointCount: '10',
+        pointLabel: 'จุดที่',
+        perPointTarget: '',
+        perPointTolerance: '5',
+        aggregateRule: 'all_pass',
+        aggregateLimit: '',
+        tareSource: '',
+      },
+      useContext: [],
+      sopStepRef: { sopCode: '', sopVersion: '', stepNumber: '', stepDescription: '', link: '' },
+      derivedCalcs: [],
+      critical: false,
+      active: true,
+      stages: [
+        { id: 1, sampleSize: '10', failureTolerance: '0', onFail: 'next', note: 'หากไม่ผ่าน → ทดสอบเพิ่มที่ Stage 2' },
+        { id: 2, sampleSize: '20', failureTolerance: '10', onFail: 'reject', note: 'หากไม่ผ่าน → REJECT batch (ตามมาตรฐาน USP)' },
+      ],
+    }));
     setAutoFilled(new Set());
+    setToast(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const addTestName = ({ name, thaiName, reference }) => {
@@ -1521,46 +1497,6 @@ function App() {
               <div className="flex-1">
                 <h2 className="font-semibold text-slate-900">Criteria Information</h2>
                 <p className="text-xs text-slate-500">กรอกข้อมูลเกณฑ์การควบคุมคุณภาพในกระบวนการ</p>
-              </div>
-            </div>
-
-            {/* Demo Loader — โหลดตัวอย่างจาก BPR PD-BPR-001 */}
-            <div className="mb-6 rounded-xl border border-dashed border-amber-300 bg-amber-50/60 p-3">
-              <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">🧪</span>
-                  <span className="text-xs font-semibold text-amber-900">Demo — โหลดตัวอย่างจาก BPR <span className="font-mono">PD-BPR-001</span> (การบรรจุผงยาลงแคปซูล)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <a href="/record.html"
-                    className="text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-full flex items-center gap-1">
-                    👷 เปิดหน้าบันทึกผล (Operator) →
-                  </a>
-                  <button type="button" onClick={() => loadDemoPreset('reset')}
-                    className="text-[11px] text-slate-500 hover:text-slate-700 underline">↺ reset</button>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <button type="button" onClick={() => loadDemoPreset('empty_capsule_weight')}
-                  className="text-left rounded-lg bg-white border border-amber-300 hover:border-amber-500 hover:shadow-sm p-3 transition-all group">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-mono font-bold bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded">8.1</span>
-                    <span className="text-xs font-semibold text-slate-900 group-hover:text-amber-900">น้ำหนักแคปซูลเปล่า — 10 จุด</span>
-                  </div>
-                  <div className="text-[11px] text-slate-500 leading-relaxed">
-                    Multi-Point Numeric · aggregate = <span className="font-mono text-teal-700">mean</span> · ส่งค่าเฉลี่ยต่อให้ Derived Calc
-                  </div>
-                </button>
-                <button type="button" onClick={() => loadDemoPreset('punch_force')}
-                  className="text-left rounded-lg bg-white border border-amber-300 hover:border-amber-500 hover:shadow-sm p-3 transition-all group">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-mono font-bold bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded">8.2</span>
-                    <span className="text-xs font-semibold text-slate-900 group-hover:text-amber-900">ค่าตั้งหัวตอก — 6 หัว ทุกครั้งที่ตั้งเครื่อง</span>
-                  </div>
-                  <div className="text-[11px] text-slate-500 leading-relaxed">
-                    Multi-Point Numeric · aggregate = <span className="font-mono text-teal-700">min_max</span> 15-25 · Critical + trigger เมื่อ changeover
-                  </div>
-                </button>
               </div>
             </div>
 
@@ -1877,19 +1813,94 @@ function App() {
                           ))}
                         </div>
                       </div>
-                      {(mp.aggregateRule === 'rsd' || mp.aggregateRule === 'mean' || mp.aggregateRule === 'min_max') && (
-                        <div className="col-span-2">
-                          <label className="field-label">
-                            {mp.aggregateRule === 'rsd' && 'RSD limit (%)'}
-                            {mp.aggregateRule === 'mean' && 'Mean acceptance range (เช่น 95-105)'}
-                            {mp.aggregateRule === 'min_max' && 'Allowed individual range (เช่น 95-105)'}
-                          </label>
-                          <input className="field-input"
-                            placeholder={mp.aggregateRule === 'rsd' ? '≤ 6.0' : '95-105'}
-                            value={mp.aggregateLimit}
-                            onChange={e => setNested('multiPoint', 'aggregateLimit', e.target.value)} />
-                        </div>
-                      )}
+                      {(mp.aggregateRule === 'rsd' || mp.aggregateRule === 'mean' || mp.aggregateRule === 'min_max') && (() => {
+                        const isAutoFromTarget = mp.aggregateRule === 'mean' || mp.aggregateRule === 'min_max';
+                        return (
+                          <div className="col-span-2">
+                            <label className="field-label flex items-center gap-2 flex-wrap">
+                              {mp.aggregateRule === 'rsd' && 'RSD limit (%)'}
+                              {mp.aggregateRule === 'mean' && 'Mean acceptance range'}
+                              {mp.aggregateRule === 'min_max' && 'Allowed individual range'}
+                              {isAutoFromTarget && (
+                                <span className="text-[10px] text-emerald-700 font-medium bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                  ⚡ คำนวณจาก Target ± Tolerance
+                                </span>
+                              )}
+                            </label>
+                            {isAutoFromTarget ? (
+                              <div className={`field-input flex items-center gap-2 ${
+                                mpHasCalc ? 'bg-emerald-50/40 border-emerald-200 text-emerald-900' : 'bg-slate-50 text-slate-400'
+                              }`}>
+                                {mpHasCalc ? (
+                                  <>
+                                    <span className="font-mono font-bold">{mpMin}</span>
+                                    <span className="text-slate-400">—</span>
+                                    <span className="font-mono font-bold">{mpMax}</span>
+                                    {form.unit && <span className="text-xs text-slate-500 ml-1">{form.unit}</span>}
+                                  </>
+                                ) : (
+                                  <span className="text-xs">กรอก Target & Tolerance ต่อจุดก่อน</span>
+                                )}
+                              </div>
+                            ) : (
+                              <input className="field-input"
+                                placeholder="≤ 6.0"
+                                value={mp.aggregateLimit}
+                                onChange={e => setNested('multiPoint', 'aggregateLimit', e.target.value)} />
+                            )}
+                            <p className="helper">
+                              {mp.aggregateRule === 'mean' && (mpHasCalc
+                                ? `ค่าเฉลี่ยของจุดทั้งหมดต้องอยู่ในช่วง ${mpMin} – ${mpMax}`
+                                : 'จะคำนวณให้เมื่อกรอก Target & Tolerance ต่อจุด')}
+                              {mp.aggregateRule === 'min_max' && (mpHasCalc
+                                ? `ทุกจุดต้องอยู่ในช่วง ${mpMin} – ${mpMax}`
+                                : 'จะคำนวณให้เมื่อกรอก Target & Tolerance ต่อจุด')}
+                              {mp.aggregateRule === 'rsd' && 'ค่าความเบี่ยงเบนสัมพัทธ์สูงสุดที่ยอมรับได้'}
+                            </p>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Tare subtraction — ผูกกับ Tare criteria ที่มีอยู่ */}
+                      {(() => {
+                        const tareCandidates = existingCriteria.filter(c =>
+                          c.code !== form.code &&
+                          c.criteriaType === 'multi_point' &&
+                          c.multiPoint?.aggregateRule === 'mean'
+                        );
+                        return (
+                          <div className="col-span-2 mt-1 rounded-xl border border-cyan-200 bg-cyan-50/50 p-3">
+                            <div className="flex items-start gap-2 mb-2">
+                              <span className="text-base">⚖️</span>
+                              <div className="flex-1">
+                                <div className="text-xs font-semibold text-cyan-900">หัก Tare อัตโนมัติ (Net = Gross − Tare)</div>
+                                <p className="text-[11px] text-cyan-800/80 leading-relaxed">
+                                  เช่น Weight Variation = น้ำหนักรวม − น้ำหนักแคปซูลเปล่า · เลือก Tare criteria ที่บันทึกค่าเฉลี่ยไว้
+                                </p>
+                              </div>
+                              <button type="button" onClick={refreshExisting}
+                                className="text-[10px] text-cyan-700 hover:text-cyan-900 underline">↻ refresh</button>
+                            </div>
+                            {tareCandidates.length === 0 ? (
+                              <div className="text-xs text-slate-500 bg-white border border-dashed border-slate-300 rounded-lg p-2.5">
+                                ยังไม่มี Tare criteria ที่ใช้ได้ — สร้าง criteria แบบ <span className="font-semibold">Multi-Point Numeric + Aggregate = Mean</span> ก่อน แล้วกด ↻ refresh
+                              </div>
+                            ) : (
+                              <select className="field-input text-sm cursor-pointer"
+                                value={mp.tareSource || ''}
+                                onChange={e => setNested('multiPoint', 'tareSource', e.target.value)}>
+                                <option value="">— ไม่ใช้ Tare —</option>
+                                {tareCandidates.map(c => (
+                                  <option key={c.code} value={c.code}>
+                                    {c.code} — {c.testLabel || c.testName}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                          </div>
+                        );
+                      })()}
+
                       {mpHasCalc && (
                         <div className="col-span-2 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-white border border-teal-300 text-sm text-teal-800">
                           <span className="font-semibold">ช่วงต่อจุด:</span>
@@ -3534,8 +3545,9 @@ function App() {
               )}
             </div>
             <div className="flex gap-2 sm:gap-3 flex-shrink-0">
-              <button className="btn btn-ghost flex-1 sm:flex-initial">CANCEL</button>
-              <button className="btn btn-primary flex-1 sm:flex-initial" disabled={!form.testName || !form.code || errorCount > 0}
+              <button type="button" className="btn btn-ghost flex-1 sm:flex-initial">CANCEL</button>
+              <button type="button" onClick={handleCreate}
+                className="btn btn-primary flex-1 sm:flex-initial" disabled={!form.testName || !form.code || errorCount > 0}
                 title={errorCount > 0 ? `มี ${errorCount} error ต้องแก้ก่อน` : ''}>
                 CREATE{errorCount > 0 && <span className="ml-1 text-[10px]">({errorCount} err)</span>}
               </button>
@@ -3543,6 +3555,37 @@ function App() {
           </div>
         </div>
       </main>
+
+      {toast && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setToast(null)}>
+          <div className="bg-white max-w-md w-full rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 text-2xl font-bold">✓</div>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-slate-900 text-base">{toast.title}</div>
+                <div className="text-sm text-slate-600 mt-1 leading-relaxed">{toast.message}</div>
+              </div>
+              <button type="button" onClick={() => setToast(null)}
+                className="text-slate-400 hover:text-slate-700 text-xl leading-none flex-shrink-0">×</button>
+            </div>
+            <div className="text-xs text-slate-500 mb-3 px-1">ต้องการทำอะไรต่อ?</div>
+            <div className="grid grid-cols-1 gap-2">
+              <button type="button" onClick={resetFormForNew}
+                className="tap rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-2.5 px-4 flex items-center justify-center gap-2">
+                <span className="text-lg leading-none">+</span> สร้าง Criteria ตัวใหม่ (ฟอร์มล้าง)
+              </button>
+              <a href="record.html"
+                className="tap rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-4 flex items-center justify-center gap-2">
+                👷 ไปหน้าบันทึกผล (Operator) →
+              </a>
+              <button type="button" onClick={() => setToast(null)}
+                className="tap text-slate-500 hover:text-slate-700 text-sm py-1">
+                อยู่หน้านี้ (แก้ไขต่อ)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
