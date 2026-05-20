@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IPC Criteria Prototype — UI Demo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', 'Sarabun', system-ui, sans-serif; background: #f1f5f9; }
+</style>
+</head>
+<body class="text-slate-900">
+
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+
+  <!-- Header -->
+  <header class="mb-10">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-2xl font-bold">🌿</div>
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold">IPC Criteria Prototype</h1>
+        <p class="text-sm text-slate-500">Herbal ERP — UI/UX Reference สำหรับ Developer</p>
+      </div>
+    </div>
+    <p class="text-base text-slate-700 leading-relaxed">
+      Prototype นี้แสดง UX/UI ใหม่สำหรับระบบ
+      <strong>"สร้าง IPC Criteria"</strong> และ <strong>"บันทึกผล IPC"</strong>
+      ในระบบ Herbal ERP — ใช้เป็น clickable mockup เพื่อให้ dev เห็นภาพ flow และ interaction ก่อนเริ่ม implement
+    </p>
+  </header>
+
+  <!-- 2 main pages -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+    <!-- Page A -->
+    <a href="index.html" class="block bg-white rounded-2xl border-2 border-slate-200 hover:border-emerald-400 hover:shadow-md p-6 transition-all">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl">📋</div>
+        <div>
+          <h2 class="font-bold text-lg">หน้าสร้าง IPC Criteria</h2>
+          <code class="text-xs text-slate-500">/master-data/ipc-criteria/new</code>
+        </div>
+      </div>
+      <p class="text-sm text-slate-600 leading-relaxed mb-3">
+        ฟอร์มสำหรับ QA/Admin สร้างเกณฑ์การควบคุมคุณภาพ — รองรับ 9 criteria types,
+        Multi-Stage Acceptance, Multi-Trigger, Tare linkage, Live Preview
+      </p>
+      <div class="flex flex-wrap gap-1.5">
+        <span class="text-[10px] font-medium bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">QA / Admin</span>
+        <span class="text-[10px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">3,500+ บรรทัด</span>
+      </div>
+      <div class="text-xs font-semibold text-emerald-700 mt-3">เปิดหน้า →</div>
+    </a>
+
+    <!-- Page B -->
+    <a href="record.html" class="block bg-white rounded-2xl border-2 border-slate-200 hover:border-emerald-400 hover:shadow-md p-6 transition-all">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xl">👷</div>
+        <div>
+          <h2 class="font-bold text-lg">หน้าบันทึกผล IPC</h2>
+          <code class="text-xs text-slate-500">/ipc-recording</code>
+        </div>
+      </div>
+      <p class="text-sm text-slate-600 leading-relaxed mb-3">
+        หน้าสำหรับ Operator บันทึกผลตามเกณฑ์ที่ตั้งไว้ — Multi-round support,
+        Tare subtraction, Numpad popup, Touch-friendly UI
+      </p>
+      <div class="flex flex-wrap gap-1.5">
+        <span class="text-[10px] font-medium bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Operator</span>
+        <span class="text-[10px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">~1,300 บรรทัด</span>
+      </div>
+      <div class="text-xs font-semibold text-emerald-700 mt-3">เปิดหน้า →</div>
+    </a>
+  </div>
+
+  <!-- How to test -->
+  <section class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+    <h2 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span>🧪</span> วิธีทดสอบ Flow (แนะนำ)
+    </h2>
+    <ol class="space-y-2.5 text-sm text-slate-700 list-decimal list-inside">
+      <li>เปิด <a href="index.html" class="text-emerald-700 font-semibold underline">หน้าสร้าง IPC Criteria</a> →
+        สร้าง <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">IPC-CAP-TARE-001</code>
+        (Multi-Point Numeric, 10 จุด, Aggregate = Mean) → กด CREATE</li>
+      <li>หลังกด CREATE → Modal ขึ้น → กด <strong>"+ สร้าง Criteria ตัวใหม่"</strong></li>
+      <li>กรอก <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">IPC-CAP-WV-001</code>
+        (Weight Variation, Multi-Point, 20 จุด, Target 0.500, Tolerance 7.5%) →
+        ในส่วน "⚖️ หัก Tare" เลือก <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">IPC-CAP-TARE-001</code> → CREATE</li>
+      <li>หลัง CREATE → Modal ขึ้น → กด <strong>"👷 ไปหน้าบันทึกผล"</strong></li>
+      <li>คลิกการ์ด <strong>IPC-CAP-TARE-001</strong> → กรอก 10 ค่า (เช่น 0.0958, 0.0962, ...) → กดส่งผล</li>
+      <li>กลับ list → คลิกการ์ด <strong>IPC-CAP-WV-001</strong> → ดู Tare banner สีฟ้าด้านบน → กรอก Gross weight 20 ค่า → เห็น Net คำนวณให้</li>
+      <li>กลับ list → กด <strong>"+ รอบใหม่"</strong> บนการ์ด WV-001 → กรอกเหตุผล → ลองบันทึกอีกรอบ</li>
+    </ol>
+  </section>
+
+  <!-- Tech notes -->
+  <section class="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-6">
+    <h2 class="font-bold text-lg mb-3 flex items-center gap-2 text-amber-900">
+      <span>⚠️</span> สำหรับ Developer
+    </h2>
+    <div class="space-y-2 text-sm text-amber-900">
+      <p>Prototype นี้เป็น <strong>single-file HTML</strong> ใช้ React + Tailwind via CDN — ไม่ใช่ production-ready code</p>
+      <p>ข้อมูลเก็บใน <strong>browser localStorage</strong> เท่านั้น (หายเมื่อล้าง cache)</p>
+      <p>ใช้เป็น <strong>UX/UI reference</strong> สำหรับ implement ในระบบจริง ไม่ใช่นำ code มาใช้ตรงๆ</p>
+    </div>
+    <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
+      <a href="https://github.com/adthaponu-creator/ERP-erbal-/blob/main/AI-PROMPT.md"
+         class="text-xs font-semibold bg-white border-2 border-amber-300 hover:border-amber-500 text-amber-900 rounded-xl px-3 py-2.5 flex items-center justify-center gap-1.5 transition-all">
+        📜 AI-PROMPT.md
+      </a>
+      <a href="https://github.com/adthaponu-creator/ERP-erbal-/blob/main/HANDOFF.md"
+         class="text-xs font-semibold bg-white border-2 border-amber-300 hover:border-amber-500 text-amber-900 rounded-xl px-3 py-2.5 flex items-center justify-center gap-1.5 transition-all">
+        📋 HANDOFF.md
+      </a>
+      <a href="https://github.com/adthaponu-creator/ERP-erbal-"
+         class="text-xs font-semibold bg-white border-2 border-amber-300 hover:border-amber-500 text-amber-900 rounded-xl px-3 py-2.5 flex items-center justify-center gap-1.5 transition-all">
+        💻 GitHub Repo
+      </a>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+    <h2 class="font-bold text-lg mb-4 flex items-center gap-2">
+      <span>✨</span> Key Features ที่ Prototype สาธิต
+    </h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+      <div class="flex items-start gap-2">
+        <span class="text-emerald-600 mt-0.5">✓</span>
+        <span><strong>9 Criteria Types</strong> — Numeric, Pass/Fail, Visual, Text, Multi-Point, Custom Multi-Field, Calibration, Tare, Calculated</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <span class="text-emerald-600 mt-0.5">✓</span>
+        <span><strong>Smart Auto-fill</strong> — เลือก Test Name → เติม Code/Unit/Sample Plan</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <span class="text-emerald-600 mt-0.5">✓</span>
+        <span><strong>Multi-Stage Acceptance</strong> — USP &lt;711&gt;, &lt;905&gt;, &lt;701&gt;</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <span class="text-emerald-600 mt-0.5">✓</span>
+        <span><strong>Multi-Trigger Inspection</strong> — Time/Quantity/Milestone/Event/Once-per-batch</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <span class="text-emerald-600 mt-0.5">✓</span>
+        <span><strong>Tare Linkage</strong> — Net = Gross − Tare อัตโนมัติ</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <span class="text-emerald-600 mt-0.5">✓</span>
+        <span><strong>Auto-computed Range</strong> — Mean acceptance from Target ± Tolerance</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <span class="text-emerald-600 mt-0.5">✓</span>
+        <span><strong>Multi-Round Recording</strong> — รอบที่ submitted ถูก lock + เริ่มรอบใหม่ได้</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <span class="text-emerald-600 mt-0.5">✓</span>
+        <span><strong>Live Preview Panel</strong> — Acceptance Flow + GMP Compliance</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <span class="text-emerald-600 mt-0.5">✓</span>
+        <span><strong>Searchable Dropdowns</strong> — keyboard navigation (↑↓ Enter Esc)</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <span class="text-emerald-600 mt-0.5">✓</span>
+        <span><strong>Touch-friendly Numpad</strong> — Tap-large buttons สำหรับ tablet</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <span class="text-emerald-600 mt-0.5">✓</span>
+        <span><strong>Responsive Design</strong> — Mobile / Tablet / Desktop</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <span class="text-emerald-600 mt-0.5">✓</span>
+        <span><strong>Audit-friendly</strong> — Timestamp + Reason ทุกรอบ</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center text-xs text-slate-500 mt-10">
+    <p>Designed & built by Claude (Anthropic)</p>
+    <p class="mt-1">References: USP &lt;711&gt;, &lt;905&gt;, &lt;701&gt;, &lt;1216&gt; · ICH Q8, Q9, Q10 · PIC/S Annex 8 · 21 CFR Part 11</p>
+  </footer>
+
+</div>
+
+</body>
+</html>
