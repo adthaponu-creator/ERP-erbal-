@@ -10,7 +10,7 @@ Prototype นี้คือ **single-page HTML** สำหรับระบบ
 
 | ไฟล์ | บทบาท | ผู้ใช้ |
 |---|---|---|
-| `index.html` | สร้าง/แก้ไข IPC Criteria | QA / Admin |
+| `criteria.html` | สร้าง/แก้ไข IPC Criteria | QA / Admin |
 | `record.html` | บันทึกผลการตรวจสอบ | Operator (line) |
 
 **Prototype นี้ใช้เป็น UX/UI reference เท่านั้น** — ไม่ใช่ production-ready code
@@ -60,7 +60,7 @@ Prototype ไม่ครอบคลุมข้อกำหนด electronic r
 
 ## 🎯 Core Features ที่ Prototype ทำให้ดู
 
-### หน้า New IPC (`index.html`)
+### หน้า New IPC (`criteria.html`)
 
 1. **Criteria Information form** — รองรับ 9 criteria types:
    - `numeric` — ค่าตัวเลข ± tolerance
@@ -274,8 +274,9 @@ type RoundData = {
 git clone https://github.com/adthaponu-creator/ERP-erbal-.git
 cd ERP-erbal-
 
-# เปิด index.html ในเบราว์เซอร์ (Windows)
+# เปิด landing page ในเบราว์เซอร์ (Windows)
 start index.html
+# หรือเปิดหน้าฟอร์มตรงๆ: start criteria.html
 
 # หรือใช้ npm
 npm run dev  # serves on http://localhost:5173
@@ -283,7 +284,7 @@ npm run dev  # serves on http://localhost:5173
 
 ### Test scenario แนะนำ
 
-1. **สร้าง Tare:** index.html → กรอก IPC-CAP-TARE-001 (Multi-Point, 10 จุด, Aggregate=Mean) → CREATE
+1. **สร้าง Tare:** เปิด `criteria.html` → กรอก IPC-CAP-TARE-001 (Multi-Point, 10 จุด, Aggregate=Mean) → CREATE
 2. **สร้าง WV:** กด "สร้าง Criteria ตัวใหม่" → กรอก IPC-CAP-WV-001 → เลือก Tare = TARE-001 → CREATE
 3. **บันทึก Tare:** record.html → คลิก TARE-001 → กรอก 10 ค่า → ส่งผล
 4. **บันทึก WV:** คลิก WV-001 → ดู Tare banner → กรอก 20 ค่า → ดู Gross/Net auto-calculate
