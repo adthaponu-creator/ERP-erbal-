@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dev Package — Quality Module Audit Fixes</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', 'Sarabun', system-ui, sans-serif; background: #f1f5f9; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .copy-btn {
+    background: #475569; color: white;
+    padding: 6px 12px; border-radius: 8px;
+    font-size: 11px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px;
+    transition: all .15s;
+  }
+  .copy-btn:hover { background: #334155; }
+  .copy-btn.copied { background: #059669; }
+  .link-row {
+    background: white; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 12px 14px;
+    display: flex; align-items: center; gap: 12px;
+    transition: all .15s;
+  }
+  .link-row:hover { border-color: #cbd5e1; background: #f8fafc; }
+  .url-text {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 12px; color: #475569;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    flex: 1; min-width: 0;
+  }
+  pre.message {
+    font-family: 'Inter', 'Sarabun', system-ui, sans-serif;
+    background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 18px;
+    font-size: 13px; line-height: 1.7;
+    white-space: pre-wrap;
+    color: #334155;
+  }
+</style>
+</head>
+<body class="text-slate-900">
+
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+
+  <!-- Header -->
+  <header class="mb-8">
+    <a href="index.html" class="text-slate-500 hover:text-slate-800 text-sm">← กลับ Landing</a>
+    <div class="flex items-center gap-3 mt-2">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white flex items-center justify-center text-3xl shadow-lg shadow-emerald-200">📦</div>
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold">Dev Package</h1>
+        <p class="text-sm text-slate-500">ชุดส่ง Dev — link UI mockup + Dev Prompts สำหรับ Quality Module</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Quick action: Copy all -->
+  <section class="mb-8">
+    <div class="bg-gradient-to-br from-emerald-600 to-emerald-700 text-white rounded-2xl p-5 sm:p-6 shadow-xl shadow-emerald-200">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <h2 class="font-bold text-lg mb-1">⚡ ส่งให้ Dev ทันที</h2>
+          <p class="text-emerald-50 text-sm">กดปุ่ม copy ด้านขวา → วางใน Slack/Email/LINE ส่งให้ dev ได้เลย</p>
+        </div>
+        <button class="copy-btn flex-shrink-0" data-target="full-msg" style="background: white; color: #047857; padding: 10px 18px; font-size: 14px;">
+          📋 Copy ทั้งข้อความ
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 1: Live URLs -->
+  <section class="mb-8">
+    <h2 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span>🔗</span> Link สาธารณะ
+      <span class="text-xs font-normal text-slate-500">(deploy แล้วบน GitHub Pages — dev เข้าได้ทันที)</span>
+    </h2>
+
+    <div class="space-y-2">
+
+      <!-- Prompt -->
+      <div class="link-row">
+        <span class="text-xl">🤖</span>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm">Dev Prompts (สำหรับ AI/Dev)</div>
+          <div class="url-text" id="url-prompt">https://adthaponu-creator.github.io/ERP-erbal-/prompt.html</div>
+        </div>
+        <a href="https://adthaponu-creator.github.io/ERP-erbal-/prompt.html" target="_blank" class="text-xs text-emerald-700 font-semibold hover:underline flex-shrink-0">เปิด →</a>
+        <button class="copy-btn" data-target="url-prompt">📋 Copy</button>
+      </div>
+
+      <!-- QC Entry -->
+      <div class="link-row">
+        <span class="text-xl">📥</span>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm">UI Mockup — QC Sample Entry</div>
+          <div class="url-text" id="url-qc-entry">https://adthaponu-creator.github.io/ERP-erbal-/qc-entry.html</div>
+        </div>
+        <a href="https://adthaponu-creator.github.io/ERP-erbal-/qc-entry.html" target="_blank" class="text-xs text-emerald-700 font-semibold hover:underline flex-shrink-0">เปิด →</a>
+        <button class="copy-btn" data-target="url-qc-entry">📋 Copy</button>
+      </div>
+
+      <!-- QC Detail -->
+      <div class="link-row">
+        <span class="text-xl">🔬</span>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm">UI Mockup — QC Detail / Recording</div>
+          <div class="url-text" id="url-qc-detail">https://adthaponu-creator.github.io/ERP-erbal-/qc-detail.html</div>
+        </div>
+        <a href="https://adthaponu-creator.github.io/ERP-erbal-/qc-detail.html" target="_blank" class="text-xs text-emerald-700 font-semibold hover:underline flex-shrink-0">เปิด →</a>
+        <button class="copy-btn" data-target="url-qc-detail">📋 Copy</button>
+      </div>
+
+      <!-- Guide -->
+      <div class="link-row">
+        <span class="text-xl">📖</span>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm">User Guide (8 slides)</div>
+          <div class="url-text" id="url-guide">https://adthaponu-creator.github.io/ERP-erbal-/guide.html</div>
+        </div>
+        <a href="https://adthaponu-creator.github.io/ERP-erbal-/guide.html" target="_blank" class="text-xs text-emerald-700 font-semibold hover:underline flex-shrink-0">เปิด →</a>
+        <button class="copy-btn" data-target="url-guide">📋 Copy</button>
+      </div>
+
+      <!-- Landing -->
+      <div class="link-row">
+        <span class="text-xl">🏠</span>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm">Landing Page (ครบทุก link)</div>
+          <div class="url-text" id="url-landing">https://adthaponu-creator.github.io/ERP-erbal-/</div>
+        </div>
+        <a href="https://adthaponu-creator.github.io/ERP-erbal-/" target="_blank" class="text-xs text-emerald-700 font-semibold hover:underline flex-shrink-0">เปิด →</a>
+        <button class="copy-btn" data-target="url-landing">📋 Copy</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Section 2: Pre-built message templates -->
+  <section class="mb-8">
+    <h2 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span>💬</span> Template ข้อความส่ง (เลือกอันที่เหมาะกับช่องทาง)
+    </h2>
+
+    <!-- Tab buttons -->
+    <div class="flex gap-2 mb-3 flex-wrap">
+      <button class="tab-btn active" data-tab="full">📝 ครบ (Email/document)</button>
+      <button class="tab-btn" data-tab="slack">💬 Slack/Teams</button>
+      <button class="tab-btn" data-tab="line">📱 LINE สั้น</button>
+    </div>
+
+    <!-- Full version -->
+    <div id="tab-full" class="tab-content">
+      <div class="flex justify-end mb-2">
+        <button class="copy-btn" data-target="full-msg">📋 Copy</button>
+      </div>
+      <pre class="message" id="full-msg">เรียน ทีม Dev,
+
+จากผลตรวจ GMP Quality Module เมื่อ 22 พ.ค. 2569 มี 4 audit items ที่ต้องแก้ในระบบ
+herbal-erp-more.bmscloud.in.th/quality/qc-entry
+
+ผมเตรียม UI mockup + dev prompts ไว้แล้ว — ดูที่ link ด้านล่างได้เลยครับ
+
+📦 Landing (รวมทุกอย่าง):
+https://adthaponu-creator.github.io/ERP-erbal-/
+
+🤖 Dev Prompts (พร้อมใช้ — กด copy แล้ววางใน AI ได้เลย):
+https://adthaponu-creator.github.io/ERP-erbal-/prompt.html
+
+🎨 UI Mockup ที่ implement แล้วเป็นตัวอย่าง:
+• QC Sample Entry: https://adthaponu-creator.github.io/ERP-erbal-/qc-entry.html
+• QC Detail/Recording: https://adthaponu-creator.github.io/ERP-erbal-/qc-detail.html
+
+📖 User Guide (8 slides — flow ทั้งหมด):
+https://adthaponu-creator.github.io/ERP-erbal-/guide.html
+
+──── สรุป 4 Audit Items ที่ต้องแก้ ────
+
+#1 Sample Plan Trigger [HIGH]
+   → ปัญหา: ไม่มีแจ้งเตือนเมื่อ lot รับเข้า/WO complete ต้องสร้าง QC entry manual
+   → แก้: เพิ่ม Pending QC Tasks panel + 4 auto-triggers (gr/wo/stability/complaint)
+
+#3 Retain Sample Storage [MEDIUM]
+   → ปัญหา: ไม่มีคลังเก็บ retain sample
+   → แก้: เพิ่ม 4 warehouses (Retain rooms + Stability chambers) + storage fields
+
+#6 Dual Approval [CRITICAL]
+   → ปัญหา: ปุ่ม Released ใครก็กดได้ ไม่มีการตรวจนับก่อนปล่อยเข้าคลัง
+   → แก้: แยก Released เป็น 2 ขั้น — QC Released → Warehouse Verified (RBAC)
+
+#7 Auto-notification [HIGH]
+   → ปัญหา: ไม่มีแจ้งเตือนข้ามฝ่ายเมื่อ stage เปลี่ยน
+   → แก้: เพิ่ม Bell icon + Toast + WebSocket real-time (8 event types)
+
+──── ลำดับ implement ที่แนะนำ ────
+
+1. #7 Notification system (เป็น dependency ของ #1 และ #6)
+2. #1 Sample Plan Trigger
+3. #6 Dual Approval
+4. #3 Retain Sample (ทำคู่ขนานได้)
+
+มีคำถามทักได้เลยครับ
+</pre>
+    </div>
+
+    <!-- Slack version -->
+    <div id="tab-slack" class="tab-content hidden">
+      <div class="flex justify-end mb-2">
+        <button class="copy-btn" data-target="slack-msg">📋 Copy</button>
+      </div>
+      <pre class="message" id="slack-msg">📋 *Quality Module Audit Fixes — Dev Package*
+
+จากผลตรวจ GMP 22 พ.ค. มี *4 audit items* ที่ต้องแก้:
+
+*#1 Sample Plan Trigger* `HIGH`
+*#3 Retain Sample Storage* `MEDIUM`
+*#6 Dual Approval (QC + Warehouse)* `CRITICAL`
+*#7 Auto-notification* `HIGH`
+
+📦 *Resources:*
+• 🏠 Landing: https://adthaponu-creator.github.io/ERP-erbal-/
+• 🤖 Dev Prompts: https://adthaponu-creator.github.io/ERP-erbal-/prompt.html
+• 📥 UI Entry: https://adthaponu-creator.github.io/ERP-erbal-/qc-entry.html
+• 🔬 UI Detail: https://adthaponu-creator.github.io/ERP-erbal-/qc-detail.html
+• 📖 Guide: https://adthaponu-creator.github.io/ERP-erbal-/guide.html
+
+⚡ *แนะนำ:* เปิด `prompt.html` → กด copy prompt #6 ก่อน (CRITICAL) แล้ววางใน Cursor/Claude Code ที่ repo จริง
+
+มีคำถามทักได้เลยครับ 🙏
+</pre>
+    </div>
+
+    <!-- LINE version -->
+    <div id="tab-line" class="tab-content hidden">
+      <div class="flex justify-end mb-2">
+        <button class="copy-btn" data-target="line-msg">📋 Copy</button>
+      </div>
+      <pre class="message" id="line-msg">[Quality Module Audit] 4 รายการต้องแก้
+
+ดู mockup + prompts ทั้งหมดที่:
+https://adthaponu-creator.github.io/ERP-erbal-/
+
+หรือไปตรงที่ Dev Prompts:
+https://adthaponu-creator.github.io/ERP-erbal-/prompt.html
+
+มี 4 items:
+#1 Sample Plan Trigger (HIGH)
+#3 Retain Sample (MED)
+#6 Dual Approval (CRIT)
+#7 Notification (HIGH)
+
+แนะนำเริ่ม #6 ก่อน — CRITICAL ครับ
+</pre>
+    </div>
+
+  </section>
+
+  <!-- Section 3: What's inside -->
+  <section class="mb-8">
+    <h2 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span>📂</span> Package มีอะไรบ้าง
+    </h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+      <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">🎨 UI Mockup (ต้องดูก่อน design)</div>
+        <ul class="text-sm space-y-1.5">
+          <li>✅ <code class="text-xs bg-slate-100 px-1.5 rounded">qc-entry.html</code> — Pending Tasks + Retain + Notification</li>
+          <li>✅ <code class="text-xs bg-slate-100 px-1.5 rounded">qc-detail.html</code> — Dual Approval + Notification</li>
+          <li>✅ <code class="text-xs bg-slate-100 px-1.5 rounded">guide.html</code> — User Guide 8 slides</li>
+        </ul>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">🤖 Dev Prompts (วางใน AI)</div>
+        <ul class="text-sm space-y-1.5">
+          <li>📝 Prompt #1: Sample Plan Trigger</li>
+          <li>📝 Prompt #3: Retain Sample Storage</li>
+          <li>📝 Prompt #6: Dual Approval</li>
+          <li>📝 Prompt #7: Auto-notification</li>
+          <li>📝 All-in-one prompt (รวม 4 ข้อ)</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Tips -->
+  <section class="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+    <h2 class="font-bold text-base mb-2 flex items-center gap-2 text-amber-900">
+      <span>💡</span> Tips
+    </h2>
+    <ul class="text-sm text-amber-900 space-y-1.5">
+      <li>• Mockup เป็น React + Tailwind (single-file HTML) — dev ใช้เป็น <strong>visual reference</strong> เท่านั้น ไม่ใช่นำ code ไปใช้ตรงๆ</li>
+      <li>• ระบบจริงใช้ Next.js App Router + TypeScript — prompts ใน prompt.html เขียน spec สำหรับ stack นี้แล้ว</li>
+      <li>• Data เก็บใน browser localStorage เท่านั้น — ปิด browser แล้วหาย</li>
+      <li>• ถ้าอยากให้ dev ดูแค่ feature เดียว: copy URL ของหน้านั้นไปส่งโดยตรงได้</li>
+    </ul>
+  </section>
+
+  <footer class="text-center text-xs text-slate-400 pt-6 border-t border-slate-200 mt-8">
+    Dev Package generated · Quality Module Audit 22 พ.ค. 2569 · 4 items
+  </footer>
+
+</div>
+
+<!-- Toast -->
+<div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+  <div class="bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl text-sm font-semibold flex items-center gap-2">
+    <span>✓</span> <span id="toast-msg">Copied</span>
+  </div>
+</div>
+
+<style>
+  .tab-btn {
+    background: white; border: 2px solid #e2e8f0;
+    padding: 8px 16px; border-radius: 10px;
+    font-size: 13px; font-weight: 600; color: #475569;
+    transition: all .15s;
+  }
+  .tab-btn:hover { border-color: #cbd5e1; }
+  .tab-btn.active { background: #0f172a; color: white; border-color: #0f172a; }
+</style>
+
+<script>
+  // Copy buttons
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const targetId = btn.dataset.target;
+      const el = document.getElementById(targetId);
+      const text = el.innerText.trim();
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      btn.classList.add('copied');
+      const original = btn.innerHTML;
+      btn.innerHTML = '✓ Copied!';
+      showToast(`Copied (${text.length} chars)`);
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = original;
+      }, 1600);
+    });
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), 2000);
+  }
+
+  // Tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+    });
+  });
+</script>
+
+</body>
+</html>
