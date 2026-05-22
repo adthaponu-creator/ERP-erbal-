@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#10b981" />
+<title>QC Entry — ลงทะเบียนตัวอย่าง QC</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #10b981;
+    --brand-dark: #047857;
+  }
+  html, body, #root { height: 100%; }
+  body {
+    font-family: 'Inter', 'Sarabun', system-ui, sans-serif;
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+  .tap { min-height: 44px; }
+  .field-wrap { position: relative; }
+  .field-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+    padding-left: 2px;
+  }
+  .field-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    background: white;
+    font-size: 14px;
+    line-height: 1.4;
+    transition: all .15s;
+  }
+  .field-input:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,.15); }
+  .field-input:disabled { background: #f8fafc; color: #94a3b8; }
+  input.field-input[type="date"] { padding-right: 14px; }
+
+  .scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+  @media print {
+    .no-print { display: none !important; }
+    body { background: white; }
+    .print-area { box-shadow: none !important; border: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useMemo, useEffect, useRef } = React;
+
+/* ============================ ICONS ============================ */
+const Icon = ({ name, className = "w-5 h-5" }) => {
+  const icons = {
+    check:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>,
+    x:       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>,
+    back:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>,
+    plus:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>,
+    chevDown:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+    cal:     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+    flask:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 3h6v4l5 9a3 3 0 0 1-3 5H7a3 3 0 0 1-3-5l5-9V3z"/><path d="M9 3h6"/></svg>,
+    search:  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+    alert:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+    info:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>,
+    home:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+    leaf:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19.2 2.96c1.4 9.3-3.6 15.7-8.2 17.04Z"/><path d="M2 22c1.6-2.5 4.5-5.8 8.1-8"/></svg>,
+    print:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>,
+  };
+  return <span className={className}>{icons[name]}</span>;
+};
+
+/* ============================ STORAGE ============================ */
+const STORAGE_KEY = 'qc_samples';
+const LOTS_KEY    = 'qc_lots_state'; // override quantity เมื่อตัดสต็อก
+const TASKS_KEY   = 'qc_pending_tasks';  // pending QC tasks (Item 1: Sample Plan Trigger)
+const NOTIF_KEY   = 'qc_notifications';  // notification feed (Item 7)
+
+const loadSamples = () => {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch { return []; }
+};
+const saveSamples = (arr) => localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+
+const loadLotOverrides = () => {
+  try { return JSON.parse(localStorage.getItem(LOTS_KEY) || '{}'); }
+  catch { return {}; }
+};
+const saveLotOverrides = (obj) => localStorage.setItem(LOTS_KEY, JSON.stringify(obj));
+
+/* ===== Pending QC Tasks (Item 1) ===== */
+const loadTasks = () => {
+  try {
+    const stored = localStorage.getItem(TASKS_KEY);
+    if (stored) return JSON.parse(stored);
+    // Seed default demo tasks ครั้งแรก
+    const defaults = [
+      { id: 't1', triggerType: 'gr',         title: 'Lot รับเข้าใหม่ — ฟ้าทะลายโจร',           productCode: 'RM-HRB-002', lotNumber: 'L-AND-26052', sourceRef: 'PO-2569-0438', dueDate: '2026-05-25', priority: 'high',   createdAt: '2026-05-20T08:30:00', status: 'pending' },
+      { id: 't2', triggerType: 'wo',         title: 'WO Complete — แคปซูลขิงแก่',              productCode: 'FG-FIN-003', lotNumber: 'L-FG-GIN-26045', sourceRef: 'WO-2569-0142', dueDate: '2026-05-23', priority: 'critical', createdAt: '2026-05-20T14:15:00', status: 'pending' },
+      { id: 't3', triggerType: 'stability',  title: 'Stability 6-month — Andrographis Capsule', productCode: 'FG-SEM-002', lotNumber: 'L-FG-AND-26049', sourceRef: 'STAB-2026-018', dueDate: '2026-05-30', priority: 'medium', createdAt: '2026-05-19T10:00:00', status: 'pending' },
+      { id: 't4', triggerType: 'complaint',  title: 'Customer Complaint — ลูกค้าส่งคืน lot ขม',   productCode: 'FG-SEM-002', lotNumber: 'L-FG-AND-26054', sourceRef: 'CMP-2026-005', dueDate: '2026-05-21', priority: 'critical', createdAt: '2026-05-20T09:45:00', status: 'pending' },
+    ];
+    localStorage.setItem(TASKS_KEY, JSON.stringify(defaults));
+    return defaults;
+  } catch { return []; }
+};
+const saveTasks = (arr) => localStorage.setItem(TASKS_KEY, JSON.stringify(arr));
+
+/* ===== Notifications (Item 7) ===== */
+const loadNotifications = () => {
+  try {
+    const stored = localStorage.getItem(NOTIF_KEY);
+    if (stored) return JSON.parse(stored);
+    const defaults = [
+      { id: 'n1', kind: 'trigger',  title: '🆕 Lot รับเข้าใหม่ต้องตรวจ',          msg: 'L-AND-26052 (ผงฟ้าทะลายโจร) รอ QC Entry', createdAt: new Date(Date.now() - 5*60*1000).toISOString(),   read: false, to: 'qc'  },
+      { id: 'n2', kind: 'trigger',  title: '🏭 WO Complete',                       msg: 'WO-2569-0142 ผลิตเสร็จ — FG-FIN-003 รอ QC',  createdAt: new Date(Date.now() - 25*60*1000).toISOString(),  read: false, to: 'qc'  },
+      { id: 'n3', kind: 'approval', title: '⏳ รอ Warehouse Verify',                msg: 'QC-2026-000005 ผ่าน QC แล้ว รอคลังตรวจนับ',   createdAt: new Date(Date.now() - 50*60*1000).toISOString(),  read: false, to: 'wh'  },
+    ];
+    localStorage.setItem(NOTIF_KEY, JSON.stringify(defaults));
+    return defaults;
+  } catch { return []; }
+};
+const saveNotifications = (arr) => localStorage.setItem(NOTIF_KEY, JSON.stringify(arr));
+const addNotification = (n) => {
+  const all = loadNotifications();
+  all.unshift({ ...n, id: 'n' + Date.now(), createdAt: new Date().toISOString(), read: false });
+  saveNotifications(all.slice(0, 50));
+  return all;
+};
+
+const TRIGGER_META = {
+  gr:         { icon: '📥', label: 'Lot รับเข้า',         color: 'cyan'    },
+  wo:         { icon: '🏭', label: 'WO Complete',         color: 'emerald' },
+  stability:  { icon: '🕐', label: 'Stability Schedule',   color: 'violet'  },
+  complaint:  { icon: '⚠️', label: 'Customer Complaint',   color: 'red'     },
+};
+
+// Lot list ที่ผ่าน override quantity จาก localStorage แล้ว
+const getLiveLots = () => {
+  const overrides = loadLotOverrides();
+  return QUARANTINE_LOTS.map(l => {
+    const k = `${l.productCode}|${l.lotNumber}`;
+    return overrides[k] !== undefined ? { ...l, quantity: overrides[k] } : l;
+  }).filter(l => l.quantity > 0);
+};
+
+/* ============================ MASTER DATA ============================ */
+const SOURCE_TYPES = [
+  { value: 'work_order',   label: 'ใบสั่งผลิต (Work order batch)' },
+  { value: 'raw_material', label: 'วัตถุดิบเข้า (Raw material lot)' },
+  { value: 'in_process',   label: 'ระหว่างการผลิต (In-process)' },
+  { value: 'finished',     label: 'ผลิตภัณฑ์สำเร็จรูป (Finished good)' },
+  { value: 'stability',    label: 'ความคงตัว (Stability study)' },
+  { value: 'returned',     label: 'สินค้าคืน (Returned goods)' },
+];
+
+const PRODUCTS = [
+  { code: 'RM-HRB-002', name: 'ผงฟ้าทะลายโจร',                 nameEn: 'Andrographis Powder',         unit: 'kg', category: 'RM' },
+  { code: 'RM-HRB-004', name: 'ผงกระชายดำ',                    nameEn: 'Black Galingale Powder',      unit: 'kg', category: 'RM' },
+  { code: 'RM-EXT-002', name: 'สารสกัดฟ้าทะลายโจร (Andrographolide)', nameEn: 'Andrographolide Extract', unit: 'kg', category: 'RM' },
+  { code: 'RM-CAP-001', name: 'แคปซูลเปล่า เบอร์ 0 สีเหลือง',    nameEn: 'Empty Capsule Size 0 Yellow', unit: 'pcs', category: 'RM' },
+  { code: 'PK-BTL-002', name: 'ขวดแก้วใส 30ml',                 nameEn: 'Clear Glass Bottle 30ml',     unit: 'pcs', category: 'PK' },
+  { code: 'PK-BOX-002', name: 'กล่องผลิตภัณฑ์ขนาด M (100 แคปซูล)', nameEn: 'Product Box Size M',       unit: 'pcs', category: 'PK' },
+  { code: 'PK-PKG-002', name: 'ถุงซีลกันชื้น 200g',              nameEn: 'Moisture Barrier Bag 200g',   unit: 'pcs', category: 'PK' },
+  { code: 'FG-FIN-003', name: 'แคปซูลขิงแห้ง 300mg (60 แคปซูล/กล่อง)', nameEn: 'Ginger Capsule 300mg', unit: 'box', category: 'FG' },
+  { code: 'FG-SEM-002', name: 'ฟ้าทะลายโจรแคปซูล ขนาด 500 mg (บรรจุลงแคปซูล)', nameEn: 'Andrographis Filling Capsule', unit: 'kg', category: 'FG' },
+  { code: 'RM-CHM-003', name: 'น้ำมันโกโก้บัตเตอร์ (Cocoa Butter Oil)', nameEn: 'Cocoa Butter Oil',     unit: 'kg', category: 'RM' },
+  { code: 'RM-EXC-004', name: 'สารกันเสีย โปแตสเซียมซอร์เบต',    nameEn: 'Potassium Sorbate Preservative', unit: 'kg', category: 'RM' },
+  { code: 'PK-BOX-003', name: 'กล่องนอกขนาด 24 แคปซูล',          nameEn: 'Outer Carton 24 Box Pack',    unit: 'pcs', category: 'PK' },
+];
+
+// Mock quarantine lots — lot data per product (พร้อมข้อมูลรับเข้าครบ)
+// status 'quarantine' = รอ QC, 'released' = ผ่านแล้ว (ไม่แสดงในรายการเลือก)
+const QUARANTINE_LOTS = [
+  // ผงฟ้าทะลายโจร
+  { productCode: 'RM-HRB-002', lotNumber: 'L-AND-26041',  quantity: 250,  mfgDate: '2026-04-10', expDate: '2028-04-10', retestDate: '2027-04-10', storageCond: 'แห้ง / ไม่โดนแสง',         sourceRef: 'PO-2569-0421' },
+  { productCode: 'RM-HRB-002', lotNumber: 'L-AND-26052',  quantity: 180,  mfgDate: '2026-05-02', expDate: '2028-05-02', retestDate: '2027-05-02', storageCond: 'แห้ง / ไม่โดนแสง',         sourceRef: 'PO-2569-0438' },
+  // ผงกระชายดำ
+  { productCode: 'RM-HRB-004', lotNumber: 'L-BG-26039',   quantity: 120,  mfgDate: '2026-03-22', expDate: '2028-03-22', retestDate: '2027-03-22', storageCond: 'แห้ง / ไม่โดนแสง',         sourceRef: 'PO-2569-0405' },
+  // สารสกัดฟ้าทะลายโจร
+  { productCode: 'RM-EXT-002', lotNumber: 'L-EXT-26018',  quantity: 25,   mfgDate: '2026-01-15', expDate: '2028-01-15', retestDate: '2027-01-15', storageCond: 'แช่เย็น (2-8°C)',           sourceRef: 'PO-2569-0312' },
+  { productCode: 'RM-EXT-002', lotNumber: 'L-EXT-26050',  quantity: 40,   mfgDate: '2026-04-28', expDate: '2028-04-28', retestDate: '2027-04-28', storageCond: 'แช่เย็น (2-8°C)',           sourceRef: 'PO-2569-0430' },
+  // แคปซูลเปล่า
+  { productCode: 'RM-CAP-001', lotNumber: 'L-CAP-26015',  quantity: 500000, mfgDate: '2026-02-08', expDate: '2029-02-08', retestDate: '2028-02-08', storageCond: 'อุณหภูมิห้อง (15-30°C)',  sourceRef: 'PO-2569-0356' },
+  // ขวดแก้ว
+  { productCode: 'PK-BTL-002', lotNumber: 'L-BTL-26022',  quantity: 12000, mfgDate: '2026-02-20', expDate: '',           retestDate: '',           storageCond: 'อุณหภูมิห้อง (15-30°C)',  sourceRef: 'PO-2569-0371' },
+  // กล่อง M
+  { productCode: 'PK-BOX-002', lotNumber: 'L-BOX-26033',  quantity: 8000,  mfgDate: '2026-03-12', expDate: '',           retestDate: '',           storageCond: 'แห้ง / ไม่โดนแสง',         sourceRef: 'PO-2569-0392' },
+  // ถุงซีลกันชื้น
+  { productCode: 'PK-PKG-002', lotNumber: 'L-PKG-26040',  quantity: 15000, mfgDate: '2026-04-01', expDate: '',           retestDate: '',           storageCond: 'ป้องกันความชื้น',           sourceRef: 'PO-2569-0418' },
+  // FG ขิง
+  { productCode: 'FG-FIN-003', lotNumber: 'L-FG-GIN-26045', quantity: 320, mfgDate: '2026-04-18', expDate: '2028-04-18', retestDate: '',           storageCond: 'อุณหภูมิห้อง (15-30°C)',  sourceRef: 'WO-2569-0142' },
+  // FG ฟ้าทะลายโจรแคปซูล
+  { productCode: 'FG-SEM-002', lotNumber: 'L-FG-AND-26049', quantity: 85,  mfgDate: '2026-04-25', expDate: '2028-04-25', retestDate: '',           storageCond: 'อุณหภูมิห้อง (15-30°C)',  sourceRef: 'WO-2569-0148' },
+  { productCode: 'FG-SEM-002', lotNumber: 'L-FG-AND-26054', quantity: 95,  mfgDate: '2026-05-06', expDate: '2028-05-06', retestDate: '',           storageCond: 'อุณหภูมิห้อง (15-30°C)',  sourceRef: 'WO-2569-0152' },
+  // น้ำมันโกโก้
+  { productCode: 'RM-CHM-003', lotNumber: 'L-CCB-26027',  quantity: 60,   mfgDate: '2026-03-05', expDate: '2027-09-05', retestDate: '2026-12-05', storageCond: 'แช่เย็น (2-8°C)',           sourceRef: 'PO-2569-0384' },
+  // สารกันเสีย
+  { productCode: 'RM-EXC-004', lotNumber: 'L-PSB-26031',  quantity: 30,   mfgDate: '2026-03-10', expDate: '2029-03-10', retestDate: '2028-03-10', storageCond: 'แห้ง / ไม่โดนแสง',         sourceRef: 'PO-2569-0388' },
+  // กล่องนอก 24
+  { productCode: 'PK-BOX-003', lotNumber: 'L-OUT-26044',  quantity: 2500,  mfgDate: '2026-04-15', expDate: '',           retestDate: '',           storageCond: 'แห้ง / ไม่โดนแสง',         sourceRef: 'PO-2569-0425' },
+];
+
+// Mock test panels per category — sampleSize ตาม USP
+const TEST_PANELS = {
+  RM: [
+    { code: 'IPC-RM-IDENT', name: 'Identification (TLC/HPLC)', sampleSize: 1 },
+    { code: 'IPC-RM-LOD',   name: 'Loss on Drying',            sampleSize: 3 },
+    { code: 'IPC-RM-ASH',   name: 'Total Ash',                 sampleSize: 3 },
+    { code: 'IPC-RM-HM',    name: 'Heavy Metals',              sampleSize: 2 },
+    { code: 'IPC-RM-MICRO', name: 'Microbial Limit',           sampleSize: 3 },
+  ],
+  PK: [
+    { code: 'IPC-PK-DIM',   name: 'Dimensional Check',  sampleSize: 10 },
+    { code: 'IPC-PK-VIS',   name: 'Visual Inspection',  sampleSize: 20 },
+    { code: 'IPC-PK-LEAK',  name: 'Leak Test',          sampleSize: 5 },
+  ],
+  FG: [
+    { code: 'IPC-FG-WV',    name: 'Weight Variation', sampleSize: 10 },
+    { code: 'IPC-FG-DISS',  name: 'Dissolution',      sampleSize: 6 },
+    { code: 'IPC-FG-DISI',  name: 'Disintegration',   sampleSize: 6 },
+    { code: 'IPC-FG-ASSAY', name: 'Assay',            sampleSize: 3 },
+    { code: 'IPC-FG-MICRO', name: 'Microbial Limit',  sampleSize: 3 },
+  ],
+};
+
+const CATEGORY_LABEL = { RM: 'Raw Material', PK: 'Packaging', FG: 'Finished Goods' };
+const PURPOSE_OPTIONS = [
+  { value: 'routine',   label: 'Routine QC — ทดสอบรับเข้าปกติ' },
+  { value: 'retest',    label: 'Retest — ทดสอบซ้ำหลัง deviation' },
+  { value: 'stability', label: 'Stability — ติดตามความคงตัว' },
+  { value: 'complaint', label: 'Complaint investigation — ตรวจสอบเรื่องร้องเรียน' },
+];
+const PURPOSE_LABEL = Object.fromEntries(PURPOSE_OPTIONS.map(o => [o.value, o.label]));
+
+const STORAGE_CONDS = [
+  'อุณหภูมิห้อง (15-30°C)',
+  'แช่เย็น (2-8°C)',
+  'แช่แข็ง (-20°C)',
+  'แห้ง / ไม่โดนแสง',
+  'ป้องกันความชื้น',
+];
+
+/* ============================ HELPERS ============================ */
+const todayISO = () => new Date().toISOString().slice(0,10);
+const fmtDate = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()+543}`;
+};
+const fmtTime = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+};
+const newSampleCode = () => {
+  const seq = Math.floor(Math.random() * 9000) + 1000;
+  const yy = new Date().getFullYear() + 543;
+  return `QC-${yy}-${seq}`;
+};
+const newReqCode = () => {
+  const seq = Math.floor(Math.random() * 9000) + 1000;
+  const yy = new Date().getFullYear() + 543;
+  return `SR-${yy}-${seq}`;
+};
+
+/* ============================ SIDEBAR ============================ */
+const Sidebar = ({ active, onNavigate }) => {
+  const items = [
+    { id: 'dashboard', label: 'แดชบอร์ด', icon: 'home' },
+    { id: 'warehouse', label: 'คลังสินค้า', icon: 'home', group: true },
+    { id: 'production', label: 'การผลิต', icon: 'home', group: true },
+    { id: 'qc', label: 'ควบคุมคุณภาพ', icon: 'flask', group: true, open: true, children: [
+        { id: 'qc-entry', label: 'ลงทะเบียน QC' },
+        { id: 'qc-record', label: 'บันทึก QC' },
+        { id: 'qc-coa', label: 'ใบรับรองคุณภาพ' },
+        { id: 'qc-tmpl', label: 'เทมเพลต COA' },
+        { id: 'qc-panel', label: 'Test Panels' },
+        { id: 'qc-test', label: 'การทดสอบ' },
+        { id: 'qc-spec', label: 'ข้อกำหนด' },
+        { id: 'qc-dev', label: 'ความเบี่ยงเบน' },
+        { id: 'qc-audit', label: 'เส้นทางการตรวจสอบ' },
+    ]},
+    { id: 'gmp', label: 'GMP Compliance', icon: 'home', group: true },
+  ];
+  return (
+    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0">
+      <div className="p-5 border-b border-slate-200">
+        <div className="flex items-center gap-2.5">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white flex items-center justify-center">
+            <Icon name="leaf" className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-bold text-slate-900 leading-tight">Herbal ERP</div>
+            <div className="text-[11px] text-slate-500">Medicine Management</div>
+          </div>
+        </div>
+      </div>
+      <nav className="flex-1 overflow-y-auto scrollbar p-3">
+        {items.map(item => (
+          <div key={item.id}>
+            <button
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium mb-0.5 ${
+                item.id === 'qc' ? 'bg-emerald-100 text-emerald-800' : 'text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              <span className="flex items-center gap-2.5">
+                <Icon name={item.icon} className="w-4 h-4" />
+                {item.label}
+              </span>
+              {item.group && <Icon name="chevDown" className={`w-3.5 h-3.5 ${item.open ? '' : '-rotate-90'}`} />}
+            </button>
+            {item.children && item.open && (
+              <div className="ml-3 pl-3 border-l border-slate-200 mb-2">
+                {item.children.map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => onNavigate && onNavigate(c.id)}
+                    className={`w-full text-left px-3 py-1.5 rounded-md text-[13px] mb-0.5 ${
+                      c.id === active ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </nav>
+      <div className="p-3 border-t border-slate-200">
+        <div className="flex items-center gap-2.5 px-2 py-2">
+          <div className="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-bold">S</div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold truncate">System Admi...</div>
+            <div className="text-[10px] text-slate-500">ADMIN</div>
+          </div>
+        </div>
+        <div className="text-[11px] text-slate-500 px-2 mt-2">🇹🇭 ไทย</div>
+      </div>
+    </aside>
+  );
+};
+
+/* ============================ SEARCHABLE DROPDOWN ============================ */
+const SearchableDropdown = ({ value, onChange, options, placeholder, renderOption, getKey, getLabel, disabled }) => {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState('');
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const onClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, []);
+
+  const filtered = useMemo(() => {
+    if (!q.trim()) return options;
+    const s = q.toLowerCase();
+    return options.filter(o => getLabel(o).toLowerCase().includes(s));
+  }, [q, options]);
+
+  const selected = options.find(o => getKey(o) === value);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => !disabled && setOpen(v => !v)}
+        className={`field-input text-left flex items-center justify-between ${disabled ? '' : 'cursor-pointer'}`}
+      >
+        <span className={selected ? 'text-slate-900' : 'text-slate-400'}>
+          {selected ? getLabel(selected) : placeholder}
+        </span>
+        <Icon name="chevDown" className={`w-4 h-4 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute z-30 top-full left-0 right-0 mt-1.5 bg-white border-2 border-emerald-200 rounded-xl shadow-xl max-h-72 overflow-hidden flex flex-col">
+          <div className="p-2 border-b border-slate-100">
+            <div className="relative">
+              <Icon name="search" className="w-4 h-4 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <input
+                autoFocus
+                value={q}
+                onChange={e => setQ(e.target.value)}
+                placeholder="ค้นหา..."
+                className="w-full pl-8 pr-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:border-emerald-400"
+              />
+            </div>
+          </div>
+          <div className="overflow-y-auto scrollbar flex-1">
+            {filtered.length === 0 ? (
+              <div className="text-center text-sm text-slate-400 py-6">ไม่พบรายการ</div>
+            ) : filtered.map(o => (
+              <button
+                key={getKey(o)}
+                type="button"
+                onClick={() => { onChange(getKey(o)); setOpen(false); setQ(''); }}
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-emerald-50 border-b border-slate-50 last:border-0 ${
+                  getKey(o) === value ? 'bg-emerald-50' : ''
+                }`}
+              >
+                {renderOption ? renderOption(o) : getLabel(o)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ============================ FORM PAGE ============================ */
+const NewSampleForm = ({ onCancel, onSaved, onPrint, prefill }) => {
+  const [liveLots, setLiveLots] = useState(() => getLiveLots());
+
+  const [sourceType, setSourceType] = useState(() => {
+    if (prefill?.triggerType === 'gr') return 'raw_material';
+    if (prefill?.triggerType === 'wo') return 'work_order';
+    if (prefill?.triggerType === 'stability') return 'stability';
+    if (prefill?.triggerType === 'complaint') return 'returned';
+    return 'work_order';
+  });
+  const [sourceRef,  setSourceRef]  = useState(prefill?.sourceRef || '');
+  const [productCode, setProductCode] = useState(prefill?.productCode || '');
+  const [lotNumber, setLotNumber] = useState(prefill?.lotNumber || '');
+
+  // Item 3: Retain Sample storage
+  const [retainStorage,  setRetainStorage]  = useState('WH-RETAIN-01');
+  const [retainExpiry,   setRetainExpiry]   = useState('');
+  const [retainShelf,    setRetainShelf]    = useState('');
+  const [mfgDate, setMfgDate] = useState('');
+  const [expDate, setExpDate] = useState('');
+  const [retestDate, setRetestDate] = useState('');
+  const [storageCond, setStorageCond] = useState('');
+  const [receiveDate, setReceiveDate] = useState(todayISO());
+  const [note, setNote] = useState('');
+  // Sampling requisition fields
+  const [requestedBy, setRequestedBy] = useState('QC Operator');
+  const [purpose, setPurpose] = useState('routine');
+  // testConfig: { [code]: { selected: bool, mode: 'usp'|'sqrt'|'fixed', fixedQty: number } }
+  const [testConfig, setTestConfig] = useState({});
+  const [bufferPct, setBufferPct] = useState(20);
+  const [showSuccess, setShowSuccess] = useState(null); // saved sample (+ req data)
+
+  const resetForm = () => {
+    setSourceType('work_order');
+    setSourceRef('');
+    setProductCode('');
+    setLotNumber('');
+    setMfgDate('');
+    setExpDate('');
+    setRetestDate('');
+    setStorageCond('');
+    setReceiveDate(todayISO());
+    setNote('');
+    setRequestedBy('QC Operator');
+    setPurpose('routine');
+    setTestConfig({});
+    setBufferPct(20);
+    setShowSuccess(null);
+    setLiveLots(getLiveLots());
+  };
+
+  const selectedProduct = useMemo(
+    () => PRODUCTS.find(p => p.code === productCode),
+    [productCode]
+  );
+
+  // Mapping: ประเภทแหล่งที่มา → หมวดสินค้าที่ allowed
+  // raw_material = วัตถุดิบ + packaging · ที่เหลือ = finished good
+  const allowedCategories = useMemo(() => {
+    const map = {
+      raw_material: ['RM', 'PK'],
+      work_order:   ['FG'],
+      in_process:   ['FG'],
+      finished:     ['FG'],
+      stability:    ['FG'],
+      returned:     ['FG'],
+    };
+    return map[sourceType] || null;   // null = ไม่ filter
+  }, [sourceType]);
+
+  // Products ที่ผ่าน 2 filter: (1) มี lot กักกัน  (2) category ตรงกับ sourceType
+  const availableProducts = useMemo(() => {
+    return PRODUCTS.filter(p => {
+      const hasLot = liveLots.some(l => l.productCode === p.code);
+      if (!hasLot) return false;
+      if (!allowedCategories) return true;
+      return allowedCategories.includes(p.category);
+    });
+  }, [allowedCategories, liveLots]);
+
+  // เมื่อเปลี่ยน sourceType ถ้า productCode ปัจจุบันไม่อยู่ใน allowed → เคลียร์
+  useEffect(() => {
+    if (!productCode) return;
+    const inList = availableProducts.some(p => p.code === productCode);
+    if (!inList) setProductCode('');
+  }, [sourceType, availableProducts]);
+
+  // Lots ของสินค้าที่เลือก (สถานะกักกัน รอ QC) — ใช้ live quantity
+  const productLots = useMemo(
+    () => liveLots.filter(l => l.productCode === productCode),
+    [productCode, liveLots]
+  );
+
+  const selectedLot = useMemo(
+    () => productLots.find(l => l.lotNumber === lotNumber),
+    [productLots, lotNumber]
+  );
+
+  const panel = useMemo(() => {
+    if (!selectedProduct) return [];
+    return TEST_PANELS[selectedProduct.category] || [];
+  }, [selectedProduct]);
+
+  // เมื่อเปลี่ยนสินค้า: เคลียร์ค่าที่ผูกกับ lot + init test config
+  useEffect(() => {
+    setLotNumber('');
+    setMfgDate('');
+    setExpDate('');
+    setRetestDate('');
+    setStorageCond('');
+    const next = {};
+    panel.forEach(t => {
+      next[t.code] = { selected: true, mode: 'usp', fixedQty: t.sampleSize };
+    });
+    setTestConfig(next);
+  }, [productCode]);
+
+  // คำนวณ sample size ตามโหมด
+  const computeSampleSize = (test, cfg, lotQty) => {
+    if (!cfg) return 0;
+    if (cfg.mode === 'usp')   return test.sampleSize;
+    if (cfg.mode === 'sqrt')  return lotQty > 0 ? Math.ceil(Math.sqrt(lotQty) + 1) : 0;
+    if (cfg.mode === 'fixed') return Math.max(0, Number(cfg.fixedQty) || 0);
+    return test.sampleSize;
+  };
+
+  // เมื่อเลือก lot → auto-fill ทุกฟิลด์ที่ผูกกับ lot
+  const applyLot = (lotNum) => {
+    setLotNumber(lotNum);
+    const lot = liveLots.find(l => l.productCode === productCode && l.lotNumber === lotNum);
+    if (!lot) return;
+    setMfgDate(lot.mfgDate || '');
+    setExpDate(lot.expDate || '');
+    setRetestDate(lot.retestDate || '');
+    setStorageCond(lot.storageCond || '');
+    if (!sourceRef.trim() && lot.sourceRef) setSourceRef(lot.sourceRef);
+    // Auto-derive sourceType จาก prefix ของ ref + category
+    if (lot.sourceRef?.startsWith('WO-')) {
+      setSourceType('work_order');
+    } else if (lot.sourceRef?.startsWith('PO-')) {
+      setSourceType(selectedProduct?.category === 'PK' ? 'raw_material' : 'raw_material');
+    }
+  };
+
+  // คำนวณจำนวนสุ่ม — เก็บผลลัพธ์ต่อ test (ใช้ทั้งใน summary และ print)
+  const lotQty = selectedLot?.quantity || 0;
+  const computedTests = useMemo(() => {
+    return panel
+      .filter(t => testConfig[t.code]?.selected)
+      .map(t => {
+        const cfg = testConfig[t.code];
+        return {
+          ...t,
+          mode: cfg.mode,
+          fixedQty: cfg.fixedQty,
+          computedQty: computeSampleSize(t, cfg, lotQty),
+        };
+      });
+  }, [panel, testConfig, lotQty]);
+
+  const testSampleSum = computedTests.reduce((s, t) => s + t.computedQty, 0);
+  const bufferQty = Math.ceil(testSampleSum * bufferPct / 100);
+  const totalSampleQty = testSampleSum + bufferQty;
+
+  const exceedsStock = selectedLot && totalSampleQty > selectedLot.quantity;
+  const canSubmit = sourceType && productCode && lotNumber && selectedLot &&
+                    testSampleSum > 0 && totalSampleQty > 0 && !exceedsStock && receiveDate;
+
+  const submit = () => {
+    if (!canSubmit) return;
+
+    // Revalidate stock against latest persisted state (กัน stale หาก tab อื่นเบิกไปก่อน)
+    const masterLot = QUARANTINE_LOTS.find(l => l.productCode === productCode && l.lotNumber === lotNumber);
+    if (!masterLot) {
+      alert('ไม่พบ lot นี้ในระบบ — กรุณาเลือกใหม่');
+      return;
+    }
+    const overrides = loadLotOverrides();
+    const k = `${productCode}|${lotNumber}`;
+    const liveQty = overrides[k] !== undefined ? overrides[k] : masterLot.quantity;
+    if (liveQty < totalSampleQty) {
+      alert(`คงเหลือใน lot ไม่พอ: ${liveQty} ชิ้น (ต้องเบิก ${totalSampleQty})\nอาจมีผู้ใช้อื่นเบิกไปก่อน — โปรด refresh แล้วลองใหม่`);
+      setLiveLots(getLiveLots());
+      return;
+    }
+
+    const reqCode = newReqCode();
+    const sampleCode = newSampleCode();
+    const now = new Date().toISOString();
+
+    const sample = {
+      id: 'qc_' + Date.now(),
+      code: sampleCode,
+      createdAt: now,
+      sourceType,
+      sourceRef: sourceRef.trim(),
+      productCode,
+      productName: selectedProduct?.name || '',
+      productNameEn: selectedProduct?.nameEn || '',
+      productCategory: selectedProduct?.category || '',
+      lotNumber: lotNumber.trim(),
+      quantity: String(totalSampleQty),
+      unit: 'sample',
+      productUnit: selectedProduct?.unit || '',
+      mfgDate, expDate, retestDate,
+      storageCond,
+      receiveDate, note: note.trim(),
+      panel: computedTests,
+      status: 'received',
+      // requisition fields (in-line)
+      requisitionCode: reqCode,
+      requestedBy: requestedBy.trim(),
+      purpose,
+      testSampleSum,
+      bufferPct,
+      bufferQty,
+      // Item 3: Retain sample storage
+      retainStorage,
+      retainShelf,
+      retainExpiry,
+    };
+    const all = loadSamples();
+    all.unshift(sample);
+    saveSamples(all);
+
+    // ตัดสต็อก quarantine (ใช้ค่า liveQty ที่เพิ่ง revalidate)
+    overrides[k] = liveQty - totalSampleQty;
+    saveLotOverrides(overrides);
+
+    setShowSuccess(sample);
+  };
+
+  return (
+    <div className="p-6 lg:p-8 max-w-4xl mx-auto">
+
+      {/* Breadcrumb */}
+      <nav className="text-sm text-slate-500 mb-3">
+        Quality / QC Entry / <span className="text-slate-700 font-semibold">New</span>
+      </nav>
+
+      {/* Header */}
+      <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-cyan-100 text-cyan-700 flex items-center justify-center">
+            <Icon name="flask" className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">ลงทะเบียน + ขอเบิกตัวอย่าง QC</h1>
+            <p className="text-sm text-slate-500">เบิก lot กักกัน → ตัดสต็อก + ลงทะเบียนตัวอย่างในใบเดียว</p>
+          </div>
+        </div>
+        <button
+          onClick={onCancel}
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50"
+        >
+          <Icon name="back" className="w-4 h-4" /> ยกเลิก
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* LEFT: Form */}
+      <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+
+        {/* === Section: ผู้ขอเบิก === */}
+        <div className="mb-6">
+          <h3 className="text-sm font-bold text-slate-700 mb-3">ผู้ขอเบิก / Request</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="field-wrap">
+              <label className="field-label">ผู้ขอเบิก</label>
+              <input className="field-input" value={requestedBy} onChange={e => setRequestedBy(e.target.value)} />
+            </div>
+            <div className="field-wrap">
+              <label className="field-label">วันที่</label>
+              <input type="date" className="field-input" value={receiveDate} onChange={e => setReceiveDate(e.target.value)} />
+            </div>
+            <div className="field-wrap sm:col-span-2">
+              <label className="field-label">วัตถุประสงค์</label>
+              <SearchableDropdown
+                value={purpose}
+                onChange={setPurpose}
+                options={PURPOSE_OPTIONS}
+                getKey={o => o.value}
+                getLabel={o => o.label}
+                placeholder="เลือก"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* === Section: Source === */}
+        <div className="mb-6">
+          <h3 className="text-sm font-bold text-slate-700 mb-3">ที่มาของตัวอย่าง / Source</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="field-wrap">
+              <label className="field-label">ประเภทแหล่งที่มา</label>
+              <SearchableDropdown
+                value={sourceType}
+                onChange={setSourceType}
+                options={SOURCE_TYPES}
+                getKey={o => o.value}
+                getLabel={o => o.label}
+                placeholder="เลือกประเภท"
+              />
+            </div>
+            <div className="field-wrap">
+              <label className="field-label">อ้างอิง (WO#, Lot#, ฯลฯ)</label>
+              <input
+                className="field-input"
+                value={sourceRef}
+                onChange={e => setSourceRef(e.target.value)}
+                placeholder="เช่น WO-2569-0142"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* === Section: Product + Lot === */}
+        <div className="mb-6">
+          <h3 className="text-sm font-bold text-slate-700 mb-3">สินค้า / Lot ที่ขอเบิก</h3>
+          <div className="space-y-4">
+            <div className="field-wrap">
+              <label className="field-label flex items-center gap-1.5 flex-wrap">
+                <span>สินค้า (เฉพาะที่มี lot สถานะกักกัน)</span>
+                {allowedCategories && (
+                  <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
+                    ⚡ กรองตาม {allowedCategories.join('+')} ({availableProducts.length} รายการ)
+                  </span>
+                )}
+              </label>
+              <SearchableDropdown
+                value={productCode}
+                onChange={setProductCode}
+                options={availableProducts}
+                getKey={o => o.code}
+                getLabel={o => `${o.code} — ${o.name} / ${o.nameEn}`}
+                renderOption={o => (
+                  <div className="flex items-baseline gap-2">
+                    <code className="text-[11px] font-semibold text-slate-500">{o.code}</code>
+                    <span className="text-slate-900">— {o.name}</span>
+                    <span className="text-slate-400 text-xs">/ {o.nameEn}</span>
+                  </div>
+                )}
+                placeholder={
+                  !sourceType
+                    ? 'เลือก "ประเภทแหล่งที่มา" ก่อน'
+                    : availableProducts.length === 0
+                      ? `ไม่มีสินค้า (${allowedCategories?.join('/') || '?'}) ที่มี lot กักกัน`
+                      : 'เลือกสินค้า'
+                }
+              />
+              {sourceType && availableProducts.length === 0 && (
+                <div className="mt-1.5 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 flex items-start gap-1.5">
+                  <span>⚠</span>
+                  <span>ไม่มีสินค้าใน lot กักกันที่ตรงกับ "<span className="font-semibold">{SOURCE_TYPES.find(s => s.value === sourceType)?.label}</span>" — ลองเปลี่ยนประเภทแหล่งที่มา</span>
+                </div>
+              )}
+            </div>
+
+            <div className="field-wrap">
+              <label className="field-label">
+                Lot Number
+                {productCode && (
+                  <span className="ml-1 text-[10px] font-medium text-emerald-600">
+                    · {productLots.length} lot กักกัน
+                  </span>
+                )}
+              </label>
+              {productCode && productLots.length > 0 ? (
+                <SearchableDropdown
+                  value={lotNumber}
+                  onChange={applyLot}
+                  options={productLots}
+                  getKey={o => o.lotNumber}
+                  getLabel={o => o.lotNumber}
+                  renderOption={o => (
+                    <div>
+                      <div className="flex items-baseline justify-between">
+                        <div className="font-mono text-[13px] font-semibold text-slate-900">{o.lotNumber}</div>
+                        <div className="text-[11px] text-slate-500">{o.sourceRef}</div>
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">
+                        คงเหลือ {o.quantity.toLocaleString()} {selectedProduct?.unit}
+                        {o.expDate && <span> · EXP {fmtDate(o.expDate)}</span>}
+                      </div>
+                    </div>
+                  )}
+                  placeholder="เลือก Lot"
+                />
+              ) : (
+                <input
+                  className="field-input"
+                  value={lotNumber}
+                  onChange={e => setLotNumber(e.target.value)}
+                  placeholder={productCode ? 'ไม่มี lot กักกัน — เลือกสินค้าอื่น' : 'เลือกสินค้าก่อน'}
+                  disabled={!productCode}
+                />
+              )}
+            </div>
+
+            {selectedLot && (
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div><span className="text-slate-500">คงเหลือ:</span> <span className="font-bold text-slate-900">{selectedLot.quantity.toLocaleString()} {selectedProduct?.unit}</span></div>
+                <div><span className="text-slate-500">วันที่ผลิต:</span> {fmtDate(selectedLot.mfgDate)}</div>
+                <div><span className="text-slate-500">วันหมดอายุ:</span> {fmtDate(selectedLot.expDate)}</div>
+                <div><span className="text-slate-500">Retest:</span> {fmtDate(selectedLot.retestDate)}</div>
+                <div className="col-span-2 sm:col-span-4"><span className="text-slate-500">เก็บ:</span> {selectedLot.storageCond || '—'}</div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="field-wrap">
+                <label className="field-label">วันที่ผลิต</label>
+                <input type="date" className="field-input" value={mfgDate} onChange={e => setMfgDate(e.target.value)} />
+              </div>
+              <div className="field-wrap">
+                <label className="field-label">วันหมดอายุ</label>
+                <input type="date" className="field-input" value={expDate} onChange={e => setExpDate(e.target.value)} />
+              </div>
+              <div className="field-wrap">
+                <label className="field-label">Retest date</label>
+                <input type="date" className="field-input" value={retestDate} onChange={e => setRetestDate(e.target.value)} />
+              </div>
+              <div className="field-wrap">
+                <label className="field-label">สภาพการเก็บ (Storage)</label>
+                <SearchableDropdown
+                  value={storageCond}
+                  onChange={setStorageCond}
+                  options={STORAGE_CONDS.map(s => ({ value: s, label: s }))}
+                  getKey={o => o.value}
+                  getLabel={o => o.label}
+                  placeholder="สภาพการเก็บ"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* === Section: รายการทดสอบ === */}
+        {productCode && (
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-slate-700 mb-1">
+              รายการทดสอบ / Test Panel
+              {selectedProduct && (
+                <span className="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-700">
+                  {CATEGORY_LABEL[selectedProduct.category]}
+                </span>
+              )}
+            </h3>
+            <p className="text-xs text-slate-500 mb-3">ติ๊กเอาออกได้หาก lot นี้ไม่ต้องทดสอบทุกรายการ — จำนวนสุ่มคำนวณจาก test ที่เลือก</p>
+
+            {panel.length === 0 ? (
+              <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+                ⚠ ไม่พบ test panel มาตรฐานสำหรับหมวดนี้
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                {panel.map(t => {
+                  const cfg = testConfig[t.code] || { selected: false, mode: 'usp', fixedQty: t.sampleSize };
+                  const qty = computeSampleSize(t, cfg, lotQty);
+                  const updateCfg = (patch) => setTestConfig(s => ({ ...s, [t.code]: { ...cfg, ...patch } }));
+                  return (
+                    <div
+                      key={t.code}
+                      className={`rounded-lg border ${
+                        cfg.selected ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 p-3">
+                        <input
+                          type="checkbox"
+                          checked={cfg.selected}
+                          onChange={e => updateCfg({ selected: e.target.checked })}
+                          className="w-4 h-4 rounded accent-emerald-600 cursor-pointer"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-slate-900 truncate">{t.name}</div>
+                          <code className="text-[10px] text-slate-500">{t.code}</code>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-bold text-emerald-700">{cfg.selected ? qty : '—'}</div>
+                          <div className="text-[10px] text-slate-500">ชิ้น</div>
+                        </div>
+                      </div>
+                      {cfg.selected && (
+                        <div className="px-3 pb-3 pl-10">
+                          <div className="flex items-center flex-wrap gap-1.5 text-[11px]">
+                            <span className="text-slate-500 mr-1">สูตรสุ่ม:</span>
+                            {[
+                              { key: 'usp',   label: 'USP มาตรฐาน', hint: `${t.sampleSize} ชิ้น` },
+                              { key: 'sqrt',  label: '√n+1',         hint: lotQty > 0 ? `${Math.ceil(Math.sqrt(lotQty)+1)} ชิ้น` : 'รอ lot' },
+                              { key: 'fixed', label: 'ค่าคงที่',     hint: 'กำหนดเอง' },
+                            ].map(opt => (
+                              <button
+                                key={opt.key}
+                                type="button"
+                                onClick={() => updateCfg({ mode: opt.key })}
+                                aria-label={`สูตรสุ่ม ${opt.label} สำหรับ ${t.name}`}
+                                aria-pressed={cfg.mode === opt.key}
+                                className={`px-2 py-1 rounded-md border text-[11px] font-medium ${
+                                  cfg.mode === opt.key
+                                    ? 'bg-emerald-600 text-white border-emerald-600'
+                                    : 'bg-white text-slate-600 border-slate-300 hover:border-emerald-300'
+                                }`}
+                                title={opt.hint}
+                              >
+                                {opt.label}
+                              </button>
+                            ))}
+                            {cfg.mode === 'fixed' && (
+                              <input
+                                type="number"
+                                min="0"
+                                value={cfg.fixedQty}
+                                onChange={e => updateCfg({ fixedQty: Number(e.target.value) })}
+                                className="w-20 ml-1 px-2 py-1 text-[11px] border border-slate-300 rounded-md focus:outline-none focus:border-emerald-400"
+                                placeholder="ชิ้น"
+                              />
+                            )}
+                            <span className="ml-auto text-[10px] text-slate-500">
+                              {cfg.mode === 'usp'  && <>ตาม USP: {t.sampleSize}</>}
+                              {cfg.mode === 'sqrt' && lotQty > 0 && <>⌈√{lotQty.toLocaleString()}+1⌉ = {qty}</>}
+                              {cfg.mode === 'sqrt' && lotQty === 0 && <>ต้องเลือก lot ก่อน</>}
+                              {cfg.mode === 'fixed' && <>กำหนดเอง</>}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* === Section: หมายเหตุ === */}
+        <div className="field-wrap">
+          <label className="field-label">หมายเหตุ</label>
+          <textarea
+            className="field-input min-h-[80px] resize-y"
+            value={note}
+            onChange={e => setNote(e.target.value)}
+            placeholder="ระบุข้อสังเกตเพิ่มเติม..."
+          />
+        </div>
+
+      </div>
+
+      {/* RIGHT: Summary sticky */}
+      <div className="lg:col-span-1">
+        <div className="bg-white border-2 border-emerald-200 rounded-2xl p-5 shadow-sm sticky top-6">
+          <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+            <Icon name="flask" className="w-4 h-4 text-emerald-600" />
+            สรุปจำนวนสุ่ม
+          </h3>
+
+          <div className="space-y-3">
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs text-slate-500">รวมจาก test ที่เลือก ({computedTests.length} test)</span>
+              <span className="text-lg font-bold text-slate-900">{testSampleSum}</span>
+            </div>
+
+            <div>
+              <label className="field-label flex items-baseline justify-between">
+                <span>เผื่อ retain sample</span>
+                <span className="text-emerald-700">+ {bufferQty} ชิ้น</span>
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min="0" max="50" step="5"
+                  value={bufferPct}
+                  onChange={e => setBufferPct(Number(e.target.value))}
+                  className="flex-1 accent-emerald-600"
+                />
+                <span className="text-sm font-mono w-12 text-right">{bufferPct}%</span>
+              </div>
+            </div>
+
+            {/* Item 3: Retain Sample storage */}
+            {bufferQty > 0 && (
+              <div className="bg-violet-50 border border-violet-200 rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-violet-800">
+                  <span>📦</span> Retain Sample — สถานที่เก็บ
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">คลังเก็บ retain</label>
+                  <select
+                    value={retainStorage}
+                    onChange={e => setRetainStorage(e.target.value)}
+                    className="w-full mt-1 px-2 py-1.5 text-sm border border-violet-200 rounded-md bg-white focus:outline-none focus:border-violet-500"
+                  >
+                    <option value="WH-RETAIN-01">WH-RETAIN-01 — Retain Room (อุณหภูมิห้อง)</option>
+                    <option value="WH-RETAIN-02">WH-RETAIN-02 — Retain Cold (2-8°C)</option>
+                    <option value="WH-RETAIN-03">WH-RETAIN-03 — Stability Chamber 25°C/60%RH</option>
+                    <option value="WH-RETAIN-04">WH-RETAIN-04 — Stability Chamber 40°C/75%RH</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">ชั้นวาง</label>
+                    <input
+                      value={retainShelf}
+                      onChange={e => setRetainShelf(e.target.value)}
+                      placeholder="A-12, B-03..."
+                      className="w-full mt-1 px-2 py-1.5 text-sm font-mono border border-violet-200 rounded-md bg-white focus:outline-none focus:border-violet-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">หมดอายุ retain</label>
+                    <input
+                      type="date"
+                      value={retainExpiry}
+                      onChange={e => setRetainExpiry(e.target.value)}
+                      className="w-full mt-1 px-2 py-1.5 text-sm border border-violet-200 rounded-md bg-white focus:outline-none focus:border-violet-500"
+                    />
+                  </div>
+                </div>
+                <div className="text-[10px] text-violet-700 leading-relaxed">
+                  ⓘ Retain sample ต้องเก็บ ≥ 1 ปีหลัง expire ของ lot (FDA 21 CFR 211.170)
+                </div>
+              </div>
+            )}
+
+            <div className="pt-3 border-t border-slate-200 flex items-baseline justify-between">
+              <span className="text-sm font-semibold text-slate-700">ต้องเบิกทั้งหมด</span>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-emerald-700">{totalSampleQty}</div>
+                <div className="text-[10px] text-slate-500">ชิ้นตัวอย่าง</div>
+              </div>
+            </div>
+
+            {selectedLot && (
+              <div className="bg-slate-50 rounded-lg p-3 text-xs space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">คงเหลือก่อนเบิก</span>
+                  <span className="font-mono">{selectedLot.quantity.toLocaleString()} {selectedProduct?.unit}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">หักจำนวนเบิก</span>
+                  <span className="font-mono text-red-600">− {totalSampleQty}</span>
+                </div>
+                <div className="flex justify-between pt-1 border-t border-slate-200">
+                  <span className="font-semibold text-slate-700">คงเหลือหลังเบิก</span>
+                  <span className={`font-mono font-bold ${exceedsStock ? 'text-red-600' : 'text-slate-900'}`}>
+                    {(selectedLot.quantity - totalSampleQty).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {exceedsStock && (
+              <div className="bg-red-50 border border-red-200 rounded-md px-2 py-1.5 text-[11px] text-red-700">
+                ⚠ จำนวนที่ขอเบิกเกินคงเหลือใน lot
+              </div>
+            )}
+          </div>
+
+          <button
+            disabled={!canSubmit}
+            onClick={submit}
+            className={`w-full mt-5 px-5 py-3 text-sm font-bold rounded-lg transition-all ${
+              canSubmit
+                ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+            }`}
+          >
+            ยืนยันเบิก + ลงทะเบียน
+          </button>
+          <button
+            onClick={onCancel}
+            className="w-full mt-2 px-5 py-2 text-sm font-semibold text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50"
+          >
+            ยกเลิก
+          </button>
+          <p className="text-[11px] text-slate-500 mt-2 text-center">
+            จะตัดสต็อกและสร้าง QC sample ในระบบทันที
+          </p>
+        </div>
+      </div>
+      </div>
+
+      {/* SUCCESS MODAL */}
+      {showSuccess && (
+        <div className="fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-7">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-11 h-11 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+                <Icon name="check" className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-slate-900">เบิกตัวอย่างเรียบร้อย</h3>
+                <p className="text-sm text-slate-600 mt-0.5">
+                  ใบ <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs">{showSuccess.requisitionCode}</code> · QC <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs">{showSuccess.code}</code>
+                </p>
+              </div>
+              <button onClick={() => onSaved(showSuccess)} className="text-slate-400 hover:text-slate-700">
+                <Icon name="x" className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="bg-slate-50 rounded-lg p-3 text-sm space-y-1 mb-5">
+              <div><span className="text-slate-500">สินค้า:</span> <span className="font-semibold">{showSuccess.productCode}</span> — {showSuccess.productName}</div>
+              <div><span className="text-slate-500">Lot:</span> <span className="font-semibold">{showSuccess.lotNumber}</span></div>
+              <div><span className="text-slate-500">เบิก:</span> <span className="font-semibold">{showSuccess.quantity} ชิ้น</span> <span className="text-slate-400 text-xs">(test {showSuccess.testSampleSum} + buffer {showSuccess.bufferQty})</span></div>
+              <div><span className="text-slate-500">Test Panel:</span> <span className="font-semibold">{showSuccess.panel.length} รายการ</span></div>
+            </div>
+            <p className="text-sm text-slate-600 mb-3">ต้องการทำอะไรต่อ?</p>
+            <div className="space-y-2">
+              <button
+                onClick={() => onPrint(showSuccess)}
+                className="w-full bg-emerald-600 text-white font-semibold py-3 rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2"
+              >
+                <Icon name="print" className="w-4 h-4" /> พิมพ์ใบขอเบิก
+              </button>
+              <button
+                onClick={resetForm}
+                className="w-full bg-white border border-slate-300 text-slate-700 font-semibold py-3 rounded-lg hover:bg-slate-50 flex items-center justify-center gap-2"
+              >
+                <Icon name="plus" className="w-4 h-4" /> เบิกตัวอย่างใหม่
+              </button>
+              <button
+                onClick={() => onSaved(showSuccess)}
+                className="w-full text-slate-600 text-sm font-medium py-2 hover:text-slate-900"
+              >
+                ไปหน้ารายการ →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ============================ PRINT VIEW ============================ */
+const RequisitionPrint = ({ sample, onBack }) => {
+  return (
+    <div className="p-6 lg:p-8 max-w-3xl mx-auto">
+      {/* Actions (no-print) */}
+      <div className="no-print mb-4 flex items-center justify-between flex-wrap gap-2">
+        <button onClick={onBack} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50">
+          <Icon name="back" className="w-4 h-4" /> กลับไปรายการ
+        </button>
+        <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700">
+          <Icon name="print" className="w-4 h-4" /> พิมพ์ใบขอเบิก
+        </button>
+      </div>
+
+      <div className="print-area bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
+        <div className="flex items-start justify-between mb-6 pb-4 border-b-2 border-slate-900">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 text-white flex items-center justify-center">
+                <Icon name="leaf" className="w-5 h-5" />
+              </div>
+              <div className="font-bold text-lg">Herbal ERP — Quality Control</div>
+            </div>
+            <div className="text-xs text-slate-500">Sampling Requisition (ใบขอเบิกสุ่มตัวอย่าง)</div>
+          </div>
+          <div className="text-right">
+            <div className="text-[10px] text-slate-500">เลขที่ใบ</div>
+            <div className="font-mono font-bold text-lg">{sample.requisitionCode}</div>
+            <div className="text-[10px] text-slate-500 mt-1">วันที่ {fmtDate(sample.receiveDate)}</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-5 text-sm">
+          <div>
+            <div className="text-[10px] uppercase text-slate-500 font-semibold mb-0.5">ผู้ขอเบิก</div>
+            <div>{sample.requestedBy}</div>
+          </div>
+          <div>
+            <div className="text-[10px] uppercase text-slate-500 font-semibold mb-0.5">วัตถุประสงค์</div>
+            <div>{(PURPOSE_LABEL[sample.purpose] || sample.purpose).split('—')[0].trim()}</div>
+          </div>
+          <div className="col-span-2">
+            <div className="text-[10px] uppercase text-slate-500 font-semibold mb-0.5">สินค้า / Lot</div>
+            <div className="font-medium">{sample.productCode} — {sample.productName}</div>
+            <div className="text-xs text-slate-500">Lot: <span className="font-mono font-semibold">{sample.lotNumber}</span> · อ้างอิง {sample.sourceRef || '—'}</div>
+          </div>
+        </div>
+
+        <h4 className="text-sm font-bold text-slate-700 mb-2">รายการทดสอบที่ขอตัวอย่าง</h4>
+        <table className="w-full text-sm mb-5 border border-slate-200">
+          <thead className="bg-slate-50 text-[11px] uppercase">
+            <tr className="text-left">
+              <th className="px-3 py-2">รหัส</th>
+              <th className="px-3 py-2">หัวข้อทดสอบ</th>
+              <th className="px-3 py-2">สูตรสุ่ม</th>
+              <th className="px-3 py-2 text-right">จำนวน</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sample.panel.map(t => {
+              const modeLabel = t.mode === 'usp' ? 'USP' : t.mode === 'sqrt' ? '√n+1' : t.mode === 'fixed' ? 'ค่าคงที่' : 'USP';
+              return (
+                <tr key={t.code} className="border-t border-slate-100">
+                  <td className="px-3 py-2 font-mono text-xs">{t.code}</td>
+                  <td className="px-3 py-2">{t.name}</td>
+                  <td className="px-3 py-2 text-xs text-slate-600">{modeLabel}</td>
+                  <td className="px-3 py-2 text-right font-semibold">{t.computedQty != null ? t.computedQty : t.sampleSize} ชิ้น</td>
+                </tr>
+              );
+            })}
+            <tr className="border-t border-slate-300 bg-slate-50">
+              <td className="px-3 py-2 font-semibold" colSpan="3">รวมจาก test</td>
+              <td className="px-3 py-2 text-right font-bold">{sample.testSampleSum}</td>
+            </tr>
+            <tr className="border-t border-slate-100">
+              <td className="px-3 py-2" colSpan="3">+ เผื่อ retain sample ({sample.bufferPct}%)</td>
+              <td className="px-3 py-2 text-right">{sample.bufferQty}</td>
+            </tr>
+            <tr className="border-t-2 border-slate-900 bg-emerald-50">
+              <td className="px-3 py-3 font-bold" colSpan="3">รวมที่เบิก</td>
+              <td className="px-3 py-3 text-right font-bold text-lg">{sample.quantity}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        {sample.note && (
+          <div className="mb-5">
+            <div className="text-[10px] uppercase text-slate-500 font-semibold mb-1">หมายเหตุ</div>
+            <div className="text-sm bg-slate-50 rounded p-2 border border-slate-200">{sample.note}</div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-6 mt-12 pt-4 text-sm">
+          <div>
+            <div className="border-t border-slate-400 pt-2 text-center">
+              <div className="text-[10px] text-slate-500">ผู้ขอเบิก / QC</div>
+              <div className="font-medium mt-6">{sample.requestedBy}</div>
+            </div>
+          </div>
+          <div>
+            <div className="border-t border-slate-400 pt-2 text-center">
+              <div className="text-[10px] text-slate-500">ผู้ปล่อยตัวอย่าง / Warehouse</div>
+              <div className="font-medium mt-6">_______________________</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 pt-3 border-t border-slate-200 text-[10px] text-slate-400 flex justify-between">
+          <span>QC Sample สร้างอัตโนมัติ: {sample.code}</span>
+          <span>สร้างเมื่อ {new Date(sample.createdAt).toLocaleString('th-TH')}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ============================ LIST PAGE ============================ */
+const SOURCE_LABEL = Object.fromEntries(SOURCE_TYPES.map(s => [s.value, s.label]));
+
+const StatusBadge = ({ status }) => {
+  const map = {
+    received: { bg: 'bg-sky-100',     text: 'text-sky-700',     label: 'รับเข้าแล้ว' },
+    testing:  { bg: 'bg-amber-100',   text: 'text-amber-700',   label: 'กำลังทดสอบ' },
+    passed:   { bg: 'bg-emerald-100', text: 'text-emerald-700', label: 'ผ่าน' },
+    failed:   { bg: 'bg-red-100',     text: 'text-red-700',     label: 'ไม่ผ่าน' },
+  };
+  const s = map[status] || map.received;
+  return <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${s.bg} ${s.text}`}>{s.label}</span>;
+};
+
+/* ============================ PENDING TASKS PANEL ============================ */
+const PendingTasksPanel = ({ tasks, onConvert, onDismiss }) => {
+  const [collapsed, setCollapsed] = useState(false);
+  const pending = tasks.filter(t => t.status === 'pending');
+  if (pending.length === 0) return null;
+
+  return (
+    <div className="mb-5 rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white overflow-hidden">
+      <div className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-amber-100/40" onClick={() => setCollapsed(!collapsed)}>
+        <div className="flex items-center gap-2">
+          <span className="text-xl">🔔</span>
+          <div>
+            <div className="font-bold text-amber-900 text-sm">Pending QC Tasks <span className="ml-1 bg-amber-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{pending.length}</span></div>
+            <div className="text-[11px] text-amber-700">ระบบสร้างให้อัตโนมัติจาก trigger ต่าง ๆ — กดเพื่อเริ่มลงทะเบียน</div>
+          </div>
+        </div>
+        <span className="text-amber-700 text-xs font-bold">{collapsed ? '▼ ขยาย' : '▲ ย่อ'}</span>
+      </div>
+      {!collapsed && (
+        <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+          {pending.map(t => {
+            const meta = TRIGGER_META[t.triggerType] || TRIGGER_META.gr;
+            const palette = {
+              cyan:    'bg-cyan-50 border-cyan-300 text-cyan-800',
+              emerald: 'bg-emerald-50 border-emerald-300 text-emerald-800',
+              violet:  'bg-violet-50 border-violet-300 text-violet-800',
+              red:     'bg-red-50 border-red-300 text-red-800',
+            }[meta.color];
+            const priorityClass = {
+              critical: 'bg-red-100 text-red-700',
+              high:     'bg-orange-100 text-orange-700',
+              medium:   'bg-amber-100 text-amber-700',
+              low:      'bg-slate-100 text-slate-700',
+            }[t.priority];
+            return (
+              <div key={t.id} className={`rounded-xl border-2 ${palette} p-3`}>
+                <div className="flex items-start gap-2 mb-2">
+                  <span className="text-base">{meta.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white border border-current">{meta.label}</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${priorityClass}`}>{t.priority.toUpperCase()}</span>
+                    </div>
+                    <div className="font-semibold text-sm leading-tight">{t.title}</div>
+                    <div className="text-[11px] text-slate-600 mt-1 font-mono">
+                      {t.productCode} · Lot {t.lotNumber} · {t.sourceRef}
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-1">ครบกำหนด: <span className="font-semibold">{t.dueDate}</span></div>
+                  </div>
+                </div>
+                <div className="flex gap-1.5 pt-2 border-t border-current/20">
+                  <button onClick={() => onConvert(t)} className="flex-1 px-2 py-1.5 rounded-md bg-white border border-current text-[11px] font-bold hover:bg-current/10">
+                    ▶ ลงทะเบียน
+                  </button>
+                  <button onClick={() => onDismiss(t.id)} className="px-2 py-1.5 rounded-md text-[11px] text-slate-500 hover:bg-white">
+                    ✕ ปิด
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ============================ NOTIFICATION BELL ============================ */
+const NotificationBell = ({ notifications, onMarkRead }) => {
+  const [open, setOpen] = useState(false);
+  const unread = notifications.filter(n => !n.read).length;
+  const fmtTime = (iso) => {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return 'เมื่อสักครู่';
+    if (m < 60) return `${m} นาทีที่แล้ว`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h} ชม.ที่แล้ว`;
+    return `${Math.floor(h/24)} วันก่อน`;
+  };
+  return (
+    <div className="relative">
+      <button onClick={() => setOpen(!open)}
+        className="relative w-10 h-10 rounded-lg hover:bg-slate-100 flex items-center justify-center">
+        <span className="text-xl">🔔</span>
+        {unread > 0 && (
+          <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+            {unread > 9 ? '9+' : unread}
+          </span>
+        )}
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-slate-200 z-40 overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+              <div className="font-bold text-sm">การแจ้งเตือน</div>
+              {unread > 0 && (
+                <button onClick={onMarkRead} className="text-[11px] text-emerald-700 hover:underline font-semibold">อ่านทั้งหมด</button>
+              )}
+            </div>
+            <div className="max-h-96 overflow-y-auto">
+              {notifications.length === 0 ? (
+                <div className="px-4 py-8 text-center text-slate-400 text-sm">ไม่มีการแจ้งเตือน</div>
+              ) : notifications.map(n => (
+                <div key={n.id} className={`px-4 py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50 ${!n.read ? 'bg-blue-50/40' : ''}`}>
+                  <div className="flex items-start gap-2">
+                    {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></span>}
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm text-slate-900">{n.title}</div>
+                      <div className="text-xs text-slate-600 mt-0.5">{n.msg}</div>
+                      <div className="text-[10px] text-slate-400 mt-1">{fmtTime(n.createdAt)}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+/* ============================ TOAST ============================ */
+const Toast = ({ toast, onClose }) => {
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(onClose, 4000);
+    return () => clearTimeout(t);
+  }, [toast]);
+  if (!toast) return null;
+  const palette = {
+    success: 'bg-emerald-600',
+    info:    'bg-blue-600',
+    warn:    'bg-amber-600',
+    error:   'bg-red-600',
+  }[toast.kind || 'info'];
+  return (
+    <div className="fixed bottom-6 right-6 z-[100] animate-in slide-in-from-bottom">
+      <div className={`${palette} text-white rounded-xl shadow-2xl px-4 py-3 min-w-[280px] max-w-[400px] flex items-start gap-3`}>
+        <span className="text-xl flex-shrink-0">{toast.icon || 'ℹ️'}</span>
+        <div className="flex-1">
+          <div className="font-bold text-sm">{toast.title}</div>
+          {toast.msg && <div className="text-xs opacity-90 mt-0.5">{toast.msg}</div>}
+        </div>
+        <button onClick={onClose} className="text-white/70 hover:text-white flex-shrink-0">✕</button>
+      </div>
+    </div>
+  );
+};
+
+const SampleList = ({ samples, onNew, onOpenPrint, tasks, onConvertTask, onDismissTask, notifications, onMarkAllRead }) => {
+  const [filter, setFilter] = useState('all');
+  const [q, setQ] = useState('');
+
+  const filtered = useMemo(() => {
+    let arr = samples;
+    if (filter !== 'all') arr = arr.filter(s => s.status === filter);
+    if (q.trim()) {
+      const s = q.toLowerCase();
+      arr = arr.filter(x =>
+        x.code.toLowerCase().includes(s) ||
+        x.productCode.toLowerCase().includes(s) ||
+        x.productName.toLowerCase().includes(s) ||
+        x.lotNumber.toLowerCase().includes(s)
+      );
+    }
+    return arr;
+  }, [samples, filter, q]);
+
+  const counts = useMemo(() => ({
+    all: samples.length,
+    received: samples.filter(s => s.status === 'received').length,
+    testing:  samples.filter(s => s.status === 'testing').length,
+    passed:   samples.filter(s => s.status === 'passed').length,
+    failed:   samples.filter(s => s.status === 'failed').length,
+  }), [samples]);
+
+  return (
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+
+      {/* Breadcrumb */}
+      <nav className="text-sm text-slate-500 mb-3">
+        Quality / <span className="text-slate-700 font-semibold">QC Entry</span>
+      </nav>
+
+      {/* Header */}
+      <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-cyan-100 text-cyan-700 flex items-center justify-center">
+            <Icon name="flask" className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">ลงทะเบียนตัวอย่าง QC</h1>
+            <p className="text-sm text-slate-500">รายการตัวอย่างที่รับเข้าสำหรับการทดสอบ</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <NotificationBell notifications={notifications} onMarkRead={onMarkAllRead} />
+          <button
+            onClick={onNew}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 shadow-sm"
+          >
+            <Icon name="plus" className="w-4 h-4" /> ลงทะเบียนตัวอย่างใหม่
+          </button>
+        </div>
+      </div>
+
+      {/* Item 1: Pending QC Tasks (auto-triggered) */}
+      <PendingTasksPanel tasks={tasks} onConvert={onConvertTask} onDismiss={onDismissTask} />
+
+      {/* Filter chips */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {[
+          { id: 'all',      label: 'ทั้งหมด' },
+          { id: 'received', label: 'รับเข้าแล้ว' },
+          { id: 'testing',  label: 'กำลังทดสอบ' },
+          { id: 'passed',   label: 'ผ่าน' },
+          { id: 'failed',   label: 'ไม่ผ่าน' },
+        ].map(c => (
+          <button
+            key={c.id}
+            onClick={() => setFilter(c.id)}
+            className={`px-3 py-1.5 text-sm font-medium rounded-full border transition-all ${
+              filter === c.id
+                ? 'bg-emerald-600 text-white border-emerald-600'
+                : 'bg-white text-slate-700 border-slate-300 hover:border-emerald-300'
+            }`}
+          >
+            {c.label} <span className="opacity-70">({counts[c.id]})</span>
+          </button>
+        ))}
+        <div className="flex-1 min-w-[200px] relative ml-auto">
+          <Icon name="search" className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            placeholder="ค้นหา code, lot, สินค้า..."
+            className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-400"
+          />
+        </div>
+      </div>
+
+      {/* Empty state */}
+      {filtered.length === 0 ? (
+        <div className="bg-white border-2 border-dashed border-slate-200 rounded-2xl p-12 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 mx-auto mb-3 flex items-center justify-center">
+            <Icon name="flask" className="w-8 h-8" />
+          </div>
+          <h3 className="font-bold text-slate-700">ยังไม่มีตัวอย่าง QC</h3>
+          <p className="text-sm text-slate-500 mt-1 mb-4">เริ่มลงทะเบียนตัวอย่างแรกของคุณได้เลย</p>
+          <button
+            onClick={onNew}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
+          >
+            <Icon name="plus" className="w-4 h-4" /> ลงทะเบียนตัวอย่างใหม่
+          </button>
+        </div>
+      ) : (
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr className="text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="px-4 py-3">QC / SR</th>
+                  <th className="px-4 py-3">สินค้า / Lot</th>
+                  <th className="px-4 py-3">ที่มา</th>
+                  <th className="px-4 py-3">จำนวนเบิก</th>
+                  <th className="px-4 py-3">วันที่</th>
+                  <th className="px-4 py-3">Test</th>
+                  <th className="px-4 py-3">สถานะ</th>
+                  <th className="px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filtered.map(s => (
+                  <tr key={s.id} className="hover:bg-slate-50">
+                    <td className="px-4 py-3">
+                      <div className="font-semibold text-emerald-700">{s.code}</div>
+                      {s.requisitionCode && <div className="text-[11px] text-slate-500 font-mono">{s.requisitionCode}</div>}
+                      <div className="text-[10px] text-slate-400">{fmtTime(s.createdAt)}</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium">{s.productCode}</div>
+                      <div className="text-xs text-slate-500 truncate max-w-[220px]">{s.productName}</div>
+                      <div className="text-[11px] text-slate-400">Lot: <span className="font-mono">{s.lotNumber}</span></div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="text-xs text-slate-600">{SOURCE_LABEL[s.sourceType]}</div>
+                      {s.sourceRef && <div className="text-[11px] text-slate-400 font-mono">{s.sourceRef}</div>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="font-semibold">{s.quantity} <span className="text-slate-500 font-normal text-xs">ชิ้น</span></div>
+                      {s.bufferQty != null && <div className="text-[10px] text-slate-400">+{s.bufferQty} buffer</div>}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600 text-xs">{fmtDate(s.receiveDate)}</td>
+                    <td className="px-4 py-3">
+                      {s.panel.length > 0 ? (
+                        <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md">{s.panel.length} test</span>
+                      ) : (
+                        <span className="text-xs text-slate-400">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3"><StatusBadge status={s.status} /></td>
+                    <td className="px-4 py-3">
+                      {s.requisitionCode && (
+                        <button
+                          onClick={() => onOpenPrint(s)}
+                          className="text-slate-400 hover:text-emerald-600 p-1"
+                          title="ดู/พิมพ์ใบขอเบิก"
+                        >
+                          <Icon name="print" className="w-4 h-4" />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ============================ APP ============================ */
+const App = () => {
+  const [view, setView] = useState('list'); // list | new | print
+  const [samples, setSamples] = useState(() => loadSamples());
+  const [activeSample, setActiveSample] = useState(null);
+  const [tasks, setTasks] = useState(() => loadTasks());
+  const [notifications, setNotifications] = useState(() => loadNotifications());
+  const [toast, setToast] = useState(null);
+  const [prefill, setPrefill] = useState(null);
+
+  const refresh = () => setSamples(loadSamples());
+
+  const fireToast = (toast) => setToast(toast);
+
+  const convertTask = (task) => {
+    // Mark task as converted + prefill new form
+    const updated = tasks.map(t => t.id === task.id ? { ...t, status: 'converted' } : t);
+    setTasks(updated);
+    saveTasks(updated);
+    setPrefill({
+      productCode: task.productCode,
+      lotNumber:   task.lotNumber,
+      sourceRef:   task.sourceRef,
+      triggerType: task.triggerType,
+    });
+    fireToast({ kind: 'info', icon: '▶', title: 'เริ่มลงทะเบียนจาก trigger', msg: `${task.lotNumber} (${task.sourceRef})` });
+    setView('new');
+  };
+  const dismissTask = (taskId) => {
+    const updated = tasks.map(t => t.id === taskId ? { ...t, status: 'dismissed' } : t);
+    setTasks(updated);
+    saveTasks(updated);
+    fireToast({ kind: 'warn', icon: '✕', title: 'ปิด task แล้ว', msg: 'task ถูกซ่อนจากรายการ' });
+  };
+  const markAllNotifRead = () => {
+    const updated = notifications.map(n => ({ ...n, read: true }));
+    setNotifications(updated);
+    saveNotifications(updated);
+  };
+
+  return (
+    <div className="flex min-h-screen bg-slate-50">
+      <div className="hidden lg:block no-print">
+        <Sidebar active="qc-entry" />
+      </div>
+      <main className="flex-1 min-w-0">
+        {view === 'list' && (
+          <SampleList
+            samples={samples}
+            tasks={tasks}
+            notifications={notifications}
+            onConvertTask={convertTask}
+            onDismissTask={dismissTask}
+            onMarkAllRead={markAllNotifRead}
+            onNew={() => { setPrefill(null); setView('new'); }}
+            onOpenPrint={(s) => { setActiveSample(s); setView('print'); }}
+          />
+        )}
+        {view === 'new' && (
+          <NewSampleForm
+            prefill={prefill}
+            onCancel={() => { setPrefill(null); setView('list'); }}
+            onSaved={(saved) => {
+              refresh();
+              setPrefill(null);
+              // Add notification: QC entry created
+              if (saved) {
+                const updated = addNotification({ kind: 'created', title: '✅ ลงทะเบียนสำเร็จ', msg: `${saved.code} · ${saved.productCode} · Lot ${saved.lotNumber}`, to: 'qc' });
+                setNotifications(updated);
+                fireToast({ kind: 'success', icon: '✓', title: 'ลงทะเบียนสำเร็จ', msg: saved.code });
+              }
+              setView('list');
+            }}
+            onPrint={(s) => { refresh(); setActiveSample(s); setView('print'); }}
+          />
+        )}
+        {view === 'print' && activeSample && (
+          <RequisitionPrint
+            sample={activeSample}
+            onBack={() => setView('list')}
+          />
+        )}
+      </main>
+      <Toast toast={toast} onClose={() => setToast(null)} />
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dev Prompts — Herbal ERP Quality Module</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Inter', 'Sarabun', system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', monospace; }
+  pre.prompt {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    background: #1e293b;
+    color: #f1f5f9;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 20px;
+    font-size: 12.5px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: normal;
+    overflow-x: auto;
+  }
+  pre.prompt code.heading { color: #fbbf24; font-weight: 700; }
+  pre.prompt code.label   { color: #a78bfa; font-weight: 600; }
+  pre.prompt code.tag     { color: #34d399; font-weight: 600; }
+  pre.prompt code.string  { color: #fde047; }
+  pre.prompt code.muted   { color: #94a3b8; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 9999px;
+    font-size: 11px; font-weight: 600;
+  }
+  .priority-critical { background: rgba(239, 68, 68, .15);  color: #fca5a5; border: 1px solid rgba(239, 68, 68, .3); }
+  .priority-high     { background: rgba(249, 115, 22, .15); color: #fdba74; border: 1px solid rgba(249, 115, 22, .3); }
+  .priority-medium   { background: rgba(245, 158, 11, .15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, .3); }
+
+  .copy-btn {
+    background: #334155; color: #e2e8f0;
+    padding: 6px 14px; border-radius: 8px;
+    font-size: 12px; font-weight: 600;
+    transition: all .15s;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .copy-btn:hover { background: #475569; }
+  .copy-btn.copied { background: #059669; color: white; }
+
+  .anchor-nav a {
+    display: block; padding: 10px 14px; border-radius: 10px;
+    color: #cbd5e1; font-size: 13px; transition: all .15s;
+    border-left: 3px solid transparent;
+  }
+  .anchor-nav a:hover { background: rgba(255,255,255,.05); color: white; }
+  .anchor-nav a.active { background: rgba(139, 92, 246, .15); color: #c4b5fd; border-left-color: #8b5cf6; }
+</style>
+</head>
+<body>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+
+  <!-- Header -->
+  <header class="mb-8">
+    <a href="index.html" class="text-slate-400 hover:text-slate-100 text-sm">← กลับ Landing</a>
+    <h1 class="text-3xl sm:text-4xl font-bold mt-2">🤖 Dev Prompts — Quality Module</h1>
+    <p class="text-slate-400 mt-2 text-sm sm:text-base leading-relaxed">
+      Prompts สำหรับสั่ง AI/Dev แก้ระบบ <strong class="text-slate-200">herbal-erp-more.bmscloud.in.th</strong>
+      ตามผลตรวจ GMP audit 22 พ.ค. 2569 — รวม 4 audit items ที่ขาด
+    </p>
+
+    <!-- Tech stack chips -->
+    <div class="flex flex-wrap gap-2 mt-4">
+      <span class="chip" style="background:rgba(59,130,246,.2); color:#93c5fd; border:1px solid rgba(59,130,246,.3);">Next.js (App Router)</span>
+      <span class="chip" style="background:rgba(6,182,212,.2); color:#67e8f9; border:1px solid rgba(6,182,212,.3);">React 18</span>
+      <span class="chip" style="background:rgba(20,184,166,.2); color:#5eead4; border:1px solid rgba(20,184,166,.3);">Tailwind CSS</span>
+      <span class="chip" style="background:rgba(139,92,246,.2); color:#c4b5fd; border:1px solid rgba(139,92,246,.3);">TypeScript (assumed)</span>
+    </div>
+  </header>
+
+  <div class="grid grid-cols-1 lg:grid-cols-[240px,1fr] gap-6">
+
+    <!-- Anchor nav -->
+    <nav class="anchor-nav lg:sticky lg:top-6 lg:self-start space-y-1">
+      <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2 px-2">Audit Items</div>
+      <a href="#item-1" class="active">
+        <div class="flex items-center justify-between">
+          <span><strong class="text-white">#1</strong> Sample Plan Trigger</span>
+          <span class="chip priority-high">HIGH</span>
+        </div>
+      </a>
+      <a href="#item-3">
+        <div class="flex items-center justify-between">
+          <span><strong class="text-white">#3</strong> Retain Sample</span>
+          <span class="chip priority-medium">MED</span>
+        </div>
+      </a>
+      <a href="#item-6">
+        <div class="flex items-center justify-between">
+          <span><strong class="text-white">#6</strong> Dual Approval</span>
+          <span class="chip priority-critical">CRIT</span>
+        </div>
+      </a>
+      <a href="#item-7">
+        <div class="flex items-center justify-between">
+          <span><strong class="text-white">#7</strong> Notification</span>
+          <span class="chip priority-high">HIGH</span>
+        </div>
+      </a>
+
+      <div class="border-t border-slate-700 my-4"></div>
+      <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2 px-2">Tools</div>
+      <a href="#all-in-one">📋 All-in-one prompt</a>
+      <a href="#tips">💡 Tips for AI</a>
+    </nav>
+
+    <!-- Content -->
+    <main class="space-y-10 min-w-0">
+
+      <!-- How to use -->
+      <section class="bg-gradient-to-br from-violet-900/40 to-violet-800/20 border border-violet-700 rounded-2xl p-5 sm:p-6">
+        <h2 class="font-bold text-lg mb-2 flex items-center gap-2">
+          <span>📖</span> วิธีใช้
+        </h2>
+        <ol class="space-y-1.5 text-sm text-slate-300 list-decimal list-inside">
+          <li>เลือก audit item ที่ต้องการ → กดปุ่ม <strong class="text-violet-300">📋 Copy</strong> เพื่อ copy prompt</li>
+          <li>วางใน AI tool (Claude Code, Cursor, Copilot Chat) ภายใน repo ของระบบจริง</li>
+          <li>AI จะอ่าน codebase + แก้ตาม spec ที่ระบุใน prompt</li>
+          <li>ตรวจ PR ที่ AI สร้าง → test → merge</li>
+        </ol>
+        <div class="mt-4 bg-amber-900/30 border border-amber-700 rounded-lg p-3 text-xs text-amber-200">
+          <strong>⚠ Important:</strong> Prompt สมมุติว่า codebase ใช้ Next.js App Router + Tailwind + React 18
+          (ดึงจาก response header ของ herbal-erp-more จริง). ปรับ path ตามโครงสร้างจริงของ repo
+        </div>
+      </section>
+
+      <!-- ===== ITEM 1: Sample Plan Trigger ===== -->
+      <section id="item-1" class="scroll-mt-6">
+        <div class="flex items-baseline justify-between gap-3 flex-wrap mb-3">
+          <h2 class="text-2xl font-bold flex items-center gap-2">
+            <span class="bg-amber-500 text-slate-900 text-sm font-bold px-2.5 py-0.5 rounded-md">#1</span>
+            Sample Plan Trigger
+            <span class="chip priority-high">HIGH</span>
+          </h2>
+          <button class="copy-btn" data-target="prompt-1">📋 Copy prompt</button>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">
+          เพิ่มระบบแจ้งเตือนอัตโนมัติเมื่อ lot รับเข้า / WO complete / Stability time-point / Customer complaint
+          → สร้าง pending QC task ให้ผู้ใช้ลงทะเบียน
+        </p>
+        <pre class="prompt" id="prompt-1"># Task: เพิ่ม Sample Plan Trigger ใน Quality Module
+
+## Context
+- ระบบ: Herbal Medicine ERP — Next.js App Router + Tailwind + React 18
+- หน้าที่แก้: `app/quality/qc-entry/page.tsx` (และ component ย่อย)
+- URL จริง: https://herbal-erp-more.bmscloud.in.th/quality/qc-entry
+- ปัญหาตาม audit: "ยังไม่มีการแจ้งเตือน เมื่อ lot รับเข้าหรือ WO complete ต้องสร้าง manual"
+
+## Acceptance Criteria
+
+### 1. Backend / API
+- เพิ่ม table `qc_pending_tasks` (Prisma schema หรือเทียบเท่า) ฟิลด์:
+  - id, triggerType ('gr' | 'wo' | 'stability' | 'complaint')
+  - title, productCode, lotNumber, sourceRef
+  - dueDate, priority ('critical' | 'high' | 'medium' | 'low')
+  - createdAt, status ('pending' | 'converted' | 'dismissed')
+  - assignedTo (optional, user id)
+- เพิ่ม endpoint:
+  - GET  /api/quality/pending-tasks
+  - POST /api/quality/pending-tasks/[id]/convert  → mark converted + return prefill
+  - POST /api/quality/pending-tasks/[id]/dismiss
+
+### 2. Event triggers (background jobs / webhooks)
+สร้าง task อัตโนมัติเมื่อ:
+- **gr** : Goods Receipt → lot สถานะเป็น 'quarantine' (listen `inventory.lot.received`)
+- **wo** : Work Order complete → FG lot เข้า quarantine (listen `production.wo.completed`)
+- **stability** : Cron job รายวัน — เช็ค stability_schedule แล้วสร้าง task เมื่อถึง time point ±3 วัน
+- **complaint** : Customer complaint API → severity ≥ medium
+
+### 3. Frontend
+- เพิ่ม `<PendingTasksPanel />` ที่หัวของ qc-entry list (ใต้ breadcrumb เหนือ filter chips)
+- ออกแบบเป็นการ์ดเหลือง collapsible พร้อม badge จำนวน
+- แต่ละ task แสดง: triggerType icon, title, product/lot/sourceRef, dueDate, priority chip
+- ปุ่ม 2 อัน: "▶ ลงทะเบียน" (convert → navigate ไป /quality/qc-entry/new พร้อม prefill query params),
+              "✕ ปิด" (dismiss task)
+
+### 4. Reference UI
+ดูตัวอย่างได้ที่ prototype: `qc-entry.html` → component `PendingTasksPanel`
+(โครงสร้าง state + styling พร้อมใช้ — แค่ port มา TypeScript + เชื่อม API จริง)
+
+### 5. Definition of Done
+- [ ] DB migration + seed default 4 demo tasks
+- [ ] 4 trigger events ทำงานครบ (มี integration test)
+- [ ] Panel แสดงผลถูกต้อง + responsive
+- [ ] Convert action ส่ง prefill ไปหน้า new ถูก
+- [ ] Dismiss action soft-delete (ไม่ลบจาก DB)
+- [ ] Audit log ทุก action
+
+### 6. Out of Scope
+- ไม่ต้องทำ email/SMS notification (ใช้ in-app เท่านั้น)
+- ไม่ต้องทำ assignment workflow (เก็บ assignedTo field ไว้ก่อน)
+</pre>
+      </section>
+
+      <!-- ===== ITEM 3: Retain Sample ===== -->
+      <section id="item-3" class="scroll-mt-6">
+        <div class="flex items-baseline justify-between gap-3 flex-wrap mb-3">
+          <h2 class="text-2xl font-bold flex items-center gap-2">
+            <span class="bg-amber-500 text-slate-900 text-sm font-bold px-2.5 py-0.5 rounded-md">#3</span>
+            Retain Sample Storage
+            <span class="chip priority-medium">MEDIUM</span>
+          </h2>
+          <button class="copy-btn" data-target="prompt-3">📋 Copy prompt</button>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">
+          เพิ่มฟิลด์ storage location + expiry สำหรับ retain sample พร้อมคลังเก็บ retain เฉพาะ
+        </p>
+        <pre class="prompt" id="prompt-3"># Task: เพิ่ม Retain Sample Storage ใน QC Entry
+
+## Context
+- ระบบ: Herbal Medicine ERP — Next.js App Router + Tailwind
+- หน้าที่แก้: `app/quality/qc-entry/new/page.tsx` (หรือ form component)
+- ปัญหาตาม audit: "ไม่มีคลังสำหรับตัวอย่างเก็บรักษา ไม่มี storage location ของ sample"
+
+## Acceptance Criteria
+
+### 1. Master Data
+- เพิ่มคลัง 4 แห่ง (ใน warehouse master):
+  - WH-RETAIN-01 — Retain Room (อุณหภูมิห้อง 15-30°C)
+  - WH-RETAIN-02 — Retain Cold (2-8°C)
+  - WH-RETAIN-03 — Stability Chamber 25°C / 60%RH
+  - WH-RETAIN-04 — Stability Chamber 40°C / 75%RH
+- เพิ่ม category `retain` ใน warehouse_type enum
+
+### 2. DB schema
+ที่ table `qc_samples` เพิ่ม:
+- retainStorageId (FK → warehouse.id, nullable)
+- retainShelf (string, e.g. "A-12")
+- retainExpiry (date) — ต้อง ≥ lot expiry + 1 year (FDA 21 CFR 211.170)
+- retainQty (number) — แยกจาก test quantity
+
+### 3. Frontend (Form)
+ใน NewSampleForm:
+- โผล่ section "📦 Retain Sample Storage" สีม่วงเมื่อ bufferQty > 0
+- ฟิลด์:
+  - Dropdown คลังเก็บ (4 ตัวเลือกจาก master data)
+  - Input ชั้นวาง (text, validation: format A-NN)
+  - Date picker หมดอายุ retain (default = lot.expDate + 1 year)
+- มี hint: "Retain sample ต้องเก็บ ≥ 1 ปีหลัง expire ของ lot (FDA 21 CFR 211.170)"
+
+### 4. Stock Movement
+เมื่อ confirm sample entry:
+- ตัด stock จาก lot quarantine (test qty + retain qty)
+- สร้าง 2 movement transactions แยก:
+  - `test_consumption` → ไป QC Lab
+  - `retain_storage` → ไปคลัง retain ที่เลือก
+- ผูก reference: sampleId
+
+### 5. Retain Inventory View
+สร้างหน้าใหม่ `/quality/retain-inventory`:
+- Table แสดง retain samples ทั้งหมด
+- Filter: คลัง / สถานะ (active/expired) / product
+- Action: "destroy" (เมื่อถึงวันหมดอายุ retain — log audit trail)
+
+### 6. Reference UI
+prototype: `qc-entry.html` → ใน NewSampleForm มี section สีม่วง "Retain Sample Storage"
+
+### 7. Definition of Done
+- [ ] DB migration + seed 4 warehouses
+- [ ] Form validation (ต้องเลือก storage ถ้า bufferQty > 0)
+- [ ] Stock movement สร้าง 2 transactions แยก
+- [ ] Retain inventory page list + filter
+- [ ] Expire alert (notification when retain reaches expiry)
+</pre>
+      </section>
+
+      <!-- ===== ITEM 6: Dual Approval ===== -->
+      <section id="item-6" class="scroll-mt-6">
+        <div class="flex items-baseline justify-between gap-3 flex-wrap mb-3">
+          <h2 class="text-2xl font-bold flex items-center gap-2">
+            <span class="bg-amber-500 text-slate-900 text-sm font-bold px-2.5 py-0.5 rounded-md">#6</span>
+            Dual Approval (QC + Warehouse)
+            <span class="chip priority-critical">CRITICAL</span>
+          </h2>
+          <button class="copy-btn" data-target="prompt-6">📋 Copy prompt</button>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">
+          แยก stage Released เป็น 2 ขั้น: QC Released → Warehouse Verified
+          เพื่อให้คลังตรวจนับสินค้าจริงก่อนปล่อยเข้าระบบขาย
+        </p>
+        <pre class="prompt" id="prompt-6"># Task: Dual Approval — QC Release + Warehouse Verify
+
+## Context
+- ระบบ: Herbal Medicine ERP — Next.js App Router + Tailwind
+- หน้าที่แก้: `app/quality/qc-entry/[id]/page.tsx` + Work Order release logic
+- ปัญหาตาม audit (ระบุชัด):
+  > "ปุ่ม released เป็นใครก็ได้กด ไม่มีการตรวจสอบจำนวนก่อนปล่อยเข้าคลัง"
+  > "การอนุมัติปล่อยผ่านสินค้าต้องมาจาก QC จากฝ่าย QC และสถานะ release ใน lot
+  >  เป็นฝ่ายคลัง ที่ตรวจนับสินค้าก่อนกด released ปล่อยสินค้าเข้าคลัง"
+
+## Acceptance Criteria
+
+### 1. DB schema
+ที่ table `qc_samples` (หรือ lot):
+- เปลี่ยน enum status: เพิ่ม 2 values
+  - 'qc_released'   (QC อนุมัติแล้ว รอคลังตรวจ)
+  - 'wh_verified'   (คลังตรวจนับแล้ว — lot พร้อมขาย)
+- เพิ่ม fields:
+  - qcReleasedBy (FK user), qcReleasedAt (timestamp)
+  - whVerifiedBy (FK user), whVerifiedAt (timestamp)
+  - whCountVerified (number) — จำนวนที่คลังนับได้จริง
+  - whCountExpected (number) — จำนวนที่ QC ระบุ
+  - whCountDiff (number) — diff = verified - expected
+  - whVerifyNote (text) — เหตุผลถ้า diff != 0
+
+### 2. RBAC / Permissions
+- Role `qc_manager` เท่านั้นที่กด QC Release ได้
+- Role `warehouse_supervisor` เท่านั้นที่กด Warehouse Verify ได้
+- ตรวจสิทธิ์ทั้งฝั่ง frontend (hide button) + backend (validate)
+
+### 3. Status Flow
+```
+Registered → Draft → In Progress → Approved
+                                      ↓
+                                QC Released  (by QC)
+                                      ↓
+                                WH Verified  (by Warehouse)
+                                      ↓
+                                Lot status = 'released'
+```
+- Lot สามารถใช้ในระบบขาย/ส่งสินค้าได้ก็ต่อเมื่อ wh_verified แล้วเท่านั้น
+- ก่อน wh_verified — lot ยังถือว่าอยู่ในสถานะ quarantine
+
+### 4. Frontend
+ในหน้า qc-detail:
+- Status bar เพิ่มเป็น 6 nodes:
+  ① Registered → ② Draft → ③ In Progress → ④ Approved → ⑤ QC Released → ⑥ WH Verified
+- ปุ่ม footer เปลี่ยนตาม role + stage:
+  - Approved + role=qc_manager  → ปุ่ม "QC Release ✓"
+  - QC Released + role=warehouse  → ปุ่ม "Warehouse Verify ✓"
+  - WH Verified → label "✓ Released ครบ 2 ขั้น"
+- Modal warehouse verify ต้องมี:
+  - Input "จำนวนนับจริง" (whCountVerified)
+  - แสดง diff vs expected
+  - ถ้า diff != 0 → require note (เหตุผล)
+
+### 5. Audit Trail
+- log ทุก state transition: who/when/note
+- Immutable — ไม่ allow edit history
+
+### 6. Reference UI
+prototype: `qc-detail.html` → StatusBar (6 nodes), footer (2 buttons), submitOpen modal
+
+### 7. Definition of Done
+- [ ] DB migration (alter enum + add columns)
+- [ ] RBAC ทำงานทั้ง 2 ฝั่ง (FE + BE)
+- [ ] Warehouse verify ต้องกรอกจำนวนจริง
+- [ ] Diff > 0 → require note + flag ใน audit
+- [ ] Lot quarantine release = wh_verified เท่านั้น (เช็คทุก consumer)
+- [ ] Notification ส่งหา warehouse role เมื่อ QC release
+- [ ] Test: user ที่ไม่มี role กดปุ่มไม่ได้ (403 จาก API)
+</pre>
+      </section>
+
+      <!-- ===== ITEM 7: Notification ===== -->
+      <section id="item-7" class="scroll-mt-6">
+        <div class="flex items-baseline justify-between gap-3 flex-wrap mb-3">
+          <h2 class="text-2xl font-bold flex items-center gap-2">
+            <span class="bg-amber-500 text-slate-900 text-sm font-bold px-2.5 py-0.5 rounded-md">#7</span>
+            Auto-notification ข้ามฝ่าย
+            <span class="chip priority-high">HIGH</span>
+          </h2>
+          <button class="copy-btn" data-target="prompt-7">📋 Copy prompt</button>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">
+          ระบบแจ้งเตือนอัตโนมัติเมื่อ stage เปลี่ยน หรือมี event ที่เกี่ยวข้องกับ role ของ user
+        </p>
+        <pre class="prompt" id="prompt-7"># Task: Auto-notification System (Cross-department)
+
+## Context
+- ระบบ: Herbal Medicine ERP — Next.js App Router
+- ปัญหาตาม audit: "ไม่มีการแจ้งเตือนอัตโนมัติไปยัง QC เมื่อฝ่ายผลิต complete batch
+                   หรือฝ่ายคลังรับ lot เข้า"
+
+## Acceptance Criteria
+
+### 1. DB schema
+table `notifications`:
+- id, recipientUserId (or recipientRole), kind, title, message
+- relatedEntity (polymorphic: sample/lot/wo/complaint)
+- relatedId, link (URL ไปยังหน้าที่เกี่ยวข้อง)
+- read (boolean), readAt (timestamp)
+- createdAt
+- priority ('info' | 'warn' | 'critical')
+
+### 2. Backend events to listen
+สร้าง notification เมื่อ:
+
+| Event                              | Recipient role       | Title                           |
+|------------------------------------|----------------------|---------------------------------|
+| inventory.lot.received             | qc_operator          | 🆕 Lot รับเข้าใหม่ต้องตรวจ      |
+| production.wo.completed            | qc_operator          | 🏭 WO Complete — รอ QC          |
+| stability.timepoint.due (3 day)    | qc_operator          | 🕐 Stability ครบกำหนด           |
+| complaint.created                  | qc_manager           | ⚠️ Customer complaint ใหม่      |
+| qc_sample.qc_released              | warehouse_supervisor | ⏳ รอ Warehouse Verify          |
+| qc_sample.wh_verified              | qc_operator, sales   | 🎉 Lot release ครบทั้ง 2 ขั้น   |
+| qc_sample.oos_detected             | qc_manager, qa_head  | 🚨 OOS Investigation required   |
+| ipc.deviation.created              | qc_manager           | ⚠️ IPC Deviation                |
+
+### 3. API
+- GET  /api/notifications?unreadOnly=true&limit=20
+- POST /api/notifications/[id]/read
+- POST /api/notifications/read-all
+- WebSocket / Server-Sent Events endpoint: /api/notifications/stream (push real-time)
+
+### 4. Frontend Components
+
+#### a) NotificationBell (header — global layout)
+- Bell icon + red badge (unread count, "9+" if > 9)
+- Click → dropdown panel (right-aligned, 320px wide)
+- Panel:
+  - Header: "การแจ้งเตือน" + ปุ่ม "อ่านทั้งหมด"
+  - List items: priority dot, title, message, "เมื่อ X นาทีที่แล้ว"
+  - Click item → mark read + navigate ไป link
+  - "ดูทั้งหมด →" footer link ไปหน้า /notifications
+
+#### b) Toast (global)
+- Position: bottom-right
+- Auto-dismiss 4 วินาที (10 วินาทีถ้า critical)
+- Stack ได้ (multiple toasts)
+- Animation: slide-in from bottom
+
+#### c) Full notifications page
+- /notifications — list ทั้งหมด, filter by kind/priority, mark read/delete
+
+### 5. Real-time (WebSocket หรือ SSE)
+- ทุก client เปิด connection หลัง login
+- เมื่อมี notification ใหม่ → push ลง bell + show toast ทันที
+- Reconnect logic + heartbeat
+
+### 6. Reference UI
+prototype: `qc-entry.html` → `NotificationBell` + `Toast` components
+
+### 7. Definition of Done
+- [ ] DB schema + indexes (recipientUserId + read + createdAt)
+- [ ] Event listeners ครบ 8 events
+- [ ] Bell badge update real-time
+- [ ] Toast แสดงเมื่อมี event ใหม่
+- [ ] Mark read sync ทุก device ที่ login user เดียวกัน
+- [ ] Performance: notification fetch < 100ms (P95)
+- [ ] Cleanup job: ลบ notification > 30 วันที่ read แล้ว
+</pre>
+      </section>
+
+      <!-- ===== ALL-IN-ONE ===== -->
+      <section id="all-in-one" class="scroll-mt-6">
+        <div class="flex items-baseline justify-between gap-3 flex-wrap mb-3">
+          <h2 class="text-2xl font-bold flex items-center gap-2">
+            <span class="bg-violet-500 text-white text-sm font-bold px-2.5 py-0.5 rounded-md">📋</span>
+            All-in-one prompt (รวม 4 items)
+          </h2>
+          <button class="copy-btn" data-target="prompt-all">📋 Copy all</button>
+        </div>
+        <p class="text-sm text-slate-400 mb-4">
+          ใช้เมื่ออยากให้ AI ทำทั้งหมดในรอบเดียว — เน้น context ภาพรวม + อ้างถึง prompt ย่อยแต่ละข้อ
+        </p>
+        <pre class="prompt" id="prompt-all"># Task: ปรับปรุง Quality Module ตามผลตรวจ GMP Audit (22 พ.ค. 2569)
+
+## Context
+- ระบบ: Herbal Medicine ERP at https://herbal-erp-more.bmscloud.in.th
+- Tech: Next.js App Router + Tailwind + React 18 + TypeScript
+- Module focus: Quality (QC Entry, QC Detail, NCR, COA)
+- มี audit report 10 items — 4 items ที่ต้องแก้ในรอบนี้:
+
+## Items to Fix
+
+### #1 Sample Plan Trigger (HIGH)
+- เพิ่ม auto-trigger จาก 4 sources: Lot รับเข้า, WO Complete, Stability schedule, Customer complaint
+- แสดง Pending QC Tasks panel ที่หัวของ qc-entry
+- เพิ่ม endpoints + DB table qc_pending_tasks
+- (รายละเอียดครบ: ดู prompt #1)
+
+### #3 Retain Sample Storage (MEDIUM)
+- เพิ่ม 4 warehouses ใหม่ (Retain rooms + Stability chambers)
+- เพิ่ม fields ใน qc_samples: retainStorageId, retainShelf, retainExpiry, retainQty
+- สร้างหน้า /quality/retain-inventory
+- (รายละเอียดครบ: ดู prompt #3)
+
+### #6 Dual Approval (CRITICAL)
+- แยก Released → QC Released → Warehouse Verified
+- RBAC: qc_manager กด QC Release, warehouse_supervisor กด WH Verify
+- Warehouse verify ต้องกรอกจำนวนนับจริง
+- (รายละเอียดครบ: ดู prompt #6)
+
+### #7 Auto-notification (HIGH)
+- ระบบ notification ครบทั้ง bell (in-app) + toast (real-time) + page (/notifications)
+- Listen 8 events ครอบคลุม inventory/production/QC/complaint
+- WebSocket หรือ SSE สำหรับ real-time
+- (รายละเอียดครบ: ดู prompt #7)
+
+## Order of Implementation
+1. **#7 Notification ก่อน** (เป็น dependency ของ #1 และ #6)
+2. **#1 Sample Plan Trigger** (ใช้ notification system จาก #7)
+3. **#6 Dual Approval** (ใช้ notification + RBAC)
+4. **#3 Retain Sample** (independent — ทำคู่ขนานได้)
+
+## Constraints
+- ห้าม breaking change กับ API ที่มีอยู่
+- DB migration ต้อง backward compatible (rolling deploy)
+- ทุก feature ต้องมี audit trail (21 CFR Part 11)
+- Performance: ไม่กระทบ p95 latency เกิน 10%
+
+## Reference Prototype
+ไฟล์ HTML mockup พร้อม React/Tailwind components ที่ครบทั้ง 4 features อยู่ที่:
+- qc-entry.html (#1, #3, #7 — bell + toast + pending tasks)
+- qc-detail.html (#6, #7 — dual approval + notifications)
+
+ดู component patterns เพื่อ port มาเป็น TypeScript + เชื่อม API จริง
+
+## Definition of Done
+- ทุก checkbox ใน 4 prompts ย่อย ✓ ครบ
+- E2E test ครอบคลุม happy path ของแต่ละ feature
+- Audit log ครบทุก state change
+- เอกสาร CHANGELOG + migration guide
+</pre>
+      </section>
+
+      <!-- ===== TIPS ===== -->
+      <section id="tips" class="scroll-mt-6">
+        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+          <span>💡</span> Tips สำหรับการใช้ Prompt
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div class="bg-slate-800 border border-slate-700 rounded-xl p-5">
+            <div class="text-violet-400 font-bold text-sm mb-2">🎯 ก่อน paste prompt</div>
+            <ul class="text-sm text-slate-300 space-y-2 list-disc list-inside">
+              <li>เปิด AI ที่ <strong>repo root</strong> ของระบบจริง — ไม่ใช่ repo ของ prototype</li>
+              <li>บอก AI ว่า <strong>"อ่านโครงสร้าง folder ก่อน"</strong> เพื่อ map path ที่ถูก</li>
+              <li>แนบ Prisma schema (หรือ DB schema) ปัจจุบันให้ AI ดู</li>
+            </ul>
+          </div>
+
+          <div class="bg-slate-800 border border-slate-700 rounded-xl p-5">
+            <div class="text-violet-400 font-bold text-sm mb-2">🧪 หลัง AI แก้</div>
+            <ul class="text-sm text-slate-300 space-y-2 list-disc list-inside">
+              <li>รัน <code class="bg-slate-700 px-1.5 py-0.5 rounded text-xs">pnpm typecheck</code> ก่อน commit</li>
+              <li>ตรวจ migration script ด้วยตา <strong>ห้าม</strong> trust AI 100%</li>
+              <li>Test ใน staging environment ก่อน</li>
+              <li>ดู audit log ว่า log ครบทุก state change</li>
+            </ul>
+          </div>
+
+          <div class="bg-slate-800 border border-slate-700 rounded-xl p-5">
+            <div class="text-violet-400 font-bold text-sm mb-2">⚠️ Pitfall ที่พบบ่อย</div>
+            <ul class="text-sm text-slate-300 space-y-2 list-disc list-inside">
+              <li>AI ชอบสร้างไฟล์ใหม่แทนการแก้ของเดิม → ระบุ <strong>"ห้ามสร้างไฟล์ใหม่ถ้ามี existing pattern"</strong></li>
+              <li>AI ลืม update i18n / translations</li>
+              <li>AI ลืม dark mode CSS</li>
+              <li>AI ลืม mobile responsive</li>
+            </ul>
+          </div>
+
+          <div class="bg-slate-800 border border-slate-700 rounded-xl p-5">
+            <div class="text-violet-400 font-bold text-sm mb-2">📦 ตัวอย่าง follow-up prompt</div>
+            <pre class="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">After implementing #1:
+
+"Now write Playwright E2E tests for:
+- Trigger gr creates task automatically
+- Convert task pre-fills form correctly
+- Dismiss task removes from panel
+- Permission: non-QC user cannot dismiss"</pre>
+          </div>
+
+        </div>
+      </section>
+
+      <footer class="text-center text-xs text-slate-500 pt-6 border-t border-slate-800 mt-10">
+        Generated from audit report dated 22 พ.ค. 2569 · Tech stack detected from herbal-erp-more.bmscloud.in.th
+      </footer>
+
+    </main>
+  </div>
+</div>
+
+<!-- Toast for copy feedback -->
+<div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+  <div class="bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl text-sm font-semibold flex items-center gap-2">
+    <span>✓</span> <span id="toast-msg">Copied to clipboard</span>
+  </div>
+</div>
+
+<script>
+  // Copy buttons
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const targetId = btn.dataset.target;
+      const text = document.getElementById(targetId).innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.classList.add('copied');
+        const original = btn.innerHTML;
+        btn.innerHTML = '✓ Copied!';
+        showToast(`Copied prompt (${text.length} chars)`);
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = original;
+        }, 1800);
+      } catch (e) {
+        // fallback for non-secure context
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('Copied (fallback method)');
+      }
+    });
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), 2200);
+  }
+
+  // Anchor nav active state on scroll
+  const anchorLinks = document.querySelectorAll('.anchor-nav a[href^="#"]');
+  const sections = Array.from(anchorLinks).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        anchorLinks.forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-30% 0px -50% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

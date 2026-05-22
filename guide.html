@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>วิธีใช้งาน QC Module — Herbal ERP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', 'Sarabun', system-ui, sans-serif; background: #0f172a; color: #f1f5f9; }
+  .slide { min-height: calc(100vh - 70px); display: none; }
+  .slide.active { display: flex; }
+  .slide-content { background: white; color: #0f172a; }
+
+  .step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #8b5cf6; color: white;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .code-chip { background: #f5f3ff; color: #6d28d9; padding: 1px 6px; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 0.9em; font-weight: 600; }
+
+  @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+  .slide.active { animation: slideIn .3s ease-out; }
+
+  .nav-btn {
+    background: white; color: #0f172a;
+    padding: 10px 18px; border-radius: 12px; font-weight: 700; font-size: 14px;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all .15s;
+    border: 2px solid #e2e8f0;
+  }
+  .nav-btn:hover:not(:disabled) { background: #f1f5f9; }
+  .nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+  .nav-btn.primary { background: #8b5cf6; color: white; border-color: #8b5cf6; }
+  .nav-btn.primary:hover:not(:disabled) { background: #6d28d9; border-color: #6d28d9; }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #475569; transition: all .2s; cursor: pointer; }
+  .dot.active { background: #8b5cf6; width: 28px; border-radius: 4px; }
+
+  .persona-sampler { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+  .persona-lab     { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .persona-qa      { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+
+  .ascii-box {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+    font-family: ui-monospace, 'Cascadia Mono', Menlo, monospace;
+    font-size: 12px; line-height: 1.6; padding: 14px;
+    white-space: pre; overflow-x: auto;
+    color: #475569;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="fixed top-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-700">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+    <a href="index.html" class="text-slate-400 hover:text-white text-sm">← กลับ</a>
+    <div class="flex-1">
+      <div class="font-bold text-sm">📖 วิธีใช้งาน QC Module</div>
+      <div class="text-[11px] text-slate-400">Step-by-step: Sample Entry → Test → Release</div>
+    </div>
+    <div class="text-xs text-slate-400"><span id="slide-num">1</span> / <span id="slide-total">8</span></div>
+  </div>
+</div>
+
+<main class="pt-[70px] pb-[80px]">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+
+    <!-- ============== SLIDE 1: Intro ============== -->
+    <section class="slide active">
+      <div class="slide-content rounded-3xl p-8 sm:p-12 shadow-2xl w-full">
+        <div class="text-[11px] uppercase tracking-widest text-violet-700 font-bold mb-3">Slide 1 / Intro</div>
+        <h1 class="text-4xl sm:text-5xl font-extrabold mb-4">🧪 QC Module<br/>Quality Control</h1>
+        <p class="text-lg text-slate-600 mb-8 leading-relaxed">
+          คู่มือพา walk-through ระบบ QC ตั้งแต่ <strong>รับตัวอย่าง</strong> → <strong>ทดสอบ test panel</strong> → <strong>QA review</strong> → <strong>Release lot</strong>
+          ใช้เวลา ~10 นาที
+        </p>
+
+        <div class="bg-gradient-to-br from-violet-50 to-white border-2 border-violet-200 rounded-2xl p-6 mb-6">
+          <div class="font-bold text-violet-900 mb-3">📍 Scenario สำหรับฝึก</div>
+          <div class="text-sm text-slate-700 leading-relaxed">
+            <strong>โจทย์:</strong> Lot FG-FIN-003-2605 "แคปซูลขิงแก่ 300mg" ผลิตเสร็จ 50,000 แคปซูล<br/>
+            ต้องทดสอบ <strong>Test Panel</strong> 5 รายการ (Appearance, ID, pH, Assay, Microbial) ก่อน release<br/>
+            สุ่มตัวอย่าง 20 แคปซูล (ตาม USP &lt;905&gt;) — ตัด stock จาก lot
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="border-2 border-violet-200 rounded-xl p-4">
+            <div class="text-[10px] uppercase tracking-widest text-violet-700 font-bold">STEP 1</div>
+            <div class="font-bold text-sm mt-1">รับตัวอย่าง + เบิก</div>
+            <div class="text-[11px] text-slate-500 mt-1">qc-entry.html</div>
+          </div>
+          <div class="border-2 border-violet-200 rounded-xl p-4">
+            <div class="text-[10px] uppercase tracking-widest text-violet-700 font-bold">STEP 2</div>
+            <div class="font-bold text-sm mt-1">ทดสอบ Test Panel</div>
+            <div class="text-[11px] text-slate-500 mt-1">qc-detail.html</div>
+          </div>
+          <div class="border-2 border-violet-200 rounded-xl p-4">
+            <div class="text-[10px] uppercase tracking-widest text-violet-700 font-bold">STEP 3</div>
+            <div class="font-bold text-sm mt-1">Submit → Release</div>
+            <div class="text-[11px] text-slate-500 mt-1">qc-detail.html</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== SLIDE 2: Personas + Lifecycle ============== -->
+    <section class="slide">
+      <div class="slide-content rounded-3xl p-8 sm:p-12 shadow-2xl w-full">
+        <div class="text-[11px] uppercase tracking-widest text-violet-700 font-bold mb-3">Slide 2 / Personas + Lifecycle</div>
+        <h2 class="text-3xl font-extrabold mb-4">👥 ใครทำอะไร?</h2>
+
+        <div class="space-y-3 mb-8">
+          <div class="border-2 border-violet-200 rounded-2xl p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-11 h-11 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center text-2xl flex-shrink-0">📥</div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <h3 class="font-bold">QC Sampler</h3>
+                  <span class="persona-sampler text-[10px] font-bold px-2 py-0.5 rounded-full">REGISTER</span>
+                </div>
+                <p class="text-sm text-slate-600">รับตัวอย่างเข้า lab → ลงทะเบียน → ขอเบิก lot จาก inventory</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-2 border-blue-200 rounded-2xl p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-11 h-11 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-2xl flex-shrink-0">🔬</div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <h3 class="font-bold">Lab Technician</h3>
+                  <span class="persona-lab text-[10px] font-bold px-2 py-0.5 rounded-full">TEST</span>
+                </div>
+                <p class="text-sm text-slate-600">ยืนยัน sampling + ตัด stock → ทดสอบทุก test ใน panel → จัดการ OOS</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-2 border-emerald-200 rounded-2xl p-4">
+            <div class="flex items-start gap-3">
+              <div class="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl flex-shrink-0">✅</div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <h3 class="font-bold">QA Reviewer</h3>
+                  <span class="persona-qa text-[10px] font-bold px-2 py-0.5 rounded-full">RELEASE</span>
+                </div>
+                <p class="text-sm text-slate-600">รีวิวผลรวม → ตัดสินใจ Release / Reject / Quarantine</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="font-bold mb-3">📊 Sample Lifecycle (5 stages)</h3>
+        <div class="ascii-box">
+①━━━━━━━━━━②━━━━━━━━━━③━━━━━━━━━━④━━━━━━━━━━⑤
+Registered  Draft       In Progress  Approved   Released
+   ↑          ↑             ↑           ↑          ↑
+Sampler   ตัด stock     เริ่มทดสอบ    Lab ส่ง     QA กดปุ่ม
+ลงทะเบียน                                   review
+
+                    ⚠ OOS branch
+                  (เมื่อพบผลผิด spec)
+                    → CAPA workflow
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== SLIDE 3: Step 1 - Registration ============== -->
+    <section class="slide">
+      <div class="slide-content rounded-3xl p-8 sm:p-12 shadow-2xl w-full">
+        <div class="text-[11px] uppercase tracking-widest text-violet-700 font-bold mb-3">Slide 3 / Step 1 — รับตัวอย่าง</div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="persona-sampler text-[10px] font-bold px-2 py-0.5 rounded-full">QC SAMPLER</span>
+          <a href="qc-entry.html" class="text-xs text-slate-500 underline">qc-entry.html</a>
+        </div>
+        <h2 class="text-3xl font-extrabold mb-4">📥 ลงทะเบียน + ขอเบิก stock</h2>
+
+        <ol class="space-y-3">
+          <li class="flex gap-3">
+            <span class="step-num">1</span>
+            <div class="text-sm">เปิด <a href="qc-entry.html" class="text-violet-700 font-bold underline">qc-entry.html</a> → กด <strong>"+ ลงทะเบียนตัวอย่างใหม่"</strong></div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">2</span>
+            <div class="text-sm">กรอกข้อมูลผู้ขอเบิก + วันที่ + วัตถุประสงค์ (Routine / Stability / Customer ฯลฯ)</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">3</span>
+            <div class="text-sm">เลือก <strong>ประเภทแหล่งที่มา</strong> เช่น "ใบสั่งผลิต (Work order batch)"</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">4</span>
+            <div class="text-sm">⚡ <strong>Cascading filter</strong> ทำงาน → dropdown สินค้าโชว์เฉพาะ category ที่เกี่ยวข้อง (FG)</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">5</span>
+            <div class="text-sm">เลือก <span class="code-chip">FG-FIN-003</span> → เลือก Lot → ระบบ auto-fill: mfg date / exp / storage</div>
+          </li>
+        </ol>
+
+        <div class="ascii-box mt-5">
+ประเภทแหล่งที่มา ─→ กรองสินค้า:
+  ┌─────────────────────────┬──────────────┐
+  │ ใบสั่งผลิต               │  FG-*        │
+  │ วัตถุดิบเข้า              │  RM-* + PK-* │
+  │ ระหว่างการผลิต            │  FG-*        │
+  │ ผลิตภัณฑ์สำเร็จรูป        │  FG-*        │
+  │ ความคงตัว                │  FG-*        │
+  │ สินค้าคืน                │  FG-*        │
+  └─────────────────────────┴──────────────┘
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== SLIDE 4: Step 1 - Test Panel Selection ============== -->
+    <section class="slide">
+      <div class="slide-content rounded-3xl p-8 sm:p-12 shadow-2xl w-full">
+        <div class="text-[11px] uppercase tracking-widest text-violet-700 font-bold mb-3">Slide 4 / Step 1 (cont) — Test Panel + Sampling</div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="persona-sampler text-[10px] font-bold px-2 py-0.5 rounded-full">QC SAMPLER</span>
+        </div>
+        <h2 class="text-3xl font-extrabold mb-4">📋 เลือก Test Panel + ยืนยันเบิก</h2>
+
+        <ol class="space-y-3">
+          <li class="flex gap-3">
+            <span class="step-num">6</span>
+            <div class="text-sm">ระบบโชว์ <strong>Test Panel</strong> ที่ผูกกับ category ของสินค้าอัตโนมัติ (Appearance, ID, pH, Assay, Microbial...)</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">7</span>
+            <div class="text-sm">เลือก mode การคำนวณจำนวน sample ของแต่ละ test:
+              <div class="mt-1 ml-2 text-[12px] text-slate-600 space-y-0.5">
+                <div>• <strong>USP</strong> — ตามมาตรฐาน (default)</div>
+                <div>• <strong>√n+1</strong> — ตามจำนวน lot</div>
+                <div>• <strong>Fixed</strong> — กำหนดเอง</div>
+              </div>
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">8</span>
+            <div class="text-sm">ดู <strong>"สรุปจำนวนสุ่ม"</strong> ที่ sidebar ขวา — รวมทุก test panel + retain sample</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">9</span>
+            <div class="text-sm">กด <strong>"ยืนยันเบิก + ลงทะเบียน"</strong> → ระบบสร้าง <span class="code-chip">QC-2026-000011</span> + ตัด stock</div>
+          </li>
+        </ol>
+
+        <div class="bg-violet-50 border border-violet-200 rounded-xl p-4 mt-5">
+          <div class="font-bold text-violet-900 text-sm mb-2">📊 สรุปจำนวนสุ่ม (sidebar)</div>
+          <div class="ascii-box text-xs">
+รวมจาก test ที่เลือก (5 test):    12 ชิ้น
+เมื่อ retain sample (+ 3 ชิ้น):     20%
+ต้องเบิกทั้งหมด:                  15 ชิ้นตัวอย่าง
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== SLIDE 5: Step 2 - Sampling Plan + Stock Deduction ============== -->
+    <section class="slide">
+      <div class="slide-content rounded-3xl p-8 sm:p-12 shadow-2xl w-full">
+        <div class="text-[11px] uppercase tracking-widest text-blue-700 font-bold mb-3">Slide 5 / Step 2 — Sampling Plan + Stock</div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="persona-lab text-[10px] font-bold px-2 py-0.5 rounded-full">LAB TECH</span>
+          <a href="qc-detail.html" class="text-xs text-slate-500 underline">qc-detail.html</a>
+        </div>
+        <h2 class="text-3xl font-extrabold mb-4">🔬 ยืนยัน Sampling + ตัด Stock</h2>
+
+        <ol class="space-y-3">
+          <li class="flex gap-3">
+            <span class="step-num">1</span>
+            <div class="text-sm">เปิด <a href="qc-detail.html" class="text-violet-700 font-bold underline">qc-detail.html</a> ของ sample ที่เพิ่งลงทะเบียน</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">2</span>
+            <div class="text-sm">เห็น <strong>5-stage progress bar</strong> ด้านบน — ปัจจุบันอยู่ <strong>① Registered</strong></div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">3</span>
+            <div class="text-sm">ที่การ์ดซ้าย <strong>"Sampling Plan"</strong> — ดู method + จำนวน + Multi-stage</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">4</span>
+            <div class="text-sm">Test panel ทางขวาถูก <strong>ล็อค 🔒</strong> — ยังกดทดสอบไม่ได้</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">5</span>
+            <div class="text-sm">กดปุ่ม <strong>"ยืนยันสุ่มตัวอย่าง · ตัด 20 capsules"</strong></div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">6</span>
+            <div class="text-sm">Modal confirm ขึ้น → ระบบสร้าง <strong>Stock Movement</strong> → กดยืนยัน</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">7</span>
+            <div class="text-sm">Stock <strong>50,000 → 49,980</strong> · TXN ref ปรากฏ · stage เลื่อน → <strong>② Draft</strong></div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">8</span>
+            <div class="text-sm">Test panel ปลด lock ✓ — เริ่มทดสอบได้</div>
+          </li>
+        </ol>
+
+        <div class="mt-5 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-900">
+          <strong>↶ Reversal:</strong> ถ้าตอน Draft ยังไม่เข้า In Progress — กดปุ่ม "ยกเลิก sampling · คืน stock" ได้ · เข้า In Progress แล้ว reverse ไม่ได้
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== SLIDE 6: Step 2 - Test Recording ============== -->
+    <section class="slide">
+      <div class="slide-content rounded-3xl p-8 sm:p-12 shadow-2xl w-full">
+        <div class="text-[11px] uppercase tracking-widest text-blue-700 font-bold mb-3">Slide 6 / Step 2 (cont) — ทดสอบ + OOS</div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="persona-lab text-[10px] font-bold px-2 py-0.5 rounded-full">LAB TECH</span>
+        </div>
+        <h2 class="text-3xl font-extrabold mb-4">🔬 บันทึกผลทุก test</h2>
+
+        <ol class="space-y-3">
+          <li class="flex gap-3">
+            <span class="step-num">1</span>
+            <div class="text-sm">คลิก <strong>test ใน list ซ้าย</strong> เช่น "pH Value"</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">2</span>
+            <div class="text-sm">ดู <strong>Specification ทางซ้าย</strong>: Method / Range / Equipment / Calibration valid / SOP link</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">3</span>
+            <div class="text-sm">กรอก <strong>Reading ทางขวา</strong> → ระบบโชว์ ✓/✕ ทันที (live spec check)</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">4</span>
+            <div class="text-sm">เลือก Replicate (Run 1/2/3) + Equipment + Analyst + Note (optional)</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">5</span>
+            <div class="text-sm">กด <strong>"Save & Next ▶"</strong> → ระบบไป test ถัดไปอัตโนมัติ</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">6</span>
+            <div class="text-sm">หลัง test แรก → stage เลื่อนจาก <strong>② Draft → ③ In Progress</strong></div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">7</span>
+            <div class="text-sm">ถ้ากรอกค่า <strong>นอก spec</strong> → <strong>OOS modal</strong> ขึ้น 3 ตัวเลือก:
+              <div class="mt-1 ml-2 text-[12px] text-slate-600 space-y-0.5">
+                <div>• <strong>บันทึก OOS</strong> — เปิด CAPA investigation</div>
+                <div>• <strong>Re-test</strong> — ล้างค่า กรอกใหม่ + เหตุผล</div>
+                <div>• <strong>Discard</strong> — ทิ้งค่า ไม่บันทึก</div>
+              </div>
+            </div>
+          </li>
+        </ol>
+
+        <div class="ascii-box mt-5">
+┌─ pH Value · USP <791> ─────────────────────┐
+│                                            │
+│ Spec: 6.0 – 7.5                            │
+│ Reading: [ 6.8 ] pH    →  ✓ Within range  │
+│                                            │
+│ Reading: [ 5.5 ] pH    →  ✕ OOS modal!    │
+│                                            │
+│ 「บันทึก OOS · Re-test · Discard」           │
+└────────────────────────────────────────────┘
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== SLIDE 7: Step 3 - Submit + Release ============== -->
+    <section class="slide">
+      <div class="slide-content rounded-3xl p-8 sm:p-12 shadow-2xl w-full">
+        <div class="text-[11px] uppercase tracking-widest text-emerald-700 font-bold mb-3">Slide 7 / Step 3 — Submit + Release</div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="persona-qa text-[10px] font-bold px-2 py-0.5 rounded-full">QA REVIEWER</span>
+        </div>
+        <h2 class="text-3xl font-extrabold mb-4">✅ ส่ง Review → Release lot</h2>
+
+        <ol class="space-y-3">
+          <li class="flex gap-3">
+            <span class="step-num">1</span>
+            <div class="text-sm">เมื่อทดสอบทุก <strong>required test</strong> ครบ → ปุ่ม <strong>"Submit for Review →"</strong> ปรากฏที่ footer</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">2</span>
+            <div class="text-sm">Lab tech กด Submit → stage เลื่อน <strong>③ In Progress → ④ Approved</strong></div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">3</span>
+            <div class="text-sm"><strong>QA reviewer</strong> (คนละคน) เข้ามา → ดูผลรวมทุก test + history</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">4</span>
+            <div class="text-sm">ถ้าทุกอย่าง OK → กดปุ่ม <strong>"Release ✓"</strong> ที่ footer</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">5</span>
+            <div class="text-sm">Stage เลื่อน <strong>④ Approved → ⑤ Released</strong> · lot พร้อมใช้ขาย</div>
+          </li>
+          <li class="flex gap-3">
+            <span class="step-num">6</span>
+            <div class="text-sm">ระบบออก <strong>CoA (Certificate of Analysis)</strong> อัตโนมัติ (ในระบบจริง)</div>
+          </li>
+        </ol>
+
+        <div class="ascii-box mt-5">
+●━━━━━●━━━━━●━━━━━●━━━━━●
+①     ②     ③     ④     ⑤
+Reg.  Draft  In.   Appr. Released
+                            ↑
+                       กด Release
+        </div>
+
+        <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs">
+            <div class="font-bold text-emerald-800 mb-1">✓ Pass case</div>
+            <div class="text-emerald-900">ทุก test ผ่าน → Release → lot ขายได้</div>
+          </div>
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs">
+            <div class="font-bold text-amber-800 mb-1">⚠ OOS branch</div>
+            <div class="text-amber-900">เปิด OOS Investigation → CAPA → Re-test</div>
+          </div>
+          <div class="bg-red-50 border border-red-200 rounded-xl p-3 text-xs">
+            <div class="font-bold text-red-800 mb-1">✕ Reject case</div>
+            <div class="text-red-900">Reject lot → กลับ producer / scrap</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== SLIDE 8: Summary + Dev tips ============== -->
+    <section class="slide">
+      <div class="slide-content rounded-3xl p-8 sm:p-12 shadow-2xl w-full">
+        <div class="text-[11px] uppercase tracking-widest text-violet-700 font-bold mb-3">Slide 8 / สรุป</div>
+        <h2 class="text-3xl font-extrabold mb-4">🎉 จบ QC Flow</h2>
+        <p class="text-slate-600 mb-6">ทำตามครบทุก step แล้ว lot จะถูก release พร้อมขาย</p>
+
+        <div class="ascii-box mb-6">
+QC Workflow:
+   ① Registered → ② Draft → ③ In Progress → ④ Approved → ⑤ Released
+       ↑           ↑          ↑              ↑           ↑
+    Sampler    Lab tech    Lab tech       Lab tech     QA
+    ลงทะเบียน   ตัด stock   บันทึกผล       Submit     Release
+        </div>
+
+        <h3 class="font-bold text-lg mb-3">💡 Tips สำหรับ Dev</h3>
+        <ul class="space-y-2 text-sm text-slate-700 mb-6">
+          <li class="flex gap-2"><span>•</span> ข้อมูลทั้งหมดเก็บใน <code class="code-chip">localStorage</code></li>
+          <li class="flex gap-2"><span>•</span> Page transition ใช้ <code class="code-chip">window.location</code> ตรง ๆ ไม่ใช่ SPA</li>
+          <li class="flex gap-2"><span>•</span> ทุกหน้าใช้ React via CDN (Babel-standalone) — ไม่ต้อง build</li>
+          <li class="flex gap-2"><span>•</span> Production ระบบจริงควรเปลี่ยนเป็น <strong>backend API + DB</strong></li>
+        </ul>
+
+        <h3 class="font-bold text-lg mb-3">📌 Edge Cases ที่ต้อง implement เพิ่ม</h3>
+        <ul class="space-y-2 text-sm text-slate-700 mb-6">
+          <li class="flex gap-2"><span>•</span> <strong>OOS workflow</strong> — Investigation form + root cause + CAPA tracking</li>
+          <li class="flex gap-2"><span>•</span> <strong>Re-sampling</strong> — เมื่อ initial sample ไม่พอ / contaminate</li>
+          <li class="flex gap-2"><span>•</span> <strong>Stability study</strong> — เก็บตัวอย่างทดสอบที่ time point ต่าง ๆ (0, 3, 6, 12 เดือน)</li>
+          <li class="flex gap-2"><span>•</span> <strong>e-Signature (21 CFR Part 11)</strong> — บังคับ password re-entry ตอน Release</li>
+          <li class="flex gap-2"><span>•</span> <strong>CoA template</strong> — generate PDF อัตโนมัติ</li>
+          <li class="flex gap-2"><span>•</span> <strong>Stock reversal audit</strong> — log ทุก reversal พร้อม reason</li>
+        </ul>
+
+        <div class="bg-gradient-to-br from-violet-600 to-violet-700 text-white rounded-2xl p-6">
+          <div class="font-bold text-xl mb-2">🚀 ลองเล่นเอง</div>
+          <p class="text-violet-50 text-sm mb-4">เริ่มจากหน้า landing แล้วลองทำตาม Step 1 → 2 → 3</p>
+          <div class="flex gap-2 flex-wrap">
+            <a href="index.html" class="bg-white text-violet-700 font-bold rounded-xl px-4 py-2 text-sm hover:bg-violet-50">🏠 Landing</a>
+            <a href="qc-entry.html" class="bg-white/20 text-white font-bold rounded-xl px-4 py-2 text-sm hover:bg-white/30">📥 QC Entry</a>
+            <a href="qc-detail.html" class="bg-white/20 text-white font-bold rounded-xl px-4 py-2 text-sm hover:bg-white/30">🔬 QC Detail</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- BOTTOM NAV -->
+<div class="fixed bottom-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur border-t border-slate-700">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+    <button id="prev-btn" class="nav-btn">← ก่อนหน้า</button>
+    <div class="flex-1 flex items-center justify-center gap-1.5" id="dots"></div>
+    <button id="next-btn" class="nav-btn primary">ถัดไป →</button>
+  </div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  const dotsContainer = document.getElementById('dots');
+  let current = 0;
+
+  slides.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.dataset.idx = i;
+    dot.title = `Slide ${i + 1}`;
+    dot.onclick = () => goTo(i);
+    dotsContainer.appendChild(dot);
+  });
+
+  document.getElementById('slide-total').textContent = totalSlides;
+  const dots = document.querySelectorAll('.dot');
+
+  function goTo(i) {
+    if (i < 0 || i >= totalSlides) return;
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = i;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+    document.getElementById('slide-num').textContent = current + 1;
+    document.getElementById('prev-btn').disabled = current === 0;
+    document.getElementById('next-btn').textContent = current === totalSlides - 1 ? 'จบแล้ว ✓' : 'ถัดไป →';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.getElementById('prev-btn').onclick = () => goTo(current - 1);
+  document.getElementById('next-btn').onclick = () => {
+    if (current === totalSlides - 1) {
+      window.location.href = 'index.html';
+    } else {
+      goTo(current + 1);
+    }
+  };
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft')  goTo(current - 1);
+    if (e.key === 'ArrowRight') goTo(current + 1);
+    if (e.key === 'Home')       goTo(0);
+    if (e.key === 'End')        goTo(totalSlides - 1);
+  });
+
+  document.getElementById('prev-btn').disabled = true;
+</script>
+
+</body>
+</html>

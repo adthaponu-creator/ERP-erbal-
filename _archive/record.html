@@ -933,6 +933,74 @@ function CalculatedRecorder({ criteria, inputs, setInputs, openPad }) {
 
 /* ============================ EMPTY STATE ============================ */
 function EmptyState() {
+  const seedDemo = () => {
+    // 3 criteria จาก BPR PD-BPR-001
+    const tareId = 'demo-tare-001';
+    const punchId = 'demo-punch-001';
+    const wvId = 'demo-wv-001';
+    const now = new Date().toISOString();
+    const demo = [
+      // 8.1 TARE
+      {
+        id: tareId, code: 'IPC-CAP-TARE-001', testName: 'capsule_empty_weight',
+        dosageForm: 'capsule', unit: 'g',
+        criteriaType: 'multi_point',
+        multiPoint: {
+          pointCount: '10', pointLabel: 'ลำดับแคปซูล',
+          perPointTarget: '0.096', perPointTolerance: '10',
+          aggregateRule: 'mean', aggregateLimit: '0.090-0.102',
+        },
+        useContext: ['routine'],
+        sopStepRef: { sopCode: 'PD-BPR-001', sopVersion: '00', stepNumber: '8.1', stepDescription: 'บันทึกน้ำหนักแคปซูลเปล่า — สุ่ม 10 แคปซูล หาค่าเฉลี่ย', link: '' },
+        critical: false, active: true,
+        stages: [
+          { id: 1, sampleSize: '10', failureTolerance: '0', onFail: 'next', note: 'สุ่ม 10 แคปซูลเปล่า หาค่าเฉลี่ย' },
+        ],
+        createdAt: now,
+      },
+      // 8.2 PUNCH
+      {
+        id: punchId, code: 'IPC-CAP-PUNCH-001', testName: 'capsule_filler_punch_force',
+        dosageForm: 'capsule', unit: 'count',
+        criteriaType: 'multi_point',
+        multiPoint: {
+          pointCount: '6', pointLabel: 'หัวตอกที่',
+          perPointTarget: '20', perPointTolerance: '25',
+          aggregateRule: 'min_max', aggregateLimit: '15-25',
+        },
+        useContext: ['routine', 'changeover'],
+        sopStepRef: { sopCode: 'PD-BPR-001', sopVersion: '00', stepNumber: '8.2', stepDescription: 'บันทึกค่าการตั้งหัวตอก 1-6 (ค่าตั้ง 15-25)', link: '' },
+        critical: true, active: true,
+        stages: [
+          { id: 1, sampleSize: '6', failureTolerance: '0', onFail: 'deviation', note: 'วัดทุกหัวตอก (6 หัว) — ค่าต้องอยู่ในช่วง 15-25' },
+        ],
+        createdAt: now,
+      },
+      // 8.3 WV (uses tare)
+      {
+        id: wvId, code: 'IPC-CAP-WV-001', testName: 'weight_variation',
+        dosageForm: 'capsule', unit: 'g',
+        criteriaType: 'multi_point',
+        multiPoint: {
+          pointCount: '20', pointLabel: 'แคปซูลที่',
+          perPointTarget: '0.500', perPointTolerance: '7.5',
+          aggregateRule: 'min_max', aggregateLimit: '0.4625-0.5375',
+        },
+        useContext: ['routine', 'release'],
+        sopStepRef: { sopCode: 'PD-BPR-001', sopVersion: '00', stepNumber: '8.3', stepDescription: 'ตรวจการกระจายน้ำหนัก (USP <905>) — สุ่ม 20 แคปซูล หัก tare', link: '' },
+        tareSource: { criteriaId: tareId, criteriaCode: 'IPC-CAP-TARE-001', field: 'mean' },
+        critical: true, active: true,
+        stages: [
+          { id: 1, sampleSize: '20', failureTolerance: '10', onFail: 'next',  note: 'Stage 1 — USP <905>: ≤ 2 แคปซูลเกิน ±7.5%' },
+          { id: 2, sampleSize: '20', failureTolerance: '5',  onFail: 'reject', note: 'Stage 2 — ห้ามมีแคปซูลใดเกิน ±15%' },
+        ],
+        createdAt: now,
+      },
+    ];
+    localStorage.setItem('ipc_criteria_list', JSON.stringify(demo));
+    location.reload();
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="max-w-md text-center">
@@ -940,13 +1008,22 @@ function EmptyState() {
           <Icon name="empty" className="w-12 h-12" />
         </div>
         <h2 className="text-xl font-bold text-slate-900 mb-2">ยังไม่มี IPC Criteria</h2>
-        <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-          ยังไม่มีการตั้งค่าเกณฑ์การควบคุมคุณภาพ — กรุณาไปที่หน้า "สร้าง IPC Criteria ใหม่" เพื่อสร้างเกณฑ์ก่อนเริ่มบันทึกผล
+        <p className="text-sm text-slate-600 mb-5 leading-relaxed">
+          ยังไม่มีการตั้งค่าเกณฑ์การควบคุมคุณภาพ — กดปุ่มด้านล่างเพื่อ <strong>โหลด demo 3 IPC</strong> (จาก BPR PD-BPR-001) ทันที หรือสร้างเองในหน้า Criteria
         </p>
-        <a href="criteria.html"
-          className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl px-5 py-3 shadow-lg shadow-emerald-200">
-          <Icon name="plus" className="w-5 h-5" /> สร้าง IPC Criteria
-        </a>
+        <div className="space-y-2">
+          <button onClick={seedDemo}
+            className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl px-5 py-3 shadow-lg shadow-emerald-200">
+            🧪 โหลด Demo (TARE + PUNCH + WV)
+          </button>
+          <a href="criteria.html"
+            className="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-700 border-2 border-slate-200 font-bold rounded-xl px-5 py-3">
+            <Icon name="plus" className="w-5 h-5" /> ไปสร้างเอง
+          </a>
+        </div>
+        <div className="mt-4 text-[11px] text-slate-400">
+          Demo จะ seed 3 criteria: 8.1 Tare · 8.2 Punch · 8.3 Weight Variation (ผูก tare)
+        </div>
       </div>
     </div>
   );
