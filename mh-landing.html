@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MetaHerb — สมุนไพรและผลิตภัณฑ์เพื่อสุขภาพ</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --brand:#319754; --brand-dark:#26713e; }
+  body { font-family: 'Inter','Sarabun',system-ui,sans-serif; color:#1f2937; background:#fff; }
+  .heading-display { font-family:'Sarabun',system-ui,sans-serif; font-weight:800; letter-spacing:-.02em; line-height:1.15; }
+
+  .brand-mark {
+    font-family:'Sarabun',system-ui,sans-serif;
+    font-weight:800; font-size:28px; letter-spacing:1px;
+    display:inline-flex; align-items:center; line-height:1;
+  }
+  .brand-mark .green { color:#319754; }
+  .brand-mark .orange { color:#f97316; }
+
+  .search-pill {
+    background:white; border:1px solid #e5e7eb; border-radius:9999px;
+    padding:4px; display:flex; align-items:center;
+    box-shadow:0 1px 2px rgba(0,0,0,.04);
+  }
+  .search-pill input { background:transparent; border:0; outline:0; padding:10px 20px; flex:1; font-size:15px; font-family:inherit; }
+  .search-pill .search-btn { width:44px; height:44px; border-radius:50%; background:#319754; color:white; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+  .search-pill .search-btn:hover { background:#26713e; }
+
+  .icon-btn { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#4b5563; transition:all .15s; }
+  .icon-btn:hover { background:#f3f4f6; }
+
+  .btn-signup { padding:11px 28px; border-radius:9999px; border:2px solid #f59e0b; color:#d97706; background:white; font-weight:700; font-size:14px; transition:all .15s; }
+  .btn-signup:hover { background:#fffbeb; }
+  .btn-login { padding:11px 30px; border-radius:9999px; background:#319754; color:white; font-weight:700; font-size:14px; border:2px solid #319754; transition:all .15s; }
+  .btn-login:hover { background:#26713e; border-color:#26713e; }
+
+  .main-nav { background:#319754; color:white; overflow:visible !important; }
+  .main-nav > div { overflow:visible !important; }
+  .main-nav a, .main-nav .navbtn { color:white; padding:14px 30px; font-weight:600; font-size:16px; transition:all .15s; display:inline-flex; align-items:center; gap:6px; background:transparent; border:0; cursor:pointer; font-family:inherit; }
+  .main-nav a:hover, .main-nav .navbtn:hover { background:rgba(0,0,0,.08); }
+  .main-nav a.active, .main-nav .navbtn.active { background:white; color:#319754; border-radius:9999px; margin:6px 4px; padding:8px 30px; }
+
+  .nav-dropdown { position:absolute; top:100%; left:0; background:white; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 12px 32px -8px rgba(0,0,0,.25); min-width:280px; padding:6px; z-index:100; display:none; margin-top:6px; }
+  .nav-dropdown.open { display:block; }
+  .main-nav .nav-dropdown a { display:flex !important; align-items:center; gap:10px; padding:10px 14px !important; color:#1f2937 !important; background:transparent; border-radius:10px; font-size:14px; font-weight:500; margin:0; }
+  .main-nav .nav-dropdown a:hover { background:#f0fdf4 !important; color:#26713e !important; }
+
+  .settings-pop { position:absolute; top:calc(100% + 8px); right:0; background:white; border:1px solid #e5e7eb; border-radius:14px; box-shadow:0 12px 32px -8px rgba(0,0,0,.2); width:320px; padding:16px; z-index:60; display:none; }
+  .settings-pop.open { display:block; }
+  .switch { position:relative; width:44px; height:24px; background:#e5e7eb; border-radius:9999px; cursor:pointer; transition:background .15s; flex-shrink:0; }
+  .switch.on { background:#319754; }
+  .switch::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; background:white; border-radius:50%; transition:transform .15s; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+  .switch.on::after { transform:translateX(20px); }
+
+  /* Hero */
+  .hero-banner-main {
+    background: linear-gradient(135deg, #e9f5ee 0%, #f0fdf4 50%, #fffbeb 100%);
+    border-radius:20px; overflow:hidden; position:relative; min-height:340px;
+  }
+  .banner-honey { background: linear-gradient(135deg,#fef3c7 0%,#fde68a 100%); border-radius:16px; overflow:hidden; position:relative; min-height:160px; }
+  .banner-ingredients { background: linear-gradient(135deg,#fef3c7 0%,#fed7aa 100%); border-radius:16px; overflow:hidden; position:relative; min-height:160px; }
+
+  /* Categories */
+  .cat-circle { width:88px; height:88px; background:white; border:2px solid #e9f5ee; border-radius:22px; display:flex; align-items:center; justify-content:center; font-size:40px; transition:all .2s; box-shadow:0 2px 8px rgba(49,151,84,.08); margin:0 auto; }
+  .cat-circle:hover { border-color:#319754; transform:translateY(-4px); box-shadow:0 8px 20px rgba(49,151,84,.18); }
+  .car-arrow { width:44px; height:44px; background:white; border-radius:50%; box-shadow:0 2px 8px rgba(0,0,0,.1); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .15s; color:#4b5563; font-size:18px; flex-shrink:0; }
+  .car-arrow:hover { background:#f0fdf4; color:#319754; }
+
+  .hero-dot { width:8px; height:8px; border-radius:9999px; background:rgba(255,255,255,.5); transition:all .2s; }
+  .hero-dot.active { background:#319754; width:28px; }
+
+  /* Product card */
+  .product-card { background:white; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden; transition:all .15s; }
+  .product-card:hover { box-shadow:0 8px 24px -8px rgba(0,0,0,.12); transform:translateY(-2px); border-color:#d1d5db; }
+  .product-img-wrap { aspect-ratio:1; background:#fafaf9; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
+  .product-img-wrap img { width:100%; height:100%; object-fit:cover; }
+  .badge-discount { position:absolute; top:0; right:0; background:#f97316; color:white; padding:3px 12px; border-bottom-left-radius:14px; font-size:11px; font-weight:700; }
+  .badge-recommend { position:absolute; top:0; right:0; background:#3b82f6; color:white; padding:3px 12px; border-bottom-left-radius:14px; font-size:11px; font-weight:700; }
+</style>
+</head>
+<body>
+
+<!-- ============== TOP HEADER ============== -->
+<header class="bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-4 flex-wrap">
+    <a href="mh-landing.html" class="flex items-center gap-3 flex-shrink-0">
+      <img src="pcture-web/logo.png" alt="METAHERB" class="w-14 h-14 rounded-full object-contain bg-white border-2 border-green-600" />
+      <div class="brand-mark">
+        <span class="green">META</span><span class="orange">HERB</span>
+      </div>
+    </a>
+
+    <div class="search-pill flex-1 max-w-2xl mx-auto w-full" style="order:99;">
+      <input placeholder="ค้นหาสินค้าที่ต้องการ" />
+      <button class="search-btn">🔍</button>
+    </div>
+
+    <div class="flex items-center gap-2 ml-auto">
+      <button class="icon-btn text-xl" title="แจ้งเตือน">🔔</button>
+      <button class="icon-btn text-xl" title="ตะกร้า">🛒</button>
+      <div class="relative">
+        <button id="settings-btn" class="icon-btn text-lg" title="ตั้งค่าเมนู">⚙️</button>
+        <div id="settings-pop" class="settings-pop">
+          <div class="font-bold text-sm mb-1">ตั้งค่าเมนู</div>
+          <div class="text-xs text-gray-500 mb-4">เปิด/ปิด การแสดงเมนูพิเศษ</div>
+          <label class="flex items-start gap-3 cursor-pointer p-2 -mx-2 rounded-lg hover:bg-gray-50">
+            <div id="switch-testlab" class="switch on"></div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-sm">ผลิตภัณฑ์เพื่อการทดสอบ</div>
+              <div class="text-[11px] text-gray-500 leading-snug mt-0.5">รวม MetaLab + Tester + Survey</div>
+            </div>
+          </label>
+        </div>
+      </div>
+      <button class="btn-signup">สมัครสมาชิก</button>
+      <button class="btn-login">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============== GREEN MAIN NAV BAR ============== -->
+<nav class="main-nav">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-center gap-1 overflow-x-auto">
+    <a href="mh-landing.html" class="active whitespace-nowrap">หน้าหลัก</a>
+    <a href="https://metaherb.co.th" target="_blank" class="whitespace-nowrap">ผลิตภัณฑ์</a>
+
+    <div id="testlab-wrap" class="relative">
+      <button id="testlab-btn" class="navbtn whitespace-nowrap">
+        ผลิตภัณฑ์เพื่อการทดสอบ
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div id="testlab-dropdown" class="nav-dropdown">
+        <a href="mh-metalab.html">
+          <span class="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center text-lg">🧪</span>
+          <div class="flex-1"><div class="font-semibold">ทดลองใช้สินค้า</div><div class="text-[11px] text-gray-500">รับสินค้า Beta ฟรี + ทดลองใช้จริง</div></div>
+        </a>
+        <a href="mh-tester.html">
+          <span class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-lg">👥</span>
+          <div class="flex-1"><div class="font-semibold">ลงทะเบียนผู้ทดสอบ</div><div class="text-[11px] text-gray-500">สมัครเป็น Tester + กรอก profile</div></div>
+        </a>
+        <a href="mh-survey.html">
+          <span class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-lg">📋</span>
+          <div class="flex-1"><div class="font-semibold">แบบประเมิน</div><div class="text-[11px] text-gray-500">ตอบ survey 3 ระยะ · สะสมแต้ม</div></div>
+        </a>
+      </div>
+    </div>
+
+    <a href="https://metaherb.co.th" target="_blank" class="whitespace-nowrap">สาระความรู้</a>
+    <a href="https://metaherb.co.th" target="_blank" class="whitespace-nowrap">เกี่ยวกับเรา</a>
+  </div>
+</nav>
+
+<!-- ============== HERO ============== -->
+<section class="py-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <!-- Main banner -->
+      <div class="lg:col-span-2 hero-banner-main p-6 sm:p-8 flex items-center relative">
+        <div class="absolute top-4 right-4 text-3xl opacity-20">🍃</div>
+        <div class="absolute top-20 right-12 text-2xl opacity-30">🍃</div>
+        <div class="absolute bottom-8 right-32 text-2xl opacity-20">🍃</div>
+
+        <div class="flex items-center gap-6 w-full relative z-10">
+          <img src="pcture-web/logo.png" alt="" class="hidden sm:block w-24 h-24 rounded-full bg-white border-2 border-green-600 object-contain flex-shrink-0 shadow-md" />
+
+          <div class="flex-1 min-w-0">
+            <h2 class="heading-display text-3xl sm:text-4xl lg:text-5xl text-stone-800 mb-2">Osmanthus Oolong</h2>
+            <p class="text-xl sm:text-2xl text-stone-700 mb-4">Loose Leaf Tea</p>
+            <div class="inline-flex items-center gap-2 bg-white/70 backdrop-blur rounded-full px-5 py-2.5 mb-4">
+              <span class="text-lg font-bold text-stone-700">ชาอู่หลงผสมดอกหอมหมื่นลี้</span>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-stone-600 flex-wrap">
+              <span class="flex items-center gap-1.5">📱 @METAHERB</span>
+              <span class="text-stone-400">·</span>
+              <span class="flex items-center gap-1.5">📞 061-421-3111</span>
+              <span class="text-stone-400">·</span>
+              <span class="flex items-center gap-1.5">🌐 metaherb.co.th</span>
+            </div>
+          </div>
+
+          <div class="hidden md:block flex-shrink-0">
+            <img src="pcture-web/oolong.png" alt="Osmanthus Oolong" class="w-48 h-48 object-contain drop-shadow-2xl" />
+          </div>
+        </div>
+
+        <div class="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-1.5">
+          <span class="hero-dot"></span>
+          <span class="hero-dot active"></span>
+          <span class="hero-dot"></span>
+          <span class="hero-dot"></span>
+        </div>
+      </div>
+
+      <!-- Side banners -->
+      <div class="space-y-4">
+        <a href="https://metaherb.co.th" target="_blank" class="banner-honey p-4 flex items-center relative block group transition-transform hover:scale-[1.02]">
+          <img src="pcture-web/logo.png" alt="" class="absolute top-2 left-2 w-10 h-10 rounded-full bg-white object-contain" />
+          <div class="flex-1 pl-12">
+            <div class="text-3xl sm:text-4xl font-extrabold text-amber-700" style="font-family:'Sarabun',cursive;">Honey Lemon</div>
+            <div class="text-amber-900 font-semibold text-sm mt-1">เลมอนดองน้ำผึ้ง</div>
+          </div>
+          <img src="pcture-web/honey.png" alt="Honey Lemon" class="w-28 h-28 object-contain flex-shrink-0" />
+        </a>
+
+        <a href="https://metaherb.co.th" target="_blank" class="banner-ingredients p-4 flex items-center relative block group transition-transform hover:scale-[1.02]">
+          <img src="pcture-web/logo.png" alt="" class="absolute top-2 left-2 w-10 h-10 rounded-full bg-white object-contain" />
+          <img src="pcture-web/ดอกจันทน์.png" alt="" class="w-28 h-28 object-contain flex-shrink-0 pl-2" />
+          <div class="flex-1 text-right">
+            <div class="text-2xl sm:text-3xl font-extrabold text-stone-700">วัตถุดิบสมุนไพร</div>
+            <div class="text-stone-600 text-xs mt-1">สมุนไพรหายากของแท้</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CATEGORY CIRCLES ============== -->
+<section class="py-6 sm:py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="flex items-center gap-3 sm:gap-5">
+      <button class="car-arrow">←</button>
+      <div class="flex-1 grid grid-cols-3 sm:grid-cols-6 gap-3 sm:gap-4">
+        <a href="https://metaherb.co.th" target="_blank" class="text-center"><div class="cat-circle">🛡️</div><div class="text-xs sm:text-sm font-semibold mt-2.5 text-stone-700">ผลิตภัณฑ์สุขภาพ</div></a>
+        <a href="https://metaherb.co.th" target="_blank" class="text-center"><div class="cat-circle">☕</div><div class="text-xs sm:text-sm font-semibold mt-2.5 text-stone-700">อาหารและเครื่องดื่ม</div></a>
+        <a href="https://metaherb.co.th" target="_blank" class="text-center"><div class="cat-circle">🌸</div><div class="text-xs sm:text-sm font-semibold mt-2.5 text-stone-700">เครื่องหอม & อโรม่า</div></a>
+        <a href="https://metaherb.co.th" target="_blank" class="text-center"><div class="cat-circle">🌿</div><div class="text-xs sm:text-sm font-semibold mt-2.5 text-stone-700">ผลิตภัณฑ์สมุนไพร</div></a>
+        <a href="https://metaherb.co.th" target="_blank" class="text-center"><div class="cat-circle">🌾</div><div class="text-xs sm:text-sm font-semibold mt-2.5 text-stone-700">วัตถุดิบสมุนไพร</div></a>
+        <a href="https://metaherb.co.th" target="_blank" class="text-center"><div class="cat-circle">🎁</div><div class="text-xs sm:text-sm font-semibold mt-2.5 text-stone-700">ชุดของชำร่วย/ฯ</div></a>
+      </div>
+      <button class="car-arrow">→</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============== สินค้าแนะนำ ============== -->
+<section class="py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="flex items-baseline justify-between mb-5">
+      <h2 class="heading-display text-2xl sm:text-3xl">สินค้าแนะนำ</h2>
+      <a href="https://metaherb.co.th" target="_blank" class="text-sm text-green-700 font-bold hover:underline flex items-center gap-1">ดูทั้งหมด <span>→</span></a>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+      <a href="https://metaherb.co.th/products/เลมอนดองน้ำผึ้ง" target="_blank" class="product-card block">
+        <div class="product-img-wrap">
+          <span class="badge-discount">ลด 20%</span>
+          <img src="pcture-web/honey.png" alt="" />
+        </div>
+        <div class="p-3">
+          <div class="font-semibold text-sm leading-tight mb-1">เลมอนดองน้ำผึ้ง</div>
+          <div class="text-green-700 font-bold mt-1">฿ 79.20 <span class="text-xs text-gray-400 line-through font-normal">฿99.00</span></div>
+          <div class="flex items-center gap-1 mt-1 text-xs text-gray-500"><span class="text-amber-400">⭐</span><span>0.0/5</span><span class="ml-auto">ขายไป 16</span></div>
+        </div>
+      </a>
+
+      <a href="https://metaherb.co.th/products/กาแฟดริป-signature-อเมริกาโนเย็น" target="_blank" class="product-card block">
+        <div class="product-img-wrap">
+          <span class="badge-discount">ลด 20%</span>
+          <img src="pcture-web/coffee.png" alt="" />
+        </div>
+        <div class="p-3">
+          <div class="font-semibold text-sm leading-tight mb-1">กาแฟดริป signature อเมริกาโนเย็น</div>
+          <div class="text-green-700 font-bold mt-1">฿ 135.20 <span class="text-xs text-gray-400 line-through font-normal">฿169.00</span></div>
+          <div class="flex items-center gap-1 mt-1 text-xs text-gray-500"><span class="text-amber-400">⭐</span><span>5.0/5</span><span class="ml-auto">ขายไป 9</span></div>
+        </div>
+      </a>
+
+      <a href="https://metaherb.co.th/products/อบเชยเทศ-เกรด-alba-ceylon-cinnamon" target="_blank" class="product-card block">
+        <div class="product-img-wrap">
+          <span class="badge-recommend">สินค้าแนะนำ</span>
+          <img src="pcture-web/ดอกจันทน์.png" alt="" />
+        </div>
+        <div class="p-3">
+          <div class="font-semibold text-sm leading-tight mb-1">อบเชยเทศ เกรด Alba (Ceylon Cinnamon)</div>
+          <div class="text-green-700 font-bold mt-1">฿ 80.00</div>
+          <div class="flex items-center gap-1 mt-1 text-xs text-gray-500"><span class="text-amber-400">⭐</span><span>0.0/5</span></div>
+        </div>
+      </a>
+
+      <a href="https://metaherb.co.th/products/ชาอูหลงผสมดอกหอมหมื่นลี้" target="_blank" class="product-card block">
+        <div class="product-img-wrap">
+          <span class="badge-recommend">สินค้าแนะนำ</span>
+          <img src="pcture-web/oolong.png" alt="" />
+        </div>
+        <div class="p-3">
+          <div class="font-semibold text-sm leading-tight mb-1">ชาอูหลงผสมดอกหอมหมื่นลี้</div>
+          <div class="text-green-700 font-bold mt-1">฿ 380.00</div>
+          <div class="flex items-center gap-1 mt-1 text-xs text-gray-500"><span class="text-amber-400">⭐</span><span>0.0/5</span></div>
+        </div>
+      </a>
+
+      <a href="https://metaherb.co.th/products/Metaherb Wellness Gift Set" target="_blank" class="product-card block">
+        <div class="product-img-wrap">
+          <span class="badge-discount">ลด 20%</span>
+          <img src="pcture-web/giftset.png" alt="" />
+        </div>
+        <div class="p-3">
+          <div class="font-semibold text-sm leading-tight mb-1">Metaherb Wellness Gift Set</div>
+          <div class="text-green-700 font-bold mt-1">฿ 319.20 <span class="text-xs text-gray-400 line-through font-normal">฿399.00</span></div>
+          <div class="flex items-center gap-1 mt-1 text-xs text-gray-500"><span class="text-amber-400">⭐</span><span>0.0/5</span></div>
+        </div>
+      </a>
+
+      <a href="https://metaherb.co.th/products/พิมเสนน้ำ-ตราเมต้าเฮิร์บ" target="_blank" class="product-card block">
+        <div class="product-img-wrap">
+          <span class="badge-discount">ลด 20%</span>
+          <img src="pcture-web/essence.png" alt="" />
+        </div>
+        <div class="p-3">
+          <div class="font-semibold text-sm leading-tight mb-1">พิมเสนน้ำ ตราเมต้าเฮิร์บ</div>
+          <div class="text-green-700 font-bold mt-1">฿ 68.00 <span class="text-xs text-gray-400 line-through font-normal">฿85.00</span></div>
+          <div class="flex items-center gap-1 mt-1 text-xs text-gray-500"><span class="text-amber-400">⭐</span><span>0.0/5</span></div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============== บทความแนะนำ ============== -->
+<section class="py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="flex items-baseline justify-between mb-5">
+      <h2 class="heading-display text-2xl sm:text-3xl">บทความแนะนำ</h2>
+      <a href="https://metaherb.co.th/articles" target="_blank" class="text-sm text-green-700 font-bold hover:underline flex items-center gap-1">ดูทั้งหมด <span>→</span></a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <a href="https://metaherb.co.th/articles" target="_blank" class="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-md transition-all flex gap-4">
+        <div class="w-32 sm:w-44 aspect-square bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center flex-shrink-0 relative">
+          <img src="pcture-web/oolong.png" alt="" class="w-full h-full object-cover" />
+          <span class="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">📹 วิดีโอ</span>
+        </div>
+        <div class="p-3 flex-1">
+          <h3 class="font-bold leading-tight mb-2">อบเชยเทศจากศรีลังกา สมุนไพรหายาก</h3>
+          <p class="text-xs text-gray-600 leading-relaxed">ยี่เม่งชมสวนอบเชยเทศ โดย CEO เม...</p>
+        </div>
+      </a>
+
+      <a href="https://metaherb.co.th/articles" target="_blank" class="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-md transition-all flex gap-4">
+        <div class="w-32 sm:w-44 aspect-square bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center flex-shrink-0 relative">
+          <img src="pcture-web/giftset.png" alt="" class="w-full h-full object-cover" />
+          <span class="absolute top-2 left-2 bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">บทความ</span>
+        </div>
+        <div class="p-3 flex-1">
+          <h3 class="font-bold leading-tight mb-2">กว่าจะมาเป็นผลิตภัณฑ์ของเ...</h3>
+          <p class="text-xs text-gray-600 leading-relaxed">MetaHerb นำเสนอผลิตภัณฑ์ของ...</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============== Go to real store CTA ============== -->
+<section class="py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <a href="https://metaherb.co.th" target="_blank"
+       class="block bg-gradient-to-r from-green-600 to-green-700 text-white rounded-2xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all relative overflow-hidden">
+      <div class="absolute right-4 top-4 text-9xl opacity-10">🌿</div>
+      <div class="flex items-center gap-4 flex-wrap relative z-10">
+        <img src="pcture-web/logo.png" alt="" class="w-16 h-16 rounded-full bg-white p-1 flex-shrink-0" />
+        <div class="flex-1 min-w-0">
+          <div class="text-xs uppercase tracking-widest opacity-80 font-bold mb-1">🛍 ร้านค้าจริง</div>
+          <h3 class="heading-display text-xl sm:text-2xl mb-1">ดูสินค้าทั้งหมดที่ร้านค้าจริง</h3>
+          <p class="text-sm opacity-90">เลือกซื้อสินค้าจริง · ราคาจริง · จัดส่งจริง</p>
+        </div>
+        <div class="bg-white text-green-700 font-bold px-5 py-3 rounded-full flex-shrink-0">
+          metaherb.co.th ↗
+        </div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ============== ผลิตภัณฑ์เพื่อการทดสอบ section ============== -->
+<section class="py-8 sm:py-12 bg-gradient-to-br from-green-50 to-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="text-center mb-8">
+      <div class="text-xs font-bold uppercase tracking-widest text-green-700 mb-2">METALAB · NEW</div>
+      <h2 class="heading-display text-2xl sm:text-3xl mb-2">🧪 ผลิตภัณฑ์เพื่อการทดสอบ</h2>
+      <p class="text-sm text-gray-600 max-w-2xl mx-auto">ทดลองสินค้า Beta ฟรี · ตอบแบบประเมิน · สะสมแต้ม · ขึ้น Tier</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+      <a href="mh-metalab.html" class="bg-white rounded-2xl border-2 border-gray-200 hover:border-green-400 hover:shadow-lg p-6 transition-all text-center">
+        <div class="w-16 h-16 rounded-2xl bg-green-100 mx-auto flex items-center justify-center text-3xl mb-3">🧪</div>
+        <div class="font-bold mb-1">ทดลองใช้สินค้า</div>
+        <div class="text-xs text-gray-500 mb-3">โปรแกรม Beta Testing</div>
+        <div class="text-xs font-bold text-green-700">ดูโปรแกรม →</div>
+      </a>
+      <a href="mh-tester.html" class="bg-white rounded-2xl border-2 border-gray-200 hover:border-green-400 hover:shadow-lg p-6 transition-all text-center">
+        <div class="w-16 h-16 rounded-2xl bg-amber-100 mx-auto flex items-center justify-center text-3xl mb-3">👥</div>
+        <div class="font-bold mb-1">ลงทะเบียนผู้ทดสอบ</div>
+        <div class="text-xs text-gray-500 mb-3">สมัครเป็น Tester</div>
+        <div class="text-xs font-bold text-green-700">สมัครฟรี →</div>
+      </a>
+      <a href="mh-survey.html" class="bg-white rounded-2xl border-2 border-gray-200 hover:border-green-400 hover:shadow-lg p-6 transition-all text-center">
+        <div class="w-16 h-16 rounded-2xl bg-blue-100 mx-auto flex items-center justify-center text-3xl mb-3">📋</div>
+        <div class="font-bold mb-1">แบบประเมิน</div>
+        <div class="text-xs text-gray-500 mb-3">Survey 3 ระยะ + แต้ม</div>
+        <div class="text-xs font-bold text-green-700">เริ่มเลย →</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER (เหมือนเว็บจริง) ============== -->
+<footer class="bg-stone-900 text-white pt-12 pb-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-8">
+      <!-- Brand -->
+      <div class="col-span-2">
+        <div class="flex items-center gap-3 mb-3">
+          <img src="pcture-web/logo.png" alt="" class="w-12 h-12 rounded-full bg-white p-1" />
+          <div class="brand-mark" style="font-size:22px;">
+            <span class="green" style="color:#4ade80;">META</span><span class="orange">HERB</span>
+          </div>
+        </div>
+        <p class="text-sm text-stone-400 leading-relaxed max-w-md">
+          จำหน่ายผลิตภัณฑ์สมุนไพร อโรมา ชาอู่หลงผสมดอกหอมหมื่นลี้
+          กาแฟดริป และวัตถุดิบสมุนไพรแท้หายาก
+        </p>
+        <div class="mt-4 text-xs text-stone-400 space-y-1">
+          <div>📍 549/153 หมู่บ้านไฮบ์สุขสวัสดิ์ ถนนสุขสวัสดิ์</div>
+          <div>แขวงราษฎร์บูรณะ กรุงเทพมหานคร 10140</div>
+          <div>📞 +66-95-591-6256</div>
+        </div>
+        <div class="flex gap-3 mt-4">
+          <a href="https://www.facebook.com/people/Metaherb/100085158050276" target="_blank" class="w-9 h-9 rounded-full bg-stone-800 hover:bg-stone-700 flex items-center justify-center" title="Facebook">📘</a>
+          <a href="https://www.tiktok.com/@metaherb" target="_blank" class="w-9 h-9 rounded-full bg-stone-800 hover:bg-stone-700 flex items-center justify-center" title="TikTok">🎵</a>
+          <a href="https://www.youtube.com/@metaherb9750" target="_blank" class="w-9 h-9 rounded-full bg-stone-800 hover:bg-stone-700 flex items-center justify-center" title="YouTube">📺</a>
+          <a href="https://line.me/ti/p/ki5w-YyV9i" target="_blank" class="w-9 h-9 rounded-full bg-stone-800 hover:bg-stone-700 flex items-center justify-center" title="LINE">💬</a>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div>
+        <div class="font-bold mb-3 text-sm">เมนูหลัก</div>
+        <ul class="space-y-2 text-sm text-stone-400">
+          <li><a href="https://metaherb.co.th/" target="_blank" class="hover:text-white">หน้าหลัก</a></li>
+          <li><a href="https://metaherb.co.th/products" target="_blank" class="hover:text-white">ผลิตภัณฑ์</a></li>
+          <li><a href="https://metaherb.co.th/articles" target="_blank" class="hover:text-white">สาระความรู้</a></li>
+          <li><a href="https://metaherb.co.th/about" target="_blank" class="hover:text-white">เกี่ยวกับเรา</a></li>
+          <li><a href="https://metaherb.co.th/mission" target="_blank" class="hover:text-white">พันธกิจ</a></li>
+        </ul>
+      </div>
+
+      <!-- Services -->
+      <div>
+        <div class="font-bold mb-3 text-sm">บริการ</div>
+        <ul class="space-y-2 text-sm text-stone-400">
+          <li><a href="https://metaherb.co.th/coupons" target="_blank" class="hover:text-white">คูปองส่วนลด</a></li>
+          <li><a href="https://metaherb.co.th/contact" target="_blank" class="hover:text-white">ติดต่อเรา</a></li>
+          <li><a href="mh-metalab.html" class="hover:text-white">🧪 ทดลองใช้สินค้า</a></li>
+          <li><a href="mh-tester.html" class="hover:text-white">👥 ลงทะเบียนผู้ทดสอบ</a></li>
+          <li><a href="mh-survey.html" class="hover:text-white">📋 แบบประเมิน</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bottom -->
+    <div class="pt-6 border-t border-stone-800 flex flex-col sm:flex-row justify-between gap-3 text-xs text-stone-400">
+      <div>© 2026 METAHERB. All rights reserved.</div>
+      <div class="flex gap-4">
+        <a href="https://metaherb.co.th/terms" target="_blank" class="hover:text-white">เงื่อนไขการใช้บริการ</a>
+        <a href="https://metaherb.co.th/privacy" target="_blank" class="hover:text-white">นโยบายความเป็นส่วนตัว</a>
+        <a href="index.html" class="hover:text-white">← QC Module Prototype</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    const KEY='mh_show_testlab';
+    const show=localStorage.getItem(KEY);
+    const showTestlab = show===null ? true : show==='1';
+    const wrap=document.getElementById('testlab-wrap');
+    const switchEl=document.getElementById('switch-testlab');
+    function apply(on){ if(on){wrap.style.display='';switchEl.classList.add('on');} else {wrap.style.display='none';switchEl.classList.remove('on');} localStorage.setItem(KEY,on?'1':'0'); }
+    apply(showTestlab);
+    switchEl.addEventListener('click', ()=>apply(!switchEl.classList.contains('on')));
+    const btn=document.getElementById('testlab-btn');
+    const dd=document.getElementById('testlab-dropdown');
+    btn.addEventListener('click',(e)=>{ e.stopPropagation(); dd.classList.toggle('open'); });
+    const sb=document.getElementById('settings-btn');
+    const sp=document.getElementById('settings-pop');
+    sb.addEventListener('click',(e)=>{ e.stopPropagation(); sp.classList.toggle('open'); });
+    document.addEventListener('click',(e)=>{
+      if(!dd.contains(e.target) && !btn.contains(e.target)) dd.classList.remove('open');
+      if(!sp.contains(e.target) && !sb.contains(e.target)) sp.classList.remove('open');
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Vite source tree — only built ./app/ output ships to Pages
+metaherb-source/
+metaherb-clone/
+
+# Raw assets — included in build, not needed at repo root
+pcture/
+pcture-web/
+dist-standalone/
+
+# Local archives / zips
+*.zip
+
+# Editor and OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*

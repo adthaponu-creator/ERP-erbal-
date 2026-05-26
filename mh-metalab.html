@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MetaLab — Active Beta Testing Programs</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', 'Sarabun', system-ui, sans-serif; color: #1f2937; background: #ffffff; }
+  .heading-display { font-family: 'Sarabun', system-ui, sans-serif; font-weight: 800; letter-spacing: -0.02em; }
+  .brand-mark { font-family: 'Sarabun', system-ui, sans-serif; font-weight: 800; font-size: 22px; color: #65a30d; }
+  .btn-primary-pill { background: #319754; color: white; padding: 9px 24px; border-radius: 9999px; font-weight: 600; font-size: 14px; border: 1px solid #319754; transition: all .15s; }
+  .btn-primary-pill:hover { background: #26713e; }
+  .btn-outline-pill { background: white; color: #26713e; padding: 9px 24px; border-radius: 9999px; font-weight: 600; font-size: 14px; border: 1px solid #319754; transition: all .15s; }
+  .btn-outline-pill:hover { background: #f0fdf4; }
+  .main-nav { background: #319754; color: white; }
+  .bg-green-600 { background-color: #319754 !important; }
+  .bg-green-700 { background-color: #26713e !important; }
+  .text-green-600 { color: #319754 !important; }
+  .text-green-700 { color: #26713e !important; }
+  .text-green-800 { color: #1f5a31 !important; }
+  .border-green-300 { border-color: #86c79b !important; }
+  .border-green-400 { border-color: #66b482 !important; }
+  .hover\:bg-green-700:hover { background-color: #26713e !important; }
+  .hover\:border-green-300:hover { border-color: #86c79b !important; }
+  .hover\:border-green-400:hover { border-color: #66b482 !important; }
+  .main-nav a, .main-nav button.navbtn { color: white; padding: 14px 22px; font-weight: 600; font-size: 15px; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 0; cursor: pointer; font-family: inherit; }
+  .main-nav a:hover, .main-nav button.navbtn:hover { background: rgba(0,0,0,.08); }
+  .main-nav a.active, .main-nav button.navbtn.active { background: white; color: #319754; border-radius: 9999px; margin: 6px 4px; padding: 8px 22px; }
+  .nav-dropdown { position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 14px; box-shadow: 0 12px 32px -8px rgba(0,0,0,.25); min-width: 260px; padding: 6px; z-index: 100; margin-top: 4px; }
+  .main-nav .nav-dropdown a { display: flex !important; align-items: center; gap: 10px; padding: 10px 14px !important; color: #1f2937 !important; background: transparent; border-radius: 10px; font-size: 14px; font-weight: 500; margin: 0; }
+  .main-nav .nav-dropdown a:hover { background: #f0fdf4 !important; color: #26713e !important; }
+  .main-nav .nav-dropdown a.active { background: #319754 !important; color: white !important; margin: 0; }
+  .main-nav { overflow: visible !important; }
+  .main-nav > div { overflow: visible !important; }
+  .settings-pop { position: absolute; top: calc(100% + 8px); right: 0; background: white; border: 1px solid #e5e7eb; border-radius: 14px; box-shadow: 0 12px 32px -8px rgba(0,0,0,.2); width: 320px; padding: 16px; z-index: 60; }
+  .switch { position: relative; width: 44px; height: 24px; background: #e5e7eb; border-radius: 9999px; cursor: pointer; transition: background .15s; flex-shrink: 0; }
+  .switch.on { background: #319754; }
+  .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform .15s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .switch.on::after { transform: translateX(20px); }
+  .prog-card { transition: all .2s; }
+  .prog-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px -10px rgba(22,163,74,.18); }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
+  .filter-pill { padding: 6px 14px; border-radius: 9999px; font-size: 12px; font-weight: 600; border: 2px solid; transition: all .15s; cursor: pointer; }
+  .filter-pill.active { background: #319754; color: white; border-color: #319754; }
+  .filter-pill:not(.active) { background: white; color: #4b5563; border-color: #e5e7eb; }
+  .filter-pill:not(.active):hover { border-color: #319754; color: #319754; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useMemo, useEffect } = React;
+
+const PROGRAMS = [
+  {
+    id: 'p1', emoji: '🌙', title: 'ชาสมุนไพรช่วยนอนหลับ',
+    brand: 'Sleep Well Co.', category: 'sleep', categoryLabel: 'นอนหลับ',
+    color: 'purple',
+    duration: 7, applied: 82, capacity: 100,
+    closesIn: '5 วัน', startDate: '15 มี.ค. 2569',
+    description: 'ชาสมุนไพรสูตรพิเศษ ผสมคาโมไมล์ ลาเวนเดอร์ เพื่อช่วยให้นอนหลับง่ายขึ้น',
+    targetGroups: ['ปัญหาการนอน', 'อายุ 25-50', 'ทำงานเครียด'],
+    rewards: { points: 150, bonus: 'ส่วนลด 30% เมื่อสินค้าเปิดขาย' },
+    requirements: ['ไม่ได้ทาน sleeping pill', 'มีอาการนอนหลับยาก ≥ 2 ครั้ง/สัปดาห์'],
+    surveyStages: 3,
+  },
+  {
+    id: 'p2', emoji: '☕', title: 'กาแฟ Focus + สมุนไพร',
+    brand: 'BrainBoost', category: 'focus', categoryLabel: 'ทำงานดึก',
+    color: 'orange',
+    duration: 14, applied: 145, capacity: 200,
+    closesIn: '12 วัน', startDate: '20 มี.ค. 2569',
+    description: 'กาแฟผสมโสม + bacopa monnieri เพื่อเพิ่ม focus และลดความเหนื่อยล้า',
+    targetGroups: ['คนทำงานดึก', 'นักเรียน/นักศึกษา', 'ดื่มกาแฟประจำ'],
+    rewards: { points: 250, bonus: 'สินค้า full size ฟรี 1 ขวด' },
+    requirements: ['ดื่มกาแฟ ≥ 1 แก้ว/วัน', 'อายุ 18+'],
+    surveyStages: 3,
+  },
+  {
+    id: 'p3', emoji: '💪', title: 'โปรตีนสมุนไพรหลังออกกำลัง',
+    brand: 'HerbPro', category: 'fitness', categoryLabel: 'นักกีฬา',
+    color: 'rose',
+    duration: 21, applied: 38, capacity: 50,
+    closesIn: '3 วัน', startDate: '12 มี.ค. 2569',
+    description: 'โปรตีนพืชผสมสมุนไพร 7 ชนิด ลดอาการปวดเมื่อยหลังออกกำลัง',
+    targetGroups: ['ออกกำลังสม่ำเสมอ', 'นักกีฬาสมัครเล่น/อาชีพ'],
+    rewards: { points: 400, bonus: 'สินค้า 1 เดือนเต็ม + คะแนน Gold tier ทันที' },
+    requirements: ['ออกกำลังกาย ≥ 3 ครั้ง/สัปดาห์', 'ไม่มีปัญหาไต'],
+    surveyStages: 3,
+  },
+  {
+    id: 'p4', emoji: '🌸', title: 'เซรั่มสมุนไพรลดสิว',
+    brand: 'Herba Beauty', category: 'skincare', categoryLabel: 'Skincare',
+    color: 'pink',
+    duration: 28, applied: 230, capacity: 300,
+    closesIn: '8 วัน', startDate: '18 มี.ค. 2569',
+    description: 'เซรั่มสกัดจากใบบัวบกและขมิ้นชัน สำหรับผิวเป็นสิว',
+    targetGroups: ['ผิวเป็นสิว', 'อายุ 16-35', 'ผิวมัน/ผสม'],
+    rewards: { points: 350, bonus: 'ส่วนลด 50% + early access' },
+    requirements: ['มีสิว ≥ 5 จุด', 'ไม่ทานยาเร่งวัยรุ่น'],
+    surveyStages: 3,
+  },
+  {
+    id: 'p5', emoji: '🍵', title: 'ชาเขียวสมุนไพรลดน้ำหนัก',
+    brand: 'GreenSlim', category: 'wellness', categoryLabel: 'สุขภาพ',
+    color: 'green',
+    duration: 30, applied: 78, capacity: 150,
+    closesIn: '15 วัน', startDate: '22 มี.ค. 2569',
+    description: 'ชาเขียวผสมใบบัวบก ใบมะรุม ลดน้ำหนักแบบธรรมชาติ',
+    targetGroups: ['อยากลดน้ำหนัก', 'ดื่มชาประจำ'],
+    rewards: { points: 300, bonus: 'สินค้า 1 เดือน + วัดผลรอบเอวฟรี' },
+    requirements: ['BMI 23+', 'ไม่ตั้งครรภ์'],
+    surveyStages: 3,
+  },
+  {
+    id: 'p6', emoji: '🧓', title: 'ขมิ้นชันแคปซูลข้อเข่า',
+    brand: 'GoldenAge', category: 'senior', categoryLabel: 'ผู้สูงอายุ',
+    color: 'amber',
+    duration: 30, applied: 24, capacity: 80,
+    closesIn: '20 วัน', startDate: '25 มี.ค. 2569',
+    description: 'แคปซูลขมิ้นชันสกัดเข้มข้น ลดอาการปวดข้อเข่า',
+    targetGroups: ['อายุ 50+', 'ปวดเข่าเรื้อรัง'],
+    rewards: { points: 200, bonus: 'ส่วนลด 40% สำหรับสมาชิก' },
+    requirements: ['ไม่ทาน warfarin', 'อายุ 50+'],
+    surveyStages: 3,
+  },
+];
+
+const CATEGORIES = [
+  { id: 'all', label: 'ทั้งหมด', count: PROGRAMS.length },
+  { id: 'sleep', label: '🌙 นอนหลับ' },
+  { id: 'focus', label: '☕ Focus' },
+  { id: 'fitness', label: '💪 ออกกำลัง' },
+  { id: 'skincare', label: '🌸 Skincare' },
+  { id: 'wellness', label: '🍵 สุขภาพ' },
+  { id: 'senior', label: '🧓 ผู้สูงอายุ' },
+];
+
+const colorPalette = {
+  purple: { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-200', dot: 'bg-purple-500', solid: 'bg-purple-600' },
+  orange: { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-200', dot: 'bg-orange-500', solid: 'bg-orange-600' },
+  rose:   { bg: 'bg-rose-100',   text: 'text-rose-700',   border: 'border-rose-200',   dot: 'bg-rose-500',   solid: 'bg-rose-600' },
+  pink:   { bg: 'bg-pink-100',   text: 'text-pink-700',   border: 'border-pink-200',   dot: 'bg-pink-500',   solid: 'bg-pink-600' },
+  green:  { bg: 'bg-green-100',  text: 'text-green-700',  border: 'border-green-200',  dot: 'bg-green-500',  solid: 'bg-green-600' },
+  amber:  { bg: 'bg-amber-100',  text: 'text-amber-700',  border: 'border-amber-200',  dot: 'bg-amber-500',  solid: 'bg-amber-600' },
+};
+
+/* ============================ HEADER ============================ */
+function Header({ active = 'metalab' }) {
+  const [showTestlab, setShowTestlab] = useState(() => {
+    const v = localStorage.getItem('mh_show_testlab');
+    return v === null ? true : v === '1';
+  });
+  const [ddOpen, setDdOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('mh_show_testlab', showTestlab ? '1' : '0');
+  }, [showTestlab]);
+
+  useEffect(() => {
+    const onDocClick = () => { setDdOpen(false); setSettingsOpen(false); };
+    document.addEventListener('click', onDocClick);
+    return () => document.removeEventListener('click', onDocClick);
+  }, []);
+
+  return (
+    <header className="sticky top-0 z-40 bg-white">
+      <div className="border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-4 flex-wrap">
+          <a href="mh-landing.html" className="flex items-center gap-2.5 flex-shrink-0">
+            <span className="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center text-2xl">🌿</span>
+            <span className="brand-mark">METAHERB</span>
+          </a>
+          <div className="flex-1 max-w-md mx-auto order-3 sm:order-2 w-full sm:w-auto">
+            <div className="flex items-center bg-white border border-gray-300 rounded-full p-0.5">
+              <input placeholder="ค้นหาสินค้าที่ต้องการ" className="bg-transparent border-0 outline-0 px-4 py-2 flex-1 text-sm" />
+              <button className="w-9 h-9 rounded-full bg-green-600 text-white flex items-center justify-center flex-shrink-0">🔍</button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 ml-auto order-2 sm:order-3">
+            <button className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg">🔔</button>
+            <button className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg">🛒</button>
+            <div className="relative" onClick={e => e.stopPropagation()}>
+              <button onClick={() => setSettingsOpen(!settingsOpen)} className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg" title="ตั้งค่าเมนู">⚙️</button>
+              {settingsOpen && (
+                <div className="settings-pop">
+                  <div className="font-bold text-sm mb-1">ตั้งค่าเมนู</div>
+                  <div className="text-xs text-gray-500 mb-4">เปิด/ปิด การแสดงเมนูพิเศษ</div>
+                  <div className="flex items-start gap-3 cursor-pointer p-2 -mx-2 rounded-lg hover:bg-gray-50" onClick={() => setShowTestlab(!showTestlab)}>
+                    <div className={`switch ${showTestlab ? 'on' : ''}`}></div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm">ผลิตภัณฑ์เพื่อการทดสอบ</div>
+                      <div className="text-[11px] text-gray-500 leading-snug mt-0.5">รวม MetaLab + Tester + Survey<br/>(เมนูสำหรับ admin ดูแลโปรแกรมทดลอง)</div>
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-gray-400 mt-3 pt-3 border-t border-gray-100">บันทึกอัตโนมัติ · ใช้กับทุกหน้า</div>
+                </div>
+              )}
+            </div>
+            <button className="btn-outline-pill hidden sm:inline-block">สมัครสมาชิก</button>
+            <button className="btn-primary-pill">เข้าสู่ระบบ</button>
+          </div>
+        </div>
+      </div>
+      <nav className="main-nav">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-1 overflow-x-auto">
+          <div className="flex items-center gap-1 mx-auto">
+            <a href="mh-landing.html" className={active === 'home' ? 'active' : ''}>หน้าหลัก</a>
+            <a href="https://metaherb.co.th" target="_blank">ผลิตภัณฑ์</a>
+
+            {showTestlab && (
+              <div className="relative" onClick={e => e.stopPropagation()}>
+                <button onClick={() => setDdOpen(!ddOpen)} className={`navbtn whitespace-nowrap ${(active === 'metalab' || active === 'tester' || active === 'survey') ? 'active' : ''}`}>
+                  ผลิตภัณฑ์เพื่อการทดสอบ
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                {ddOpen && (
+                  <div className="nav-dropdown">
+                    <a href="mh-metalab.html" className={active === 'metalab' ? 'active' : ''}>
+                      <span className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center text-lg">🧪</span>
+                      <div className="flex-1">
+                        <div className="font-semibold">ทดลองใช้สินค้า</div>
+                        <div className="text-[11px] text-gray-500">รับสินค้า Beta ฟรี + ทดลองใช้จริง</div>
+                      </div>
+                    </a>
+                    <a href="mh-tester.html" className={active === 'tester' ? 'active' : ''}>
+                      <span className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-lg">👥</span>
+                      <div className="flex-1">
+                        <div className="font-semibold">ลงทะเบียนผู้ทดสอบ</div>
+                        <div className="text-[11px] text-gray-500">สมัครเป็น Tester + กรอก profile</div>
+                      </div>
+                    </a>
+                    <a href="mh-survey.html" className={active === 'survey' ? 'active' : ''}>
+                      <span className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-lg">📋</span>
+                      <div className="flex-1">
+                        <div className="font-semibold">แบบประเมิน</div>
+                        <div className="text-[11px] text-gray-500">ตอบ survey 3 ระยะ · สะสมแต้ม</div>
+                      </div>
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <a href="https://metaherb.co.th" target="_blank">เกี่ยวกับเรา</a>
+          </div>
+          <a href="https://metaherb.co.th" target="_blank" className="text-xs opacity-80 flex-shrink-0">↗ ไปร้านค้า metaherb.co.th</a>
+        </div>
+      </nav>
+    </header>
+  );
+}
+
+/* ============================ PROGRAM CARD ============================ */
+function ProgramCard({ p, onOpen }) {
+  const pct = Math.round((p.applied / p.capacity) * 100);
+  const c = colorPalette[p.color];
+  const urgent = parseInt(p.closesIn) <= 5;
+  return (
+    <div className="prog-card bg-white rounded-2xl border-2 border-stone-200 overflow-hidden cursor-pointer" onClick={() => onOpen(p)}>
+      {/* Hero strip (พื้นขาว) */}
+      <div className="bg-white px-5 py-5 relative border-b border-stone-100">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className={`chip ${c.bg} ${c.text} border ${c.border} flex-shrink-0`}>
+              {p.categoryLabel}
+            </span>
+            <div className={`w-14 h-14 rounded-2xl ${c.bg} flex items-center justify-center text-3xl shadow-sm flex-shrink-0`}>{p.emoji}</div>
+          </div>
+          {urgent && (
+            <span className="chip bg-red-500 text-white animate-pulse flex-shrink-0">
+              🔥 ปิดรับใน {p.closesIn}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="p-5">
+        <h3 className="font-bold text-lg leading-tight mb-1">{p.title}</h3>
+        <div className="text-xs text-stone-500 mb-3">{p.brand}</div>
+        <p className="text-sm text-stone-600 line-clamp-2 mb-4 leading-relaxed">{p.description}</p>
+
+        {/* Meta */}
+        <div className="grid grid-cols-3 gap-2 mb-4 pb-4 border-b border-stone-100">
+          <div>
+            <div className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">ระยะเวลา</div>
+            <div className="font-bold text-sm">{p.duration} วัน</div>
+          </div>
+          <div>
+            <div className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">เริ่ม</div>
+            <div className="font-bold text-sm">{p.startDate.split(' ').slice(0,2).join(' ')}</div>
+          </div>
+          <div>
+            <div className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">รางวัล</div>
+            <div className="font-bold text-sm text-amber-700">{p.rewards.points} pts</div>
+          </div>
+        </div>
+
+        {/* Progress */}
+        <div className="flex items-center justify-between text-xs text-stone-500 mb-1.5">
+          <span><b className="text-stone-900">{p.applied}</b> / {p.capacity} สมัครแล้ว</span>
+          <span className="font-mono">{pct}%</span>
+        </div>
+        <div className="h-2 bg-stone-100 rounded-full overflow-hidden mb-4">
+          <div className={`h-full ${c.solid} rounded-full`} style={{ width: pct + '%' }}></div>
+        </div>
+
+        <a href={`mh-tester.html?enroll=${p.id}`}
+          onClick={e => e.stopPropagation()}
+          className={`w-full block text-center ${c.solid} hover:opacity-90 text-white font-bold text-sm py-2.5 rounded-xl`}>
+          สมัครเข้าร่วม →
+        </a>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ DETAIL MODAL ============================ */
+function DetailModal({ program, onClose }) {
+  if (!program) return null;
+  const c = colorPalette[program.color];
+  const pct = Math.round((program.applied / program.capacity) * 100);
+  return (
+    <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-3" onClick={onClose}>
+      <div className="bg-white max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl" onClick={e => e.stopPropagation()}>
+        {/* Hero (พื้นขาว) */}
+        <div className="bg-white px-6 py-8 relative border-b border-stone-100">
+          <button onClick={onClose} className="absolute top-4 right-4 w-9 h-9 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-600 text-xl">✕</button>
+          <div className={`w-20 h-20 rounded-2xl ${c.bg} flex items-center justify-center text-5xl shadow-sm mb-4`}>{program.emoji}</div>
+          <span className={`chip ${c.bg} ${c.text} border ${c.border}`}>{program.categoryLabel}</span>
+          <h2 className="heading-display text-2xl mt-3 mb-1">{program.title}</h2>
+          <div className="text-sm text-stone-700">{program.brand}</div>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 space-y-6">
+          <p className="text-stone-700 leading-relaxed">{program.description}</p>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-stone-50 rounded-2xl">
+            <div>
+              <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">ระยะ</div>
+              <div className="font-bold text-lg">{program.duration} วัน</div>
+            </div>
+            <div>
+              <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">เริ่ม</div>
+              <div className="font-bold text-lg">{program.startDate}</div>
+            </div>
+            <div>
+              <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">รับ</div>
+              <div className="font-bold text-lg">{program.capacity} คน</div>
+            </div>
+            <div>
+              <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">ปิดรับใน</div>
+              <div className="font-bold text-lg text-red-600">{program.closesIn}</div>
+            </div>
+          </div>
+
+          {/* Target groups */}
+          <div>
+            <div className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">🎯 เหมาะกับกลุ่ม</div>
+            <div className="flex flex-wrap gap-2">
+              {program.targetGroups.map((g, i) => (
+                <span key={i} className={`chip ${c.bg} ${c.text} border ${c.border}`}>{g}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Requirements */}
+          <div>
+            <div className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">✓ คุณสมบัติ</div>
+            <ul className="space-y-1.5">
+              {program.requirements.map((r, i) => (
+                <li key={i} className="flex gap-2 text-sm text-stone-700"><span className="text-green-600">✓</span> {r}</li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Survey stages */}
+          <div>
+            <div className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">📋 Survey 3 ระยะ</div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="text-center p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                <div className="text-2xl mb-1">A</div>
+                <div className="text-[11px] font-bold text-amber-700">ก่อนใช้</div>
+              </div>
+              <div className="text-center p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                <div className="text-2xl mb-1">B</div>
+                <div className="text-[11px] font-bold text-blue-700">ระหว่างใช้</div>
+              </div>
+              <div className="text-center p-3 bg-green-50 border border-green-200 rounded-xl">
+                <div className="text-2xl mb-1">C</div>
+                <div className="text-[11px] font-bold text-green-700">หลังจบ</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Rewards */}
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-2xl">🏆</span>
+              <div className="font-bold">รางวัลที่จะได้</div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div>
+                <div className="text-[11px] font-bold text-amber-700 uppercase">คะแนน</div>
+                <div className="font-extrabold text-2xl text-amber-700">{program.rewards.points}</div>
+              </div>
+              <div className="flex-1 pl-4 border-l border-amber-300">
+                <div className="text-[11px] font-bold text-amber-700 uppercase mb-0.5">โบนัส</div>
+                <div className="text-sm text-stone-700">{program.rewards.bonus}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Progress */}
+          <div>
+            <div className="flex items-center justify-between text-sm mb-1.5">
+              <span><b>{program.applied}</b> / {program.capacity} สมัครแล้ว</span>
+              <span className="text-stone-500 font-mono">{pct}%</span>
+            </div>
+            <div className="h-3 bg-stone-100 rounded-full overflow-hidden">
+              <div className={`h-full ${c.solid}`} style={{ width: pct + '%' }}></div>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="flex gap-2 pt-2">
+            <button onClick={onClose} className="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold py-3 rounded-xl">ปิด</button>
+            <a href={`mh-tester.html?enroll=${program.id}`}
+              className={`flex-[2] text-center ${c.solid} hover:opacity-90 text-white font-bold py-3 rounded-xl shadow-lg`}>
+              สมัครเข้าร่วมโปรแกรม →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ APP ============================ */
+function App() {
+  const [category, setCategory] = useState('all');
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('closing');
+  const [selected, setSelected] = useState(null);
+
+  const filtered = useMemo(() => {
+    let arr = [...PROGRAMS];
+    if (category !== 'all') arr = arr.filter(p => p.category === category);
+    if (search.trim()) {
+      const s = search.toLowerCase();
+      arr = arr.filter(p =>
+        p.title.toLowerCase().includes(s) ||
+        p.brand.toLowerCase().includes(s) ||
+        p.description.toLowerCase().includes(s)
+      );
+    }
+    if (sort === 'closing') arr.sort((a, b) => parseInt(a.closesIn) - parseInt(b.closesIn));
+    if (sort === 'popular') arr.sort((a, b) => (b.applied / b.capacity) - (a.applied / a.capacity));
+    if (sort === 'reward')  arr.sort((a, b) => b.rewards.points - a.rewards.points);
+    return arr;
+  }, [category, search, sort]);
+
+  return (
+    <div className="min-h-screen">
+      <Header />
+
+      {/* Hero strip */}
+      <section className="bg-gradient-to-br from-green-50 to-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+          <div className="text-xs font-bold uppercase tracking-widest text-green-700 mb-2">METALAB</div>
+          <h1 className="heading-display text-3xl sm:text-4xl mb-2">Active Beta Programs</h1>
+          <p className="text-gray-600 max-w-2xl">เลือกโปรแกรมที่เหมาะกับคุณ ทดลองสินค้าฟรี + ตอบ survey เพื่อสะสมแต้ม</p>
+
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl">
+            <div className="bg-white rounded-xl p-3 border border-gray-200">
+              <div className="text-xs text-gray-500">โปรแกรมเปิดอยู่</div>
+              <div className="font-extrabold text-xl text-green-700">{PROGRAMS.length}</div>
+            </div>
+            <div className="bg-white rounded-xl p-3 border border-gray-200">
+              <div className="text-xs text-gray-500">รับ tester รวม</div>
+              <div className="font-extrabold text-xl">{PROGRAMS.reduce((s,p)=>s+p.capacity,0)}</div>
+            </div>
+            <div className="bg-white rounded-xl p-3 border border-gray-200">
+              <div className="text-xs text-gray-500">สมัครแล้ว</div>
+              <div className="font-extrabold text-xl text-green-700">{PROGRAMS.reduce((s,p)=>s+p.applied,0)}</div>
+            </div>
+            <div className="bg-white rounded-xl p-3 border border-gray-200">
+              <div className="text-xs text-gray-500">รางวัลรวม</div>
+              <div className="font-extrabold text-xl text-amber-600">{PROGRAMS.reduce((s,p)=>s+p.rewards.points,0).toLocaleString()} pts</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Search + filter */}
+      <section className="bg-white border-b border-gray-200 sticky top-[60px] z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+          <div className="flex gap-3 items-center mb-3 flex-wrap">
+            <div className="relative flex-1 min-w-[200px]">
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="ค้นหาโปรแกรม / brand / สินค้า..."
+                className="w-full pl-10 pr-3 py-2.5 text-sm border border-gray-200 rounded-full focus:outline-none focus:border-green-500"
+              />
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+            </div>
+            <select value={sort} onChange={e => setSort(e.target.value)}
+              className="text-sm border border-gray-200 rounded-full px-4 py-2.5 bg-white cursor-pointer focus:outline-none focus:border-green-500">
+              <option value="closing">ปิดรับเร็วสุด</option>
+              <option value="popular">นิยมสุด</option>
+              <option value="reward">รางวัลสูงสุด</option>
+            </select>
+          </div>
+          <div className="flex flex-wrap gap-2 overflow-x-auto pb-1">
+            {CATEGORIES.map(cat => (
+              <button key={cat.id} onClick={() => setCategory(cat.id)}
+                className={`filter-pill ${category === cat.id ? 'active' : ''} whitespace-nowrap`}>
+                {cat.label} {cat.count !== undefined && <span className="ml-1 opacity-70">({cat.count})</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Programs grid */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {filtered.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-3">🔍</div>
+            <div className="font-bold text-lg text-stone-700">ไม่พบโปรแกรมที่ตรงกับเงื่อนไข</div>
+            <div className="text-sm text-stone-500 mt-1">ลองเปลี่ยน filter หรือ search ใหม่</div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filtered.map(p => <ProgramCard key={p.id} p={p} onOpen={setSelected} />)}
+          </div>
+        )}
+      </main>
+
+      <DetailModal program={selected} onClose={() => setSelected(null)} />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

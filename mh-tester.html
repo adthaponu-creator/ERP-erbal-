@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ลงทะเบียนผู้ทดสอบ — MetaHerb MetaLab</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', 'Sarabun', system-ui, sans-serif; color: #1f2937; background: #ffffff; }
+  .heading-display { font-family: 'Sarabun', system-ui, sans-serif; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+  .brand-mark { font-family: 'Sarabun', system-ui, sans-serif; font-weight: 800; font-size: 22px; color: #65a30d; }
+
+  /* Brand green = #319754 */
+  .bg-brand { background-color: #319754; }
+  .bg-brand-dark { background-color: #26713e; }
+  .bg-brand-light { background-color: #e9f5ee; }
+  .text-brand { color: #319754; }
+  .text-brand-dark { color: #26713e; }
+  .border-brand { border-color: #319754; }
+  .bg-green-600 { background-color: #319754 !important; }
+  .bg-green-700 { background-color: #26713e !important; }
+  .text-green-600 { color: #319754 !important; }
+  .text-green-700 { color: #26713e !important; }
+  .text-green-800 { color: #1f5a31 !important; }
+  .border-green-300 { border-color: #86c79b !important; }
+  .border-green-400 { border-color: #66b482 !important; }
+  .hover\:bg-green-700:hover { background-color: #26713e !important; }
+  .hover\:border-green-300:hover { border-color: #86c79b !important; }
+  .hover\:border-green-400:hover { border-color: #66b482 !important; }
+
+  .btn-primary-pill { background: #319754; color: white; padding: 9px 24px; border-radius: 9999px; font-weight: 600; font-size: 14px; border: 1px solid #319754; transition: all .15s; }
+  .btn-primary-pill:hover { background: #26713e; }
+  .btn-outline-pill { background: white; color: #26713e; padding: 9px 24px; border-radius: 9999px; font-weight: 600; font-size: 14px; border: 1px solid #319754; transition: all .15s; }
+  .btn-outline-pill:hover { background: #f0fdf4; }
+
+  .main-nav { background: #319754; color: white; }
+  .main-nav a, .main-nav button.navbtn { color: white; padding: 14px 22px; font-weight: 600; font-size: 15px; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 0; cursor: pointer; font-family: inherit; }
+  .main-nav a:hover, .main-nav button.navbtn:hover { background: rgba(0,0,0,.08); }
+  .main-nav a.active, .main-nav button.navbtn.active { background: white; color: #319754; border-radius: 9999px; margin: 6px 4px; padding: 8px 22px; }
+  .nav-dropdown { position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 14px; box-shadow: 0 12px 32px -8px rgba(0,0,0,.25); min-width: 260px; padding: 6px; z-index: 100; margin-top: 4px; }
+  .main-nav .nav-dropdown a { display: flex !important; align-items: center; gap: 10px; padding: 10px 14px !important; color: #1f2937 !important; background: transparent; border-radius: 10px; font-size: 14px; font-weight: 500; margin: 0; }
+  .main-nav .nav-dropdown a:hover { background: #f0fdf4 !important; color: #26713e !important; }
+  .main-nav .nav-dropdown a.active { background: #319754 !important; color: white !important; margin: 0; }
+  .settings-pop { position: absolute; top: calc(100% + 8px); right: 0; background: white; border: 1px solid #e5e7eb; border-radius: 14px; box-shadow: 0 12px 32px -8px rgba(0,0,0,.2); width: 320px; padding: 16px; z-index: 60; }
+  .switch { position: relative; width: 44px; height: 24px; background: #e5e7eb; border-radius: 9999px; cursor: pointer; transition: background .15s; flex-shrink: 0; }
+  .switch.on { background: #319754; }
+  .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform .15s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .switch.on::after { transform: translateX(20px); }
+  .main-nav { overflow: visible !important; }
+  .main-nav > div { overflow: visible !important; }
+
+  .chip-option {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 16px; border-radius: 9999px;
+    border: 2px solid #e5e7eb; background: white;
+    font-size: 13px; font-weight: 600; color: #4b5563;
+    cursor: pointer; transition: all .15s;
+  }
+  .chip-option:hover { border-color: #319754; color: #319754; }
+  .chip-option.selected { background: #319754; color: white; border-color: #319754; }
+  .step-dot {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px;
+    border: 3px solid; transition: all .2s;
+  }
+  .step-dot.todo   { background: white;   border-color: #e5e7eb; color: #9ca3af; }
+  .step-dot.active { background: #319754; border-color: #319754; color: white; }
+  .step-dot.done   { background: #319754; border-color: #319754; color: white; }
+
+  /* Card variants for visual interest */
+  .card-glow { box-shadow: 0 4px 12px -4px rgba(49,151,84,.15); }
+  .card-glow-amber { box-shadow: 0 8px 24px -8px rgba(245,158,11,.30); }
+
+  /* Hero pattern */
+  .hero-pattern {
+    background:
+      radial-gradient(ellipse at top right, rgba(49,151,84,.10), transparent 50%),
+      radial-gradient(ellipse at bottom left, rgba(234,179,8,.06), transparent 50%),
+      linear-gradient(135deg, #f0fdf4 0%, #fefce8 100%);
+  }
+
+  /* Gradient cards */
+  .grad-purple { background: linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%); }
+  .grad-orange { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); }
+  .grad-rose   { background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); }
+  .grad-blue   { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
+  .grad-green  { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
+  .grad-amber  { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); }
+  .grad-pink   { background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); }
+
+  /* Animated pulse for ongoing items */
+  @keyframes soft-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+  .pulse-soft { animation: soft-pulse 2s infinite; }
+
+  /* Confetti dots for achievements */
+  .achievement-card { position: relative; overflow: hidden; }
+  .achievement-card::before {
+    content: ''; position: absolute; top: -30%; right: -10%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(255,215,0,.18), transparent 70%);
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useMemo, useEffect } = React;
+
+const LIFESTYLE_GROUPS = [
+  { id: 'general',   label: '🙂 ผู้บริโภคทั่วไป' },
+  { id: 'health',    label: '💚 สายสุขภาพ' },
+  { id: 'senior',    label: '🧓 ผู้สูงอายุ (50+)' },
+  { id: 'athlete',   label: '💪 นักกีฬา/ออกกำลัง' },
+  { id: 'coffee',    label: '☕ คนดื่มกาแฟ' },
+  { id: 'sleep',     label: '🌙 มีปัญหาการนอน' },
+  { id: 'skincare',  label: '✨ สาย skincare' },
+  { id: 'mom',       label: '🤱 คุณแม่' },
+  { id: 'student',   label: '📚 นักเรียน/นักศึกษา' },
+  { id: 'office',    label: '💼 พนักงานออฟฟิศ' },
+];
+
+const HEALTH_ISSUES = [
+  { id: 'sleep',     label: '😴 นอนหลับยาก' },
+  { id: 'stress',    label: '😰 เครียด/วิตกกังวล' },
+  { id: 'fatigue',   label: '😩 อ่อนเพลีย' },
+  { id: 'skin',      label: '🌸 ปัญหาผิว/สิว' },
+  { id: 'digestion', label: '🍽 ระบบย่อยอาหาร' },
+  { id: 'joints',    label: '🦴 ปวดข้อ/กล้ามเนื้อ' },
+  { id: 'weight',    label: '⚖️ น้ำหนัก' },
+  { id: 'immune',    label: '🛡 ภูมิคุ้มกัน' },
+  { id: 'focus',     label: '🧠 สมาธิ/ความจำ' },
+  { id: 'none',      label: '✅ ไม่มี' },
+];
+
+const CONSUMPTION_HABITS = [
+  { id: 'tea',       label: '🍵 ชาสมุนไพร' },
+  { id: 'capsule',   label: '💊 อาหารเสริม (แคปซูล)' },
+  { id: 'powder',    label: '🥤 ผง (ชง/ผสม)' },
+  { id: 'oil',       label: '💧 น้ำมัน (หยดใต้ลิ้น/นวด)' },
+  { id: 'tincture',  label: '🧪 ทิงเจอร์/Extract' },
+  { id: 'cream',     label: '🧴 ครีม/เซรั่ม (ทาภายนอก)' },
+];
+
+const ENROLL_MAP = {
+  p1: { id: 'p1', emoji: '🌙', title: 'ชาสมุนไพรช่วยนอนหลับ', brand: 'Sleep Well Co.', gradient: 'grad-purple', dotColor: 'bg-purple-500' },
+  p2: { id: 'p2', emoji: '☕', title: 'กาแฟ Focus + สมุนไพร',     brand: 'BrainBoost',     gradient: 'grad-orange', dotColor: 'bg-orange-500' },
+  p3: { id: 'p3', emoji: '💪', title: 'โปรตีนสมุนไพรหลังออกกำลัง', brand: 'HerbPro',        gradient: 'grad-rose',   dotColor: 'bg-rose-500'   },
+  p4: { id: 'p4', emoji: '🌸', title: 'เซรั่มสมุนไพรลดสิว',        brand: 'Herba Beauty',  gradient: 'grad-pink',   dotColor: 'bg-pink-500'   },
+  p5: { id: 'p5', emoji: '🍵', title: 'ชาเขียวสมุนไพรลดน้ำหนัก',   brand: 'GreenSlim',      gradient: 'grad-green',  dotColor: 'bg-green-500'  },
+  p6: { id: 'p6', emoji: '🧓', title: 'ขมิ้นชันแคปซูลข้อเข่า',     brand: 'GoldenAge',     gradient: 'grad-amber',  dotColor: 'bg-amber-500'  },
+};
+
+/* ============================ HEADER ============================ */
+function Header({ active = 'tester', isLoggedIn, onLogin, onLogout, user }) {
+  const [showTestlab, setShowTestlab] = useState(() => {
+    const v = localStorage.getItem('mh_show_testlab');
+    return v === null ? true : v === '1';
+  });
+  const [ddOpen, setDdOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  useEffect(() => { localStorage.setItem('mh_show_testlab', showTestlab ? '1' : '0'); }, [showTestlab]);
+  useEffect(() => {
+    const onDocClick = () => { setDdOpen(false); setSettingsOpen(false); setUserMenuOpen(false); };
+    document.addEventListener('click', onDocClick);
+    return () => document.removeEventListener('click', onDocClick);
+  }, []);
+
+  return (
+    <header className="sticky top-0 z-40 bg-white">
+      <div className="border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-4 flex-wrap">
+          <a href="mh-landing.html" className="flex items-center gap-2.5 flex-shrink-0">
+            <span className="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center text-2xl">🌿</span>
+            <span className="brand-mark">METAHERB</span>
+          </a>
+          <div className="flex-1 max-w-md mx-auto order-3 sm:order-2 w-full sm:w-auto">
+            <div className="flex items-center bg-white border border-gray-300 rounded-full p-0.5">
+              <input placeholder="ค้นหาสินค้าที่ต้องการ" className="bg-transparent border-0 outline-0 px-4 py-2 flex-1 text-sm" />
+              <button className="w-9 h-9 rounded-full bg-green-600 text-white flex items-center justify-center flex-shrink-0">🔍</button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 ml-auto order-2 sm:order-3">
+            <button className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg">🔔</button>
+            <button className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg">🛒</button>
+            <div className="relative" onClick={e => e.stopPropagation()}>
+              <button onClick={() => setSettingsOpen(!settingsOpen)} className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg" title="ตั้งค่าเมนู">⚙️</button>
+              {settingsOpen && (
+                <div className="settings-pop">
+                  <div className="font-bold text-sm mb-1">ตั้งค่าเมนู</div>
+                  <div className="text-xs text-gray-500 mb-4">เปิด/ปิด การแสดงเมนูพิเศษ</div>
+                  <div className="flex items-start gap-3 cursor-pointer p-2 -mx-2 rounded-lg hover:bg-gray-50" onClick={() => setShowTestlab(!showTestlab)}>
+                    <div className={`switch ${showTestlab ? 'on' : ''}`}></div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm">ผลิตภัณฑ์เพื่อการทดสอบ</div>
+                      <div className="text-[11px] text-gray-500 leading-snug mt-0.5">รวม 3 รายการในเมนู dropdown</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {isLoggedIn ? (
+              <div className="relative" onClick={e => e.stopPropagation()}>
+                <button onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-2 px-2 py-1 rounded-full hover:bg-gray-100">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-500 to-green-700 text-white flex items-center justify-center font-bold text-sm">{(user?.name || 'U')[0]}</div>
+                  <span className="hidden sm:inline text-sm font-semibold">{user?.name}</span>
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl py-1 z-50">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <div className="font-bold text-sm">{user?.name}</div>
+                      <div className="text-xs text-gray-500">{user?.email}</div>
+                    </div>
+                    <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50">👤 Profile</button>
+                    <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50">⚙️ Settings</button>
+                    <button onClick={onLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-t border-gray-100">→ ออกจากระบบ</button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <button onClick={() => onLogin('register')} className="btn-outline-pill hidden sm:inline-block">สมัครสมาชิก</button>
+                <button onClick={() => onLogin('login')} className="btn-primary-pill">เข้าสู่ระบบ</button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+      <nav className="main-nav">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-1 overflow-x-auto">
+          <div className="flex items-center gap-1 mx-auto">
+            <a href="mh-landing.html" className={active === 'home' ? 'active' : ''}>หน้าหลัก</a>
+            <a href="https://metaherb.co.th" target="_blank">ผลิตภัณฑ์</a>
+            {showTestlab && (
+              <div className="relative" onClick={e => e.stopPropagation()}>
+                <button onClick={() => setDdOpen(!ddOpen)} className={`navbtn whitespace-nowrap ${(active === 'metalab' || active === 'tester' || active === 'survey') ? 'active' : ''}`}>
+                  ผลิตภัณฑ์เพื่อการทดสอบ
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                {ddOpen && (
+                  <div className="nav-dropdown">
+                    <a href="mh-metalab.html" className={active === 'metalab' ? 'active' : ''}>
+                      <span className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center text-lg">🧪</span>
+                      <div className="flex-1"><div className="font-semibold">ทดลองใช้สินค้า</div><div className="text-[11px] text-gray-500">รับสินค้า Beta ฟรี + ทดลองใช้จริง</div></div>
+                    </a>
+                    <a href="mh-tester.html" className={active === 'tester' ? 'active' : ''}>
+                      <span className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-lg">👥</span>
+                      <div className="flex-1"><div className="font-semibold">ลงทะเบียนผู้ทดสอบ</div><div className="text-[11px] text-gray-500">สมัครเป็น Tester + กรอก profile</div></div>
+                    </a>
+                    <a href="mh-survey.html" className={active === 'survey' ? 'active' : ''}>
+                      <span className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-lg">📋</span>
+                      <div className="flex-1"><div className="font-semibold">แบบประเมิน</div><div className="text-[11px] text-gray-500">ตอบ survey 3 ระยะ · สะสมแต้ม</div></div>
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+            <a href="https://metaherb.co.th" target="_blank">เกี่ยวกับเรา</a>
+          </div>
+          <a href="https://metaherb.co.th" target="_blank" className="text-xs opacity-80 flex-shrink-0">↗ ไปร้านค้า metaherb.co.th</a>
+        </div>
+      </nav>
+    </header>
+  );
+}
+
+/* ============================ LOGIN GATE ============================ */
+function LoginGate({ mode, enrollProgram, onLogin, onSwitchMode, onGoRegister }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const submit = (e) => {
+    e?.preventDefault();
+    // Mock login — accept anything
+    onLogin({ name: email.split('@')[0] || 'User', email: email || 'demo@metaherb.co.th' });
+  };
+
+  return (
+    <div className="min-h-screen hero-pattern flex items-center justify-center px-4 py-12">
+      <div className="max-w-md w-full">
+        {enrollProgram && (
+          <div className="mb-5 bg-white border border-green-300 rounded-2xl p-4 flex items-center gap-3 card-glow">
+            <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center text-2xl flex-shrink-0">{enrollProgram.emoji}</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-green-700">คุณกำลังจะสมัครเข้าร่วม</div>
+              <div className="font-bold text-sm text-slate-900 leading-tight">{enrollProgram.title}</div>
+              <div className="text-xs text-gray-500">เข้าสู่ระบบก่อนเพื่อสมัคร</div>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-xl">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 rounded-full bg-green-100 mx-auto flex items-center justify-center text-3xl mb-3">🌿</div>
+            <h1 className="heading-display text-2xl mb-1">{mode === 'login' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิกใหม่'}</h1>
+            <p className="text-sm text-gray-500">
+              {mode === 'login' ? 'เข้าสู่ระบบเพื่อดู dashboard และจัดการโปรแกรม' : 'สร้างบัญชีฟรี เพื่อสมัครเป็น Tester'}
+            </p>
+          </div>
+
+          <form onSubmit={submit} className="space-y-3">
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Email</label>
+              <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 text-sm" />
+            </div>
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Password</label>
+              <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 text-sm" />
+            </div>
+            {mode === 'login' && (
+              <div className="flex items-center justify-between text-xs">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" className="w-4 h-4 accent-green-600" />
+                  <span className="text-gray-600">จดจำฉัน</span>
+                </label>
+                <a href="#" className="text-green-700 font-semibold hover:underline">ลืมรหัสผ่าน?</a>
+              </div>
+            )}
+            <button type="submit" className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-full mt-2 card-glow">
+              {mode === 'login' ? 'เข้าสู่ระบบ →' : 'สมัครสมาชิก →'}
+            </button>
+          </form>
+
+          <div className="my-5 flex items-center gap-3">
+            <div className="flex-1 h-px bg-gray-200"></div>
+            <div className="text-xs text-gray-400">หรือ</div>
+            <div className="flex-1 h-px bg-gray-200"></div>
+          </div>
+
+          <div className="space-y-2">
+            <button className="w-full py-2.5 border-2 border-gray-200 hover:border-gray-300 rounded-full font-semibold text-sm flex items-center justify-center gap-2">
+              <span className="text-lg">🇬</span> เข้าสู่ระบบด้วย Google
+            </button>
+            <button className="w-full py-2.5 border-2 border-gray-200 hover:border-gray-300 rounded-full font-semibold text-sm flex items-center justify-center gap-2">
+              <span className="text-lg">📘</span> เข้าสู่ระบบด้วย Facebook
+            </button>
+          </div>
+
+          <div className="text-center text-sm text-gray-500 mt-6">
+            {mode === 'login' ? (
+              <>ยังไม่มีบัญชี? <button onClick={onGoRegister} className="text-green-700 font-bold hover:underline">สมัครสมาชิก</button></>
+            ) : (
+              <>มีบัญชีแล้ว? <button onClick={() => onSwitchMode('login')} className="text-green-700 font-bold hover:underline">เข้าสู่ระบบ</button></>
+            )}
+          </div>
+        </div>
+
+        {/* Demo shortcut */}
+        <div className="mt-4 text-center">
+          <button onClick={() => onLogin({ name: 'คุณก้อง', email: 'demo@metaherb.co.th' })}
+            className="text-xs text-gray-500 hover:text-gray-800 underline">
+            🎬 Demo: เข้าสู่ระบบทันที (ข้าม)
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ SURVEY MODAL (inline) ============================ */
+function SurveyModal({ program, stage, onClose, onSubmit }) {
+  if (!program || !stage) return null;
+  const stageInfo = {
+    A: { title: 'ก่อนใช้ · Stage A', subtitle: 'ตอบก่อนรับสินค้า', points: 30, color: 'amber' },
+    B: { title: 'ระหว่างใช้ · Stage B', subtitle: 'ตอบหลังใช้ระหว่างทาง', points: 50, color: 'blue' },
+    C: { title: 'หลังจบ · Stage C', subtitle: 'ตอบเมื่อครบกำหนด', points: 70, color: 'green' },
+  }[stage];
+
+  const questions = {
+    A: [
+      { id: 'a1', q: 'เคยใช้สินค้ากลุ่ม "' + program.title + '" มาก่อนไหม?', kind: 'choice', options: ['ไม่เคย', 'เคย 1-2 ครั้ง', 'ใช้เป็นประจำ'] },
+      { id: 'a2', q: 'คาดหวังอะไรจากสินค้านี้?', kind: 'choice', multi: true, options: ['รสชาติดี', 'สรรพคุณดี', 'ราคาคุ้ม', 'ปลอดภัย'] },
+      { id: 'a3', q: 'ระดับปัญหาปัจจุบัน (1 = น้อย, 5 = มาก)', kind: 'rating', max: 5 },
+    ],
+    B: [
+      { id: 'b1', q: 'รสชาติเป็นยังไงบ้าง?', kind: 'rating', max: 5 },
+      { id: 'b2', q: 'กลิ่นเป็นยังไง?', kind: 'rating', max: 5 },
+      { id: 'b3', q: 'ความสะดวกในการใช้?', kind: 'rating', max: 5 },
+      { id: 'b4', q: 'อาการหลังใช้', kind: 'choice', multi: true, options: ['ดีขึ้น', 'รู้สึกดี', 'ปกติ', 'ไม่ค่อยรู้สึก', 'แย่ลง'] },
+    ],
+    C: [
+      { id: 'c1', q: 'จะซื้อไหม?', kind: 'choice', options: ['ซื้อแน่นอน', 'น่าจะซื้อ', 'ไม่แน่ใจ', 'ไม่ซื้อ'] },
+      { id: 'c2', q: 'ราคาที่เหมาะสม', kind: 'choice', options: ['<300', '300-500', '500-800', '800-1200', '>1200'] },
+      { id: 'c3', q: 'ให้คะแนนรวม', kind: 'rating', max: 5 },
+    ],
+  }[stage];
+
+  const [answers, setAnswers] = useState({});
+  const allDone = questions.every(q => {
+    const a = answers[q.id];
+    if (q.kind === 'rating') return a > 0;
+    if (q.kind === 'choice' && q.multi) return Array.isArray(a) && a.length > 0;
+    return a;
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-3" onClick={onClose}>
+      <div className="bg-white max-w-xl w-full max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className={`${program.gradient || 'grad-green'} px-6 py-5 relative`}>
+          <button onClick={onClose} className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/80 hover:bg-white flex items-center justify-center text-gray-600 text-xl">✕</button>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-3xl shadow-sm">{program.emoji}</div>
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-gray-700">{stageInfo.subtitle}</div>
+              <div className="font-bold text-sm">{program.title}</div>
+              <div className="text-xs text-gray-600">{program.brand}</div>
+            </div>
+          </div>
+          <h2 className="heading-display text-xl mt-3">📋 {stageInfo.title}</h2>
+          <div className="mt-1 text-xs text-gray-700">ตอบครบรับ <strong className="text-amber-700">+{stageInfo.points} pts</strong></div>
+        </div>
+
+        {/* Body */}
+        <div className="p-5 space-y-5">
+          {questions.map((q, idx) => (
+            <div key={q.id} className="bg-gray-50 rounded-xl p-4">
+              <div className="flex items-start gap-2 mb-3">
+                <span className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">{idx + 1}</span>
+                <h3 className="font-bold text-sm leading-tight flex-1">{q.q}</h3>
+              </div>
+
+              {q.kind === 'choice' && (
+                <div className="flex flex-wrap gap-2 ml-8">
+                  {q.options.map(opt => {
+                    const selected = q.multi
+                      ? (answers[q.id] || []).includes(opt)
+                      : answers[q.id] === opt;
+                    return (
+                      <button key={opt}
+                        onClick={() => {
+                          if (q.multi) {
+                            const arr = answers[q.id] || [];
+                            setAnswers({ ...answers, [q.id]: arr.includes(opt) ? arr.filter(x => x !== opt) : [...arr, opt] });
+                          } else {
+                            setAnswers({ ...answers, [q.id]: opt });
+                          }
+                        }}
+                        className={`chip-option text-xs ${selected ? 'selected' : ''}`}>
+                        {selected && <span>✓</span>} {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {q.kind === 'rating' && (
+                <div className="flex items-center gap-2 ml-8">
+                  {Array.from({ length: q.max }).map((_, i) => (
+                    <button key={i} onClick={() => setAnswers({ ...answers, [q.id]: i + 1 })}
+                      className="text-3xl hover:scale-110 transition-transform">
+                      {i < (answers[q.id] || 0) ? <span className="text-amber-400">★</span> : <span className="text-gray-300">★</span>}
+                    </button>
+                  ))}
+                  {answers[q.id] > 0 && <span className="ml-2 text-sm text-gray-600">{answers[q.id]} / {q.max}</span>}
+                </div>
+              )}
+            </div>
+          ))}
+
+          <div className="text-xs text-gray-500 text-center">
+            {allDone ? <span className="text-green-700 font-bold">✓ ตอบครบแล้ว — กดส่งเลย!</span> : `ตอบครบ ${questions.length - questions.filter(q => { const a = answers[q.id]; if (q.kind === 'rating') return a > 0; if (q.kind === 'choice' && q.multi) return Array.isArray(a) && a.length > 0; return a; }).length} ข้อก่อนส่ง`}
+          </div>
+
+          <div className="flex gap-2">
+            <button onClick={onClose} className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-full">ปิด</button>
+            <button onClick={() => { onSubmit(stage, answers); onClose(); }}
+              disabled={!allDone}
+              className={`flex-[2] py-3 rounded-full font-bold ${allDone ? 'bg-green-600 hover:bg-green-700 text-white card-glow' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}>
+              ส่งและรับ +{stageInfo.points} pts
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================ DASHBOARD ============================ */
+function Dashboard({ user, profile, enrollProgram, onClearEnroll, onEdit }) {
+  // Initial active programs
+  const [activePrograms, setActivePrograms] = useState(() => {
+    const base = [
+      {
+        id: 'p2', emoji: '☕', title: 'กาแฟ Focus + สมุนไพร', brand: 'BrainBoost',
+        group: 'ทำงานดึก', groupColor: 'bg-orange-100 text-orange-700', gradient: 'grad-orange',
+        day: 4, total: 14,
+        stages: { A: 'done', B: 'progress', C: 'todo' },
+        points: 250,
+      },
+    ];
+    if (enrollProgram) {
+      base.unshift({
+        ...enrollProgram,
+        group: 'เพิ่งสมัคร',
+        groupColor: 'bg-green-100 text-green-700',
+        day: 0, total: 7,
+        stages: { A: 'todo', B: 'todo', C: 'todo' },
+        points: 200,
+        isNew: true,
+      });
+    }
+    return base;
+  });
+  const [surveyTarget, setSurveyTarget] = useState(null); // {program, stage}
+  const [points, setPoints] = useState(1250);
+  const [confettiToast, setConfettiToast] = useState(null);
+
+  const submitSurvey = (stage, answers) => {
+    if (!surveyTarget) return;
+    const earned = { A: 30, B: 50, C: 70 }[stage];
+    setActivePrograms(prev => prev.map(p =>
+      p.id === surveyTarget.program.id
+        ? { ...p, stages: { ...p.stages, [stage]: 'done', ...(stage === 'A' ? { B: 'progress' } : {}), ...(stage === 'B' ? { C: 'todo' } : {}) } }
+        : p
+    ));
+    setPoints(prev => prev + earned);
+    setConfettiToast({ stage, points: earned });
+    setTimeout(() => setConfettiToast(null), 3500);
+  };
+
+  const completedPrograms = [
+    { emoji: '🌙', title: 'ชาสมุนไพรช่วยนอนหลับ', brand: 'Sleep Well Co.', finishedAt: '5 มี.ค.', earnedPoints: 150, rating: 4, result: 'ผ่าน', gradient: 'grad-purple' },
+  ];
+
+  const matchedPrograms = [
+    { emoji: '🌙', title: 'ชาสมุนไพรช่วยนอนหลับ', match: 95, group: 'นอนหลับ', color: 'bg-purple-100 text-purple-700', gradient: 'grad-purple' },
+    { emoji: '💪', title: 'โปรตีนสมุนไพรหลังออกกำลัง', match: 72, group: 'นักกีฬา', color: 'bg-rose-100 text-rose-700', gradient: 'grad-rose' },
+    { emoji: '🌸', title: 'เซรั่มสมุนไพรลดสิว', match: 65, group: 'Skincare', color: 'bg-pink-100 text-pink-700', gradient: 'grad-pink' },
+  ];
+
+  const completedCount = completedPrograms.length;
+  const activeCount = activePrograms.length;
+  const totalSurveyAnswered = activePrograms.reduce((sum, p) => sum + Object.values(p.stages).filter(s => s === 'done').length, 0) + completedCount * 3;
+  const tier = points >= 2000 ? 'Platinum' : points >= 1000 ? 'Gold' : points >= 500 ? 'Silver' : 'Bronze';
+  const tierEmoji = { Bronze: '🥉', Silver: '🥈', Gold: '🥇', Platinum: '💎' }[tier];
+  const nextTier = tier === 'Bronze' ? { name: 'Silver', at: 500 } : tier === 'Silver' ? { name: 'Gold', at: 1000 } : tier === 'Gold' ? { name: 'Platinum', at: 2000 } : null;
+
+  return (
+    <div>
+      {/* === Hero / Welcome === */}
+      <section className="hero-pattern border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          {enrollProgram && (
+            <div className="mb-5 bg-white border-2 border-green-300 rounded-2xl p-4 flex items-center gap-3 card-glow">
+              <span className="text-2xl">✅</span>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-green-900 text-sm">เพิ่ม "{enrollProgram.title}" เข้าโปรแกรมของคุณแล้ว!</div>
+                <div className="text-xs text-green-700">โปรแกรมอยู่ที่หัว Active programs ด้านล่าง</div>
+              </div>
+              <button onClick={onClearEnroll} className="text-green-700 hover:text-green-900 text-lg">✕</button>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="lg:col-span-2">
+              <div className="text-xs font-bold uppercase tracking-widest text-green-700 mb-2">MY DASHBOARD</div>
+              <h1 className="heading-display text-3xl sm:text-4xl mb-1">สวัสดี, {user.name} 👋</h1>
+              <p className="text-gray-600">ขอบคุณที่เป็นส่วนหนึ่งของ MetaLab — มีโปรแกรมรอคุณตอบ {activePrograms.filter(p => Object.values(p.stages).includes('progress')).length} ระยะ</p>
+
+              {/* Quick stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
+                <div className="bg-white rounded-2xl border border-gray-200 p-4 card-glow">
+                  <div className="text-2xl mb-1">📦</div>
+                  <div className="text-2xl font-extrabold text-green-700">{activeCount}</div>
+                  <div className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider">กำลังทดสอบ</div>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-200 p-4 card-glow">
+                  <div className="text-2xl mb-1">✓</div>
+                  <div className="text-2xl font-extrabold text-blue-700">{completedCount}</div>
+                  <div className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider">จบแล้ว</div>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-200 p-4 card-glow">
+                  <div className="text-2xl mb-1">📋</div>
+                  <div className="text-2xl font-extrabold text-violet-700">{totalSurveyAnswered}</div>
+                  <div className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider">Survey ตอบ</div>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-200 p-4 card-glow">
+                  <div className="text-2xl mb-1">🎯</div>
+                  <div className="text-2xl font-extrabold text-rose-700">95%</div>
+                  <div className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider">Best match</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Tier card — Featured */}
+            <div className="grad-amber rounded-3xl border-2 border-amber-300 p-6 achievement-card card-glow-amber">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-3xl">{tierEmoji}</span>
+                <div>
+                  <div className="font-extrabold text-xl text-amber-900">{tier} Tester</div>
+                  <div className="text-[10px] text-amber-700 uppercase tracking-wider font-bold">Tier ปัจจุบัน</div>
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mb-2">
+                <div className="font-extrabold text-4xl text-amber-700">{points.toLocaleString()}</div>
+                <div className="text-xs text-amber-700/80">points</div>
+              </div>
+              {nextTier && (
+                <>
+                  <div className="h-2 bg-white/50 rounded-full overflow-hidden mb-1.5">
+                    <div className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full" style={{ width: Math.min(100, (points / nextTier.at) * 100) + '%' }}></div>
+                  </div>
+                  <div className="text-xs text-amber-800">
+                    เหลือ <b>{(nextTier.at - points).toLocaleString()} pts</b> ขึ้น <b>{nextTier.name}</b>
+                  </div>
+                </>
+              )}
+              <button className="mt-4 w-full py-2 bg-amber-700 hover:bg-amber-800 text-white font-bold text-sm rounded-full">
+                🎁 แลกของรางวัล
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* === Main content === */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-[1fr,320px] gap-6">
+
+        <section>
+          {/* Active programs */}
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="heading-display text-2xl">📦 โปรแกรมที่กำลังทดสอบ</h2>
+              <div className="text-sm text-gray-500 mt-0.5">กดเลือก stage เพื่อตอบแบบประเมินทันที</div>
+            </div>
+            <a href="mh-metalab.html" className="btn-outline-pill text-xs flex-shrink-0">ค้นหาเพิ่ม →</a>
+          </div>
+
+          <div className="space-y-3 mb-8">
+            {activePrograms.map((p, i) => {
+              const completedStages = ['A','B','C'].filter(s => p.stages[s] === 'done').length;
+              const activeStage = ['A','B','C'].find(s => p.stages[s] === 'progress');
+              const dayProgressPct = Math.round((p.day / p.total) * 100);
+
+              return (
+                <div key={p.id} className={`bg-white rounded-2xl border-2 ${p.isNew ? 'border-green-400 card-glow' : 'border-gray-200'} overflow-hidden hover:shadow-lg transition-all`}>
+                  {/* Header strip with gradient */}
+                  <div className={`${p.gradient || 'grad-green'} px-5 py-4 relative`}>
+                    <div className="flex items-start gap-3">
+                      <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-3xl flex-shrink-0 shadow-sm">{p.emoji}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          {p.isNew && <span className="text-[10px] font-bold bg-green-500 text-white px-1.5 py-0.5 rounded animate-pulse">✨ NEW</span>}
+                          <span className="text-[10px] font-bold bg-white/70 text-gray-800 px-1.5 py-0.5 rounded">📋 Day {p.day} / {p.total}</span>
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${p.groupColor}`}>{p.group}</span>
+                          <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">🎁 {p.points} pts</span>
+                        </div>
+                        <div className="font-bold text-lg">{p.title}</div>
+                        <div className="text-xs text-gray-600">{p.brand}</div>
+                      </div>
+                      {p.isNew && (
+                        <div className="bg-white border-2 border-green-300 text-green-800 text-[11px] font-bold px-3 py-2 rounded-xl flex-shrink-0 text-center leading-tight">
+                          📦<br/>รอสินค้า<br/>3-5 วัน
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div className="px-5 py-4">
+                    {/* Day progress */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between text-[11px] mb-1">
+                        <span className="text-gray-500">⏱ Day progress</span>
+                        <span className="font-mono font-bold">{dayProgressPct}%</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full" style={{ width: dayProgressPct + '%' }}></div>
+                      </div>
+                    </div>
+
+                    {/* Survey 3-stages - clickable */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-gray-700">📋 แบบประเมิน 3 ระยะ</span>
+                        <span className="text-[11px] text-gray-500">{completedStages} / 3 ระยะ</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {['A','B','C'].map(s => {
+                          const status = p.stages[s];
+                          const label = { A: 'ก่อนใช้', B: 'ระหว่าง', C: 'หลังจบ' }[s];
+                          const earnPts = { A: 30, B: 50, C: 70 }[s];
+                          if (status === 'done') {
+                            return (
+                              <div key={s} className="bg-green-50 border-2 border-green-200 rounded-xl p-3 text-center">
+                                <div className="text-2xl mb-0.5">✅</div>
+                                <div className="font-bold text-xs text-green-800">Stage {s}</div>
+                                <div className="text-[10px] text-green-700">{label} · ตอบแล้ว</div>
+                              </div>
+                            );
+                          }
+                          if (status === 'progress') {
+                            return (
+                              <button key={s} onClick={() => setSurveyTarget({ program: p, stage: s })}
+                                className="bg-amber-100 hover:bg-amber-200 border-2 border-amber-400 rounded-xl p-3 text-center transition-all pulse-soft cursor-pointer">
+                                <div className="text-2xl mb-0.5">⏳</div>
+                                <div className="font-bold text-xs text-amber-900">Stage {s} · ตอบเลย</div>
+                                <div className="text-[10px] text-amber-700 font-bold">+{earnPts} pts</div>
+                              </button>
+                            );
+                          }
+                          return (
+                            <div key={s} className="bg-gray-50 border-2 border-gray-200 rounded-xl p-3 text-center opacity-60">
+                              <div className="text-2xl mb-0.5">🔒</div>
+                              <div className="font-bold text-xs text-gray-500">Stage {s}</div>
+                              <div className="text-[10px] text-gray-400">{label} · ล็อก</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {activePrograms.length === 0 && (
+              <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-10 text-center">
+                <div className="text-5xl mb-3">🧪</div>
+                <div className="font-bold text-lg text-gray-700 mb-1">ยังไม่มีโปรแกรมที่กำลังทดสอบ</div>
+                <div className="text-sm text-gray-500 mb-4">เลือกโปรแกรมจาก MetaLab เพื่อเริ่มทดลองสินค้า</div>
+                <a href="mh-metalab.html" className="btn-primary-pill inline-block">เริ่มเลย →</a>
+              </div>
+            )}
+          </div>
+
+          {/* Completed */}
+          {completedPrograms.length > 0 && (
+            <>
+              <h2 className="heading-display text-2xl mb-4">✓ ผลประเมินที่เสร็จแล้ว</h2>
+              <div className="space-y-3 mb-8">
+                {completedPrograms.map((p, i) => (
+                  <div key={i} className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all">
+                    <div className={`${p.gradient} px-5 py-4 flex items-center gap-3`}>
+                      <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center text-3xl flex-shrink-0">{p.emoji}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className="text-[10px] font-bold bg-green-500 text-white px-1.5 py-0.5 rounded">✓ {p.result}</span>
+                          <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">+{p.earnedPoints} pts</span>
+                          <span className="text-amber-500 text-sm">{'⭐'.repeat(p.rating)}</span>
+                        </div>
+                        <div className="font-bold">{p.title}</div>
+                        <div className="text-xs text-gray-500">{p.brand} · จบเมื่อ {p.finishedAt}</div>
+                      </div>
+                      <button className="text-xs font-bold text-green-700 hover:underline">ดูผล →</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Recommendations */}
+          <h2 className="heading-display text-2xl mb-1">🎯 แนะนำสำหรับคุณ</h2>
+          <p className="text-sm text-gray-500 mb-4">เลือกจาก profile ของคุณ</p>
+          <div className="space-y-3">
+            {matchedPrograms.map((p, i) => (
+              <a key={i} href={`mh-tester.html?enroll=p1`} className="bg-white rounded-2xl border border-gray-200 hover:border-green-400 overflow-hidden hover:shadow-md transition-all block">
+                <div className={`${p.gradient} px-5 py-4 flex items-center gap-3`}>
+                  <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-2xl flex-shrink-0">{p.emoji}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${p.color}`}>{p.group}</span>
+                      <span className="text-[10px] font-bold bg-green-500 text-white px-1.5 py-0.5 rounded">⭐ {p.match}% match</span>
+                    </div>
+                    <div className="font-bold text-sm">{p.title}</div>
+                  </div>
+                  <span className="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-4 py-2 rounded-full flex-shrink-0">สมัคร</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        {/* Right sidebar */}
+        <aside className="space-y-4">
+          {/* Profile summary */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-xs font-bold uppercase tracking-wider text-gray-500">PROFILE</div>
+              <button onClick={onEdit} className="text-[11px] font-bold text-green-700 hover:underline">✎ แก้ไข</button>
+            </div>
+            <div className="text-sm space-y-2">
+              {profile && (
+                <>
+                  <div className="flex justify-between"><span className="text-gray-500">อายุ</span><span className="font-semibold">{profile.age}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">เพศ</span><span className="font-semibold">{profile.gender}</span></div>
+                  <div className="pt-2 border-t border-gray-100">
+                    <div className="text-gray-500 text-xs mb-1.5">Lifestyle</div>
+                    <div className="flex flex-wrap gap-1">
+                      {(profile.lifestyle || []).slice(0,4).map((id, i) => {
+                        const g = LIFESTYLE_GROUPS.find(x => x.id === id);
+                        return g && <span key={i} className="text-[10px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded font-semibold">{g.label}</span>;
+                      })}
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-gray-100">
+                    <div className="text-gray-500 text-xs mb-1.5">ปัญหาสุขภาพ</div>
+                    <div className="flex flex-wrap gap-1">
+                      {(profile.health || []).slice(0,4).map((id, i) => {
+                        const h = HEALTH_ISSUES.find(x => x.id === id);
+                        return h && <span key={i} className="text-[10px] bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded font-semibold">{h.label}</span>;
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Achievements */}
+          <div className="grad-amber rounded-2xl border border-amber-200 p-5 achievement-card">
+            <div className="text-xs font-bold uppercase tracking-wider text-amber-800 mb-3">🏆 ACHIEVEMENTS</div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2"><span className="text-xl">🌱</span><span className="text-amber-900 font-semibold">First Test ผ่าน!</span></div>
+              <div className="flex items-center gap-2"><span className="text-xl">📋</span><span className="text-amber-900 font-semibold">Survey Hero (10+ ครั้ง)</span></div>
+              <div className="flex items-center gap-2 opacity-50"><span className="text-xl">🥇</span><span className="text-amber-800">ขึ้น Platinum (รอ 750 pts)</span></div>
+            </div>
+          </div>
+
+          {/* Leaderboard preview */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-5">
+            <div className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">🏅 อันดับเดือนนี้</div>
+            <div className="space-y-2 text-sm">
+              {[
+                { rank: 1, name: 'คุณนิ้ง', points: 3850, emoji: '💎' },
+                { rank: 2, name: 'คุณเอ', points: 2940, emoji: '💎' },
+                { rank: 3, name: 'คุณพี', points: 2180, emoji: '💎' },
+                { rank: 12, name: user.name, points: points, emoji: tierEmoji, isMe: true },
+              ].map(r => (
+                <div key={r.rank} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg ${r.isMe ? 'bg-green-50 border border-green-200' : ''}`}>
+                  <span className={`w-6 text-center font-bold ${r.rank <= 3 ? 'text-amber-600' : 'text-gray-400'}`}>{r.rank}</span>
+                  <span className="text-lg">{r.emoji}</span>
+                  <span className={`flex-1 ${r.isMe ? 'font-bold' : 'font-medium text-gray-700'}`}>{r.name}{r.isMe && <span className="text-[10px] text-green-600 ml-1">YOU</span>}</span>
+                  <span className="text-xs font-mono text-gray-500">{r.points.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Tier ladder */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-5">
+            <div className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">TIER LADDER</div>
+            <div className="space-y-2 text-sm">
+              {[
+                { e: '🥉', name: 'Bronze', range: '0-500', done: points >= 0 },
+                { e: '🥈', name: 'Silver', range: '500-1000', done: points >= 500 },
+                { e: '🥇', name: 'Gold', range: '1000-2000', done: points >= 1000, current: tier === 'Gold' },
+                { e: '💎', name: 'Platinum', range: '2000+', done: points >= 2000, current: tier === 'Platinum' },
+              ].map(t => (
+                <div key={t.name} className={`flex items-center gap-2 ${t.current ? 'bg-amber-50 -mx-2 px-2 py-1.5 rounded-lg' : t.done ? 'opacity-60' : ''}`}>
+                  <span>{t.e}</span>
+                  <span className={t.current ? 'font-bold text-amber-800' : t.done ? 'text-gray-500' : 'text-gray-700'}>{t.name} ({t.range})</span>
+                  {t.current && <span className="ml-auto text-[10px] font-bold text-amber-700">YOU</span>}
+                  {t.done && !t.current && <span className="ml-auto text-[10px] text-green-600">✓</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      {/* Survey Modal */}
+      {surveyTarget && (
+        <SurveyModal
+          program={surveyTarget.program}
+          stage={surveyTarget.stage}
+          onClose={() => setSurveyTarget(null)}
+          onSubmit={submitSurvey}
+        />
+      )}
+
+      {/* Confetti toast */}
+      {confettiToast && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <div className="grad-amber border-2 border-amber-400 rounded-2xl shadow-2xl px-5 py-4 max-w-sm flex items-start gap-3">
+            <span className="text-3xl">🎉</span>
+            <div>
+              <div className="font-bold text-amber-900">ตอบ Stage {confettiToast.stage} เรียบร้อย!</div>
+              <div className="text-xs text-amber-800 mt-0.5">+{confettiToast.points} pts ถูกเพิ่มเข้าคะแนนแล้ว</div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================ REGISTRATION WIZARD ============================ */
+function Wizard({ onComplete, enrollProgram }) {
+  const [step, setStep] = useState(1);
+  const [profile, setProfile] = useState({
+    name: '', age: '', gender: '',
+    lifestyle: [], health: [], habits: [], notes: '',
+  });
+
+  const toggle = (key, val) => {
+    setProfile(p => ({ ...p, [key]: p[key].includes(val) ? p[key].filter(x => x !== val) : [...p[key], val] }));
+  };
+
+  const stepLabel = ['ข้อมูลพื้นฐาน', 'Lifestyle', 'ปัญหาสุขภาพ', 'พฤติกรรม', 'ยืนยัน'];
+
+  const canNext = (() => {
+    if (step === 1) return profile.name && profile.age && profile.gender;
+    if (step === 2) return profile.lifestyle.length > 0;
+    if (step === 3) return profile.health.length > 0;
+    if (step === 4) return profile.habits.length > 0;
+    return true;
+  })();
+
+  return (
+    <div>
+      <section className="hero-pattern border-b border-gray-200">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 text-center">
+          <div className="text-xs font-bold uppercase tracking-widest text-green-700 mb-2">PROFILE REGISTRATION</div>
+          <h1 className="heading-display text-3xl sm:text-4xl mb-2">ตั้งค่า Profile ของคุณ</h1>
+          <p className="text-gray-600">กรอกข้อมูล 4 ขั้น → ระบบจะแนะนำสินค้าที่เหมาะกับคุณ</p>
+        </div>
+      </section>
+
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
+        <div className="flex items-center gap-2 mb-2">
+          {[1,2,3,4,5].map((n, i) => (
+            <React.Fragment key={n}>
+              <div className={`step-dot ${step === n ? 'active' : step > n ? 'done' : 'todo'}`}>
+                {step > n ? '✓' : n}
+              </div>
+              {i < 4 && <div className={`flex-1 h-1 rounded ${step > n ? 'bg-green-500' : 'bg-gray-200'}`}></div>}
+            </React.Fragment>
+          ))}
+        </div>
+        <div className="text-xs text-gray-500 text-center">Step {step} / 5 — <b className="text-gray-800">{stepLabel[step-1]}</b></div>
+      </div>
+
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 pb-12">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8">
+
+          {step === 1 && (
+            <div>
+              <h2 className="heading-display text-2xl mb-1">ข้อมูลพื้นฐาน</h2>
+              <p className="text-sm text-gray-500 mb-6">เริ่มจากข้อมูลตัวคุณ</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-gray-500">ชื่อเล่น *</label>
+                  <input value={profile.name} onChange={e => setProfile(p => ({...p, name: e.target.value}))}
+                    placeholder="เช่น ก้อง, มิ้นท์"
+                    className="mt-1 w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-gray-500">อายุ *</label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {['15-24','25-34','35-44','45-54','55+'].map(a => (
+                      <button key={a} onClick={() => setProfile(p => ({...p, age: a}))}
+                        className={`chip-option ${profile.age === a ? 'selected' : ''}`}>{a}</button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-gray-500">เพศ *</label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {['ชาย','หญิง','LGBTQ+','ไม่ระบุ'].map(g => (
+                      <button key={g} onClick={() => setProfile(p => ({...p, gender: g}))}
+                        className={`chip-option ${profile.gender === g ? 'selected' : ''}`}>{g}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div>
+              <h2 className="heading-display text-2xl mb-1">Lifestyle</h2>
+              <p className="text-sm text-gray-500 mb-6">เลือกได้หลายข้อ — ใช้แนะสินค้าที่ตรงกลุ่ม</p>
+              <div className="flex flex-wrap gap-2">
+                {LIFESTYLE_GROUPS.map(g => (
+                  <button key={g.id} onClick={() => toggle('lifestyle', g.id)}
+                    className={`chip-option ${profile.lifestyle.includes(g.id) ? 'selected' : ''}`}>{g.label}</button>
+                ))}
+              </div>
+              <div className="mt-4 text-xs text-gray-500">เลือกแล้ว <b className="text-green-700">{profile.lifestyle.length}</b> กลุ่ม</div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div>
+              <h2 className="heading-display text-2xl mb-1">ปัญหาสุขภาพ</h2>
+              <p className="text-sm text-gray-500 mb-6">เลือกได้หลายข้อ — ระดับ broad</p>
+              <div className="flex flex-wrap gap-2">
+                {HEALTH_ISSUES.map(h => (
+                  <button key={h.id} onClick={() => toggle('health', h.id)}
+                    className={`chip-option ${profile.health.includes(h.id) ? 'selected' : ''}`}>{h.label}</button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div>
+              <h2 className="heading-display text-2xl mb-1">พฤติกรรมการบริโภค</h2>
+              <p className="text-sm text-gray-500 mb-6">รูปแบบสมุนไพรที่คุ้นเคย</p>
+              <div className="flex flex-wrap gap-2">
+                {CONSUMPTION_HABITS.map(h => (
+                  <button key={h.id} onClick={() => toggle('habits', h.id)}
+                    className={`chip-option ${profile.habits.includes(h.id) ? 'selected' : ''}`}>{h.label}</button>
+                ))}
+              </div>
+              <div className="mt-6">
+                <label className="text-xs font-bold uppercase tracking-wider text-gray-500">หมายเหตุ (optional)</label>
+                <textarea value={profile.notes} onChange={e => setProfile(p => ({...p, notes: e.target.value}))}
+                  placeholder="เช่น แพ้ถั่ว..."
+                  className="mt-1 w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 min-h-[80px] resize-none" />
+              </div>
+            </div>
+          )}
+
+          {step === 5 && (
+            <div>
+              <h2 className="heading-display text-2xl mb-1">✓ ยืนยัน Profile</h2>
+              <p className="text-sm text-gray-500 mb-6">ตรวจสอบก่อนบันทึก</p>
+              <div className="space-y-3 bg-gray-50 rounded-xl p-4">
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <div><div className="text-[10px] text-gray-500 uppercase">ชื่อ</div><div className="font-bold">{profile.name}</div></div>
+                  <div><div className="text-[10px] text-gray-500 uppercase">อายุ</div><div className="font-bold">{profile.age}</div></div>
+                  <div><div className="text-[10px] text-gray-500 uppercase">เพศ</div><div className="font-bold">{profile.gender}</div></div>
+                </div>
+                <div className="pt-3 border-t border-gray-200">
+                  <div className="text-[10px] text-gray-500 uppercase mb-1.5">Lifestyle</div>
+                  <div className="flex flex-wrap gap-1">
+                    {profile.lifestyle.map(id => {
+                      const g = LIFESTYLE_GROUPS.find(x => x.id === id);
+                      return g && <span key={id} className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">{g.label}</span>;
+                    })}
+                  </div>
+                </div>
+              </div>
+              {enrollProgram && (
+                <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 flex gap-2">
+                  <span>🎁</span>
+                  <div>หลังบันทึก → ระบบจะสมัครเข้าโปรแกรม <b>"{enrollProgram.title}"</b> ให้ทันที</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex gap-2 mt-8 pt-6 border-t border-gray-100">
+            {step > 1 && (
+              <button onClick={() => setStep(step - 1)} className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-full">← กลับ</button>
+            )}
+            <div className="flex-1"></div>
+            {step < 5 ? (
+              <button onClick={() => setStep(step + 1)} disabled={!canNext}
+                className={`px-6 py-2.5 font-bold rounded-full ${canNext ? 'bg-green-600 hover:bg-green-700 text-white card-glow' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}>
+                ถัดไป →
+              </button>
+            ) : (
+              <button onClick={() => onComplete(profile)}
+                className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-full card-glow">
+                ✓ บันทึก + ไป Dashboard
+              </button>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+/* ============================ APP ============================ */
+function App() {
+  // Persistent auth state
+  const [user, setUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('mh_user') || 'null'); } catch { return null; }
+  });
+  const [profile, setProfile] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('mh_profile') || 'null'); } catch { return null; }
+  });
+  const [view, setView] = useState('dashboard'); // dashboard | wizard
+  const [loginMode, setLoginMode] = useState(null); // null | 'login' | 'register'
+  const [enrollProgram, setEnrollProgram] = useState(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('enroll');
+    if (id) setEnrollProgram(ENROLL_MAP[id] || { id, emoji: '🧪', title: 'โปรแกรมที่เลือก', brand: '' });
+  }, []);
+
+  useEffect(() => {
+    if (user) localStorage.setItem('mh_user', JSON.stringify(user)); else localStorage.removeItem('mh_user');
+  }, [user]);
+  useEffect(() => {
+    if (profile) localStorage.setItem('mh_profile', JSON.stringify(profile));
+  }, [profile]);
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+    setLoginMode(null);
+    // If no profile yet → go wizard
+    if (!profile) setView('wizard');
+    else setView('dashboard');
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setProfile(null);
+    setView('dashboard');
+    localStorage.removeItem('mh_user');
+    localStorage.removeItem('mh_profile');
+  };
+
+  // Show login gate ONLY when explicitly triggered (clicked login/register/enroll)
+  // OR when enrollProgram exists and user not logged in
+  const needLogin = loginMode || (enrollProgram && !user);
+
+  if (needLogin) {
+    return (
+      <div className="min-h-screen">
+        <Header active="tester" isLoggedIn={!!user} user={user} onLogin={(m) => setLoginMode(m)} onLogout={handleLogout} />
+        <LoginGate
+          mode={loginMode || 'login'}
+          enrollProgram={enrollProgram}
+          onLogin={handleLogin}
+          onSwitchMode={setLoginMode}
+          onGoRegister={() => setLoginMode('register')} />
+      </div>
+    );
+  }
+
+  // Logged in but no profile → wizard (กรอก profile ก่อนเข้า dashboard)
+  if (user && (!profile || view === 'wizard')) {
+    return (
+      <div className="min-h-screen">
+        <Header active="tester" isLoggedIn={true} user={user} onLogout={handleLogout} />
+        <Wizard
+          enrollProgram={enrollProgram}
+          onComplete={(p) => { setProfile(p); setView('dashboard'); }} />
+      </div>
+    );
+  }
+
+  // Browse-only dashboard (ไม่ login ก็ดูได้)
+  return (
+    <div className="min-h-screen">
+      <Header active="tester" isLoggedIn={!!user} user={user} onLogin={(m) => setLoginMode(m)} onLogout={handleLogout} />
+      {user ? (
+        <Dashboard
+          user={user}
+          profile={profile}
+          enrollProgram={enrollProgram}
+          onClearEnroll={() => setEnrollProgram(null)}
+          onEdit={() => setView('wizard')} />
+      ) : (
+        <GuestLanding onLogin={(m) => setLoginMode(m)} />
+      )}
+    </div>
+  );
+}
+
+/* ============================ GUEST LANDING (not logged in) ============================ */
+function GuestLanding({ onLogin }) {
+  return (
+    <div>
+      {/* Hero */}
+      <section className="hero-pattern border-b border-gray-200">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16 text-center">
+          <div className="inline-flex items-center gap-2 bg-white border border-green-200 rounded-full px-3 py-1 mb-5">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            <span className="text-xs font-bold text-green-800">เปิดรับ Tester รุ่นแรก · มี.ค. 2569</span>
+          </div>
+          <h1 className="heading-display text-4xl sm:text-5xl mb-4">ทดลองสินค้าจริง<br/><span className="text-green-700">รับของฟรี + แต้มสะสม</span></h1>
+          <p className="text-base text-gray-600 max-w-xl mx-auto mb-7">
+            สมัครเป็น Tester · เลือกโปรแกรมที่สนใจ · ตอบแบบประเมิน 3 ระยะ ·
+            สะสมแต้มแลกของรางวัล
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <button onClick={() => onLogin('register')} className="btn-primary-pill text-base px-7 py-3 card-glow">
+              🧪 สมัครเป็น Tester ฟรี
+            </button>
+            <a href="mh-metalab.html" className="btn-outline-pill text-base px-7 py-3">
+              ดูโปรแกรมทั้งหมด
+            </a>
+          </div>
+          <div className="mt-4 text-xs text-gray-500">
+            มีบัญชีแล้ว? <button onClick={() => onLogin('login')} className="text-green-700 font-bold hover:underline">เข้าสู่ระบบที่นี่</button>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits */}
+      <section className="py-12 sm:py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10">
+            <div className="text-xs font-bold uppercase tracking-widest text-green-700 mb-2">WHY JOIN?</div>
+            <h2 className="heading-display text-3xl mb-2">ทำไมต้องเป็น Tester?</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grad-green rounded-2xl border border-green-200 p-6 text-center">
+              <div className="text-5xl mb-3">📦</div>
+              <h3 className="heading-display text-lg mb-2">รับสินค้าฟรี</h3>
+              <p className="text-sm text-gray-600">รับสินค้า Beta จาก brand ดัง — ใช้ได้ก่อนเปิดขายจริง</p>
+            </div>
+            <div className="grad-amber rounded-2xl border border-amber-200 p-6 text-center">
+              <div className="text-5xl mb-3">🏆</div>
+              <h3 className="heading-display text-lg mb-2">สะสมแต้ม + Tier</h3>
+              <p className="text-sm text-gray-600">ตอบแบบประเมินรับ pts · Bronze → Silver → Gold → Platinum</p>
+            </div>
+            <div className="grad-rose rounded-2xl border border-rose-200 p-6 text-center">
+              <div className="text-5xl mb-3">💬</div>
+              <h3 className="heading-display text-lg mb-2">เสียงของคุณสำคัญ</h3>
+              <p className="text-sm text-gray-600">ความเห็นของคุณช่วยปรับสูตร พัฒนาสินค้าให้ดีขึ้น</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="py-12 sm:py-16 bg-gradient-to-br from-green-50 to-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8">
+            <div className="text-xs font-bold uppercase tracking-widest text-green-700 mb-2">HOW IT WORKS</div>
+            <h2 className="heading-display text-3xl">5 ขั้นง่าย ๆ</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+            {[
+              { n: 1, icon: '📝', label: 'สมัครฟรี + กรอก profile' },
+              { n: 2, icon: '🎯', label: 'ระบบ match โปรแกรม' },
+              { n: 3, icon: '📦', label: 'รับสินค้าทดลอง' },
+              { n: 4, icon: '📋', label: 'ตอบ survey 3 ระยะ' },
+              { n: 5, icon: '🏆', label: 'รับแต้ม + ขึ้น tier' },
+            ].map(s => (
+              <div key={s.n} className="bg-white rounded-2xl border border-gray-200 p-4 text-center card-glow">
+                <div className="text-4xl mb-2">{s.icon}</div>
+                <div className="text-xs font-bold text-green-700 mb-1">ขั้นที่ {s.n}</div>
+                <div className="text-sm font-semibold">{s.label}</div>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <button onClick={() => onLogin('register')} className="btn-primary-pill text-base px-7 py-3 card-glow">
+              เริ่มเลย — สมัครฟรี →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Active programs preview */}
+      <section className="py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex items-baseline justify-between mb-5">
+            <h2 className="heading-display text-2xl">🔥 โปรแกรมที่กำลังเปิดรับ</h2>
+            <a href="mh-metalab.html" className="text-sm text-green-700 font-bold hover:underline">ดูทั้งหมด →</a>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {Object.values(ENROLL_MAP).slice(0,4).map(p => (
+              <div key={p.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-all">
+                <div className={`${p.gradient} aspect-square flex items-center justify-center text-7xl relative`}>
+                  {p.emoji}
+                  <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">เปิดรับ</span>
+                </div>
+                <div className="p-3">
+                  <div className="font-bold text-sm line-clamp-1">{p.title}</div>
+                  <div className="text-xs text-gray-500 mb-2">{p.brand}</div>
+                  <a href={`mh-tester.html?enroll=${p.id}`} className="block text-center bg-green-600 hover:bg-green-700 text-white font-bold text-xs py-1.5 rounded-full">สมัครเข้าร่วม</a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

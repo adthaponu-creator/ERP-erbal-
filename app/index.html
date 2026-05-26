@@ -1,0 +1,30 @@
+
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>METAHERB</title>
+      <script>
+        // Decode SPA redirect — accepts:
+        //   /ERP-erbal-/app/?/testlab         (from 404.html on Pages)
+        //   /…/index.html?/testlab             (direct from gallery)
+        (function(l) {
+          if (l.search[1] === '/') {
+            var route = l.search.slice(1).split('&').map(function(s) {
+              return s.replace(/~and~/g, '&');
+            }).join('?');
+            var base = l.pathname.replace(/\/index\.html$/, '/').replace(/\/$/, '');
+            window.history.replaceState(null, null, base + route + l.hash);
+          }
+        }(window.location));
+      </script>
+      <script type="module" crossorigin src="/ERP-erbal-/app/assets/index-CfaKLfUk.js"></script>
+      <link rel="stylesheet" crossorigin href="/ERP-erbal-/app/assets/index-XPZ0uawA.css">
+    </head>
+
+    <body>
+      <div id="root"></div>
+    </body>
+  </html>
+  

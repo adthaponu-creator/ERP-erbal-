@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Survey System — MetaHerb MetaLab</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', 'Sarabun', system-ui, sans-serif; color: #1f2937; background: #ffffff; }
+  .heading-display { font-family: 'Sarabun', system-ui, sans-serif; font-weight: 800; letter-spacing: -0.02em; }
+  .brand-mark { font-family: 'Sarabun', system-ui, sans-serif; font-weight: 800; font-size: 22px; color: #65a30d; }
+  .btn-primary-pill { background: #319754; color: white; padding: 9px 24px; border-radius: 9999px; font-weight: 600; font-size: 14px; border: 1px solid #319754; transition: all .15s; }
+  .btn-primary-pill:hover { background: #26713e; }
+  .btn-outline-pill { background: white; color: #26713e; padding: 9px 24px; border-radius: 9999px; font-weight: 600; font-size: 14px; border: 1px solid #319754; transition: all .15s; }
+  .btn-outline-pill:hover { background: #f0fdf4; }
+  .main-nav { background: #319754; color: white; }
+  .bg-green-600 { background-color: #319754 !important; }
+  .bg-green-700 { background-color: #26713e !important; }
+  .text-green-600 { color: #319754 !important; }
+  .text-green-700 { color: #26713e !important; }
+  .text-green-800 { color: #1f5a31 !important; }
+  .border-green-300 { border-color: #86c79b !important; }
+  .border-green-400 { border-color: #66b482 !important; }
+  .hover\:bg-green-700:hover { background-color: #26713e !important; }
+  .hover\:border-green-300:hover { border-color: #86c79b !important; }
+  .hover\:border-green-400:hover { border-color: #66b482 !important; }
+  .main-nav a, .main-nav button.navbtn { color: white; padding: 14px 22px; font-weight: 600; font-size: 15px; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 0; cursor: pointer; font-family: inherit; }
+  .main-nav a:hover, .main-nav button.navbtn:hover { background: rgba(0,0,0,.08); }
+  .main-nav a.active, .main-nav button.navbtn.active { background: white; color: #319754; border-radius: 9999px; margin: 6px 4px; padding: 8px 22px; }
+  .nav-dropdown { position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 14px; box-shadow: 0 12px 32px -8px rgba(0,0,0,.25); min-width: 260px; padding: 6px; z-index: 100; margin-top: 4px; }
+  .main-nav .nav-dropdown a { display: flex !important; align-items: center; gap: 10px; padding: 10px 14px !important; color: #1f2937 !important; background: transparent; border-radius: 10px; font-size: 14px; font-weight: 500; margin: 0; }
+  .main-nav .nav-dropdown a:hover { background: #f0fdf4 !important; color: #26713e !important; }
+  .main-nav .nav-dropdown a.active { background: #319754 !important; color: white !important; margin: 0; }
+  .main-nav { overflow: visible !important; }
+  .main-nav > div { overflow: visible !important; }
+  .settings-pop { position: absolute; top: calc(100% + 8px); right: 0; background: white; border: 1px solid #e5e7eb; border-radius: 14px; box-shadow: 0 12px 32px -8px rgba(0,0,0,.2); width: 320px; padding: 16px; z-index: 60; }
+  .switch { position: relative; width: 44px; height: 24px; background: #e5e7eb; border-radius: 9999px; cursor: pointer; transition: background .15s; flex-shrink: 0; }
+  .switch.on { background: #319754; }
+  .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform .15s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .switch.on::after { transform: translateX(20px); }
+
+  .stage-tab {
+    padding: 12px 18px; border-radius: 9999px; font-weight: 700; font-size: 13px;
+    border: 2px solid; transition: all .15s; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .stage-tab.active   { background: #319754; color: white; border-color: #319754; }
+  .stage-tab.done     { background: #f0fdf4; color: #26713e; border-color: #86efac; }
+  .stage-tab.todo     { background: white; color: #6b7280; border-color: #e5e7eb; }
+
+  .q-card { border: 1px solid #e5e7eb; border-radius: 16px; background: white; padding: 20px; transition: all .15s; }
+  .q-card:hover { border-color: #86efac; box-shadow: 0 4px 12px -4px rgba(22,163,74,.1); }
+  .q-card.active { border-color: #319754; box-shadow: 0 8px 20px -8px rgba(22,163,74,.25); }
+
+  .opt-chip {
+    padding: 10px 16px; border-radius: 9999px; font-weight: 600; font-size: 13px;
+    border: 2px solid #e5e7eb; background: white; color: #4b5563;
+    transition: all .15s; cursor: pointer;
+  }
+  .opt-chip:hover { border-color: #319754; color: #319754; }
+  .opt-chip.selected { background: #319754; color: white; border-color: #319754; }
+
+  /* Star rating */
+  .star { font-size: 32px; cursor: pointer; transition: transform .1s; }
+  .star:hover { transform: scale(1.15); }
+  .star.filled { color: #f59e0b; }
+  .star.empty { color: #d1d5db; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect } = React;
+
+/* ============================ DEMO DATA ============================ */
+const SURVEY_DATA = {
+  programTitle: 'กาแฟ Focus + สมุนไพร',
+  programBrand: 'BrainBoost',
+  programEmoji: '☕',
+  testerName: 'คุณก้อง',
+  currentStage: 'B',  // A done, B active, C todo
+  stages: {
+    A: {
+      title: 'A · ก่อนใช้',
+      subtitle: 'ตอบก่อนรับสินค้า',
+      day: 'Day 0',
+      questions: [
+        { id: 'a1', kind: 'text',   q: 'เคยใช้สินค้ากลุ่ม "กาแฟ Focus" มาก่อนไหม?', sub: 'ตอบสั้น ๆ ก็พอ',
+          answer: 'เคยลอง mushroom coffee 2 ยี่ห้อ แต่ไม่ติดใจ รสชาติแปลก' },
+        { id: 'a2', kind: 'choice', q: 'คาดหวังอะไรจากกาแฟตัวนี้?', multi: true,
+          options: ['เพิ่ม focus', 'ลดความเหนื่อย', 'ไม่ทำให้ใจสั่น', 'รสชาติดื่มง่าย', 'ราคาคุ้มค่า', 'ไม่นอนไม่หลับ'],
+          answer: ['เพิ่ม focus', 'ไม่ทำให้ใจสั่น', 'รสชาติดื่มง่าย'] },
+        { id: 'a3', kind: 'rating', q: 'ระดับความเหนื่อยล้าตอนนี้ (1 = สบายมาก, 5 = เหนื่อยมาก)',
+          max: 5, answer: 4 },
+      ],
+    },
+    B: {
+      title: 'B · ระหว่างใช้',
+      subtitle: 'ตอบหลังใช้ 4 วัน',
+      day: 'Day 4 / 14',
+      questions: [
+        { id: 'b1', kind: 'rating', q: 'รสชาติเป็นยังไงบ้าง?',  max: 5 },
+        { id: 'b2', kind: 'rating', q: 'กลิ่นเป็นยังไงบ้าง?',    max: 5 },
+        { id: 'b3', kind: 'rating', q: 'ความสะดวกในการชง?',     max: 5 },
+        { id: 'b4', kind: 'choice', q: 'อาการหลังดื่ม (เลือกได้หลายข้อ)', multi: true,
+          options: ['ตื่นตัวขึ้น', 'focus ดีขึ้น', 'ใจสั่น', 'ปวดหัว', 'นอนไม่หลับ', 'ปกติ', 'ไม่รู้สึกอะไร'] },
+        { id: 'b5', kind: 'text',   q: 'อยากเล่าอะไรเพิ่มเติม (optional)' },
+      ],
+    },
+    C: {
+      title: 'C · หลังจบ',
+      subtitle: 'ตอบหลังครบ 14 วัน',
+      day: 'Day 14',
+      questions: [
+        { id: 'c1', kind: 'choice', q: 'จะซื้อไหม?',
+          options: ['ซื้อแน่นอน', 'น่าจะซื้อ', 'ไม่แน่ใจ', 'ไม่ซื้อ'] },
+        { id: 'c2', kind: 'choice', q: 'ราคาที่เหมาะสม (กล่อง 30 ซอง)',
+          options: ['<300 บาท', '300-500', '500-800', '800-1200', '>1200'] },
+        { id: 'c3', kind: 'text',   q: 'อยากปรับอะไรในสินค้า?' },
+        { id: 'c4', kind: 'rating', q: 'ให้คะแนนรวม', max: 5 },
+      ],
+    },
+  },
+};
+
+/* ============================ HEADER ============================ */
+function Header({ active = 'survey' }) {
+  const [showTestlab, setShowTestlab] = useState(() => {
+    const v = localStorage.getItem('mh_show_testlab');
+    return v === null ? true : v === '1';
+  });
+  const [ddOpen, setDdOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  useEffect(() => { localStorage.setItem('mh_show_testlab', showTestlab ? '1' : '0'); }, [showTestlab]);
+  useEffect(() => {
+    const onDocClick = () => { setDdOpen(false); setSettingsOpen(false); };
+    document.addEventListener('click', onDocClick);
+    return () => document.removeEventListener('click', onDocClick);
+  }, []);
+
+  return (
+    <header className="sticky top-0 z-40 bg-white">
+      <div className="border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-4 flex-wrap">
+          <a href="mh-landing.html" className="flex items-center gap-2.5 flex-shrink-0">
+            <span className="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center text-2xl">🌿</span>
+            <span className="brand-mark">METAHERB</span>
+          </a>
+          <div className="flex-1 max-w-md mx-auto order-3 sm:order-2 w-full sm:w-auto">
+            <div className="flex items-center bg-white border border-gray-300 rounded-full p-0.5">
+              <input placeholder="ค้นหาสินค้าที่ต้องการ" className="bg-transparent border-0 outline-0 px-4 py-2 flex-1 text-sm" />
+              <button className="w-9 h-9 rounded-full bg-green-600 text-white flex items-center justify-center flex-shrink-0">🔍</button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 ml-auto order-2 sm:order-3">
+            <button className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg">🔔</button>
+            <button className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg">🛒</button>
+            <div className="relative" onClick={e => e.stopPropagation()}>
+              <button onClick={() => setSettingsOpen(!settingsOpen)} className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-lg" title="ตั้งค่าเมนู">⚙️</button>
+              {settingsOpen && (
+                <div className="settings-pop">
+                  <div className="font-bold text-sm mb-1">ตั้งค่าเมนู</div>
+                  <div className="text-xs text-gray-500 mb-4">เปิด/ปิด การแสดงเมนูพิเศษ</div>
+                  <div className="flex items-start gap-3 cursor-pointer p-2 -mx-2 rounded-lg hover:bg-gray-50" onClick={() => setShowTestlab(!showTestlab)}>
+                    <div className={`switch ${showTestlab ? 'on' : ''}`}></div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm">ผลิตภัณฑ์เพื่อการทดสอบ</div>
+                      <div className="text-[11px] text-gray-500 leading-snug mt-0.5">รวม MetaLab + Tester + Survey</div>
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-gray-400 mt-3 pt-3 border-t border-gray-100">บันทึกอัตโนมัติ · ใช้กับทุกหน้า</div>
+                </div>
+              )}
+            </div>
+            <button className="btn-outline-pill hidden sm:inline-block">สมัครสมาชิก</button>
+            <button className="btn-primary-pill">เข้าสู่ระบบ</button>
+          </div>
+        </div>
+      </div>
+      <nav className="main-nav">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-1 overflow-x-auto">
+          <div className="flex items-center gap-1 mx-auto">
+            <a href="mh-landing.html" className={active === 'home' ? 'active' : ''}>หน้าหลัก</a>
+            <a href="https://metaherb.co.th" target="_blank">ผลิตภัณฑ์</a>
+            {showTestlab && (
+              <div className="relative" onClick={e => e.stopPropagation()}>
+                <button onClick={() => setDdOpen(!ddOpen)} className={`navbtn whitespace-nowrap ${(active === 'metalab' || active === 'tester' || active === 'survey') ? 'active' : ''}`}>
+                  ผลิตภัณฑ์เพื่อการทดสอบ
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                {ddOpen && (
+                  <div className="nav-dropdown">
+                    <a href="mh-metalab.html" className={active === 'metalab' ? 'active' : ''}>
+                      <span className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center text-lg">🧪</span>
+                      <div className="flex-1"><div className="font-semibold">ทดลองใช้สินค้า</div><div className="text-[11px] text-gray-500">รับสินค้า Beta ฟรี + ทดลองใช้จริง</div></div>
+                    </a>
+                    <a href="mh-tester.html" className={active === 'tester' ? 'active' : ''}>
+                      <span className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-lg">👥</span>
+                      <div className="flex-1"><div className="font-semibold">ลงทะเบียนผู้ทดสอบ</div><div className="text-[11px] text-gray-500">สมัครเป็น Tester + กรอก profile</div></div>
+                    </a>
+                    <a href="mh-survey.html" className={active === 'survey' ? 'active' : ''}>
+                      <span className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-lg">📋</span>
+                      <div className="flex-1"><div className="font-semibold">แบบประเมิน</div><div className="text-[11px] text-gray-500">ตอบ survey 3 ระยะ · สะสมแต้ม</div></div>
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+            <a href="https://metaherb.co.th" target="_blank">เกี่ยวกับเรา</a>
+          </div>
+          <a href="https://metaherb.co.th" target="_blank" className="text-xs opacity-80 flex-shrink-0">↗ ไปร้านค้า metaherb.co.th</a>
+        </div>
+      </nav>
+    </header>
+  );
+}
+
+/* ============================ STAR RATING ============================ */
+function StarRating({ value, onChange, max = 5 }) {
+  return (
+    <div className="flex gap-1">
+      {Array.from({ length: max }).map((_, i) => (
+        <span key={i} onClick={() => onChange(i + 1)}
+          className={`star ${i < (value || 0) ? 'filled' : 'empty'}`}>
+          ★
+        </span>
+      ))}
+      {value > 0 && <span className="ml-3 text-sm text-gray-600 self-center">{value} / {max}</span>}
+    </div>
+  );
+}
+
+/* ============================ QUESTION ============================ */
+function Question({ q, value, onChange, num, total, readonly }) {
+  return (
+    <div className={`q-card ${readonly ? '' : 'active'}`}>
+      <div className="flex items-start gap-3 mb-4">
+        <div className="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold text-sm flex-shrink-0">{num}</div>
+        <div className="flex-1">
+          <h3 className="font-bold text-lg leading-tight">{q.q}</h3>
+          {q.sub && <p className="text-xs text-gray-500 mt-1">{q.sub}</p>}
+        </div>
+        <span className="text-xs text-gray-400 flex-shrink-0">{num}/{total}</span>
+      </div>
+
+      {q.kind === 'text' && (
+        readonly ? (
+          <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-700 min-h-[60px]">{value || <span className="italic text-gray-400">—</span>}</div>
+        ) : (
+          <textarea value={value || ''} onChange={e => onChange(e.target.value)}
+            placeholder="พิมพ์คำตอบของคุณ..."
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 min-h-[80px] resize-none text-sm" />
+        )
+      )}
+
+      {q.kind === 'choice' && (
+        <div className="flex flex-wrap gap-2">
+          {q.options.map(opt => {
+            const selected = q.multi
+              ? (value || []).includes(opt)
+              : value === opt;
+            return (
+              <button key={opt} disabled={readonly}
+                onClick={() => {
+                  if (q.multi) {
+                    const arr = value || [];
+                    onChange(arr.includes(opt) ? arr.filter(x => x !== opt) : [...arr, opt]);
+                  } else {
+                    onChange(opt);
+                  }
+                }}
+                className={`opt-chip ${selected ? 'selected' : ''} ${readonly ? 'cursor-default' : ''}`}>
+                {selected && <span>✓</span>} {opt}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {q.kind === 'rating' && (
+        readonly ? (
+          <div className="flex gap-1">
+            {Array.from({ length: q.max }).map((_, i) => (
+              <span key={i} className={`star ${i < (value || 0) ? 'filled' : 'empty'} cursor-default`}>★</span>
+            ))}
+            {value > 0 && <span className="ml-3 text-sm text-gray-600 self-center">{value} / {q.max}</span>}
+          </div>
+        ) : (
+          <StarRating value={value} onChange={onChange} max={q.max} />
+        )
+      )}
+    </div>
+  );
+}
+
+/* ============================ TESTER VIEW (answer survey) ============================ */
+function TesterView() {
+  const [stage, setStage] = useState('B');
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState({ A: true, B: false, C: false });
+  const [thanks, setThanks] = useState(false);
+
+  // Pre-fill stage A with demo answers
+  const allAnswers = { ...answers };
+  if (submitted.A) {
+    SURVEY_DATA.stages.A.questions.forEach(q => {
+      if (allAnswers[q.id] === undefined && q.answer !== undefined) {
+        allAnswers[q.id] = q.answer;
+      }
+    });
+  }
+
+  const stageData = SURVEY_DATA.stages[stage];
+  const questions = stageData.questions;
+
+  const totalQ = questions.length;
+  const answeredQ = questions.filter(q => {
+    const a = allAnswers[q.id];
+    if (q.kind === 'rating') return a > 0;
+    if (q.kind === 'choice' && q.multi) return Array.isArray(a) && a.length > 0;
+    return a !== undefined && a !== '' && a !== null;
+  }).length;
+
+  const isReadonly = submitted[stage] && stage !== 'B';
+  const isLocked = stage === 'C' && !submitted.B;
+  const allDone = answeredQ === totalQ;
+
+  const submit = () => {
+    setSubmitted(prev => ({ ...prev, [stage]: true }));
+    setThanks(true);
+    setTimeout(() => setThanks(false), 3000);
+  };
+
+  return (
+    <div>
+      {/* Program info banner */}
+      <section className="bg-gradient-to-br from-green-50 to-white border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+          <div className="text-xs font-bold uppercase tracking-widest text-green-700 mb-2">SURVEY · TESTER VIEW</div>
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="w-14 h-14 rounded-2xl bg-orange-100 border border-orange-200 flex items-center justify-center text-3xl flex-shrink-0">{SURVEY_DATA.programEmoji}</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs text-gray-500">{SURVEY_DATA.programBrand}</div>
+              <h1 className="heading-display text-2xl">{SURVEY_DATA.programTitle}</h1>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 px-4 py-2">
+              <div className="text-[10px] text-gray-500 uppercase">วันนี้</div>
+              <div className="font-bold text-green-700">{stageData.day}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stage selector */}
+      <section className="bg-white border-b border-gray-200 sticky top-[60px] z-30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {['A', 'B', 'C'].map(s => {
+              const sd = SURVEY_DATA.stages[s];
+              const isCurrent = stage === s;
+              const isSubmitted = submitted[s];
+              const isLockedTab = s === 'C' && !submitted.B;
+              return (
+                <button key={s} onClick={() => !isLockedTab && setStage(s)}
+                  disabled={isLockedTab}
+                  className={`stage-tab whitespace-nowrap ${isCurrent ? 'active' : isSubmitted ? 'done' : 'todo'} ${isLockedTab ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  {isSubmitted ? '✓' : isLockedTab ? '🔒' : ''} <span>{sd.title}</span>
+                  <span className="text-[10px] opacity-70">{sd.subtitle}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Progress */}
+          {!isReadonly && !isLocked && (
+            <div className="mt-3">
+              <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
+                <span>ความคืบหน้า</span>
+                <span><b className="text-gray-800">{answeredQ}</b> / {totalQ} ข้อ</span>
+              </div>
+              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-green-500 transition-all" style={{ width: (answeredQ/totalQ*100) + '%' }}></div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Questions */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+        {isLocked ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-gray-200">
+            <div className="text-6xl mb-3">🔒</div>
+            <div className="font-bold text-lg text-gray-700">Stage C ยังไม่เปิด</div>
+            <div className="text-sm text-gray-500 mt-1 mb-4">รอจนกว่าจะตอบ Stage B ครบ + ครบ 14 วัน</div>
+            <button onClick={() => setStage('B')} className="text-sm font-bold text-green-700 hover:underline">← กลับไป Stage B</button>
+          </div>
+        ) : (
+          <>
+            {isReadonly && (
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-5 flex items-center gap-3">
+                <span className="text-2xl">✓</span>
+                <div>
+                  <div className="font-bold text-green-800">ตอบ Stage นี้แล้ว</div>
+                  <div className="text-xs text-green-700">ดูคำตอบเดิม (ไม่สามารถแก้ไขได้)</div>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {questions.map((q, idx) => (
+                <Question key={q.id} q={q} num={idx + 1} total={totalQ}
+                  value={allAnswers[q.id]}
+                  onChange={(v) => setAnswers(prev => ({ ...prev, [q.id]: v }))}
+                  readonly={isReadonly} />
+              ))}
+            </div>
+
+            {!isReadonly && (
+              <div className="mt-6 flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-2xl p-4">
+                <div className="text-sm text-gray-600">
+                  {allDone ? (
+                    <span className="text-green-700 font-bold">✓ ตอบครบแล้ว — พร้อมส่ง!</span>
+                  ) : (
+                    <span>ตอบครบ <b>{totalQ - answeredQ}</b> ข้อก่อนส่ง</span>
+                  )}
+                </div>
+                <button onClick={submit} disabled={!allDone}
+                  className={`px-6 py-2.5 rounded-full font-bold ${allDone ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-200' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}>
+                  ส่งแบบสอบถาม + รับ {stage === 'A' ? 30 : stage === 'B' ? 50 : 70} pts
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </main>
+
+      {/* Thank you toast */}
+      {thanks && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom">
+          <div className="bg-green-600 text-white rounded-2xl shadow-2xl px-5 py-4 max-w-sm flex items-start gap-3">
+            <span className="text-2xl flex-shrink-0">🎉</span>
+            <div>
+              <div className="font-bold">ขอบคุณที่ตอบครบ!</div>
+              <div className="text-xs opacity-90 mt-0.5">ได้รับ {stage === 'A' ? 30 : stage === 'B' ? 50 : 70} pts · ดูที่ Tester Dashboard</div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================ BUILDER VIEW (admin) ============================ */
+function BuilderView() {
+  const [mode, setMode] = useState('builder'); // 'builder' | 'gform'
+  const [gformLinks, setGformLinks] = useState({ A: '', B: '', C: '' });
+  const [stage, setStage] = useState('A');
+  const [questions, setQuestions] = useState({
+    A: [
+      { id: 'a1', kind: 'text', q: 'เคยใช้สินค้ากลุ่มนี้มาก่อนไหม?' },
+      { id: 'a2', kind: 'choice', q: 'คาดหวังอะไรจากสินค้า?', multi: true, options: ['รสชาติ', 'สรรพคุณ', 'ราคา'] },
+    ],
+    B: [],
+    C: [],
+  });
+  const [draftQ, setDraftQ] = useState({ kind: 'text', q: '', options: [], multi: false });
+
+  const addQuestion = () => {
+    if (!draftQ.q.trim()) return;
+    const newQ = { ...draftQ, id: 'q' + Date.now() };
+    setQuestions(prev => ({ ...prev, [stage]: [...prev[stage], newQ] }));
+    setDraftQ({ kind: 'text', q: '', options: [], multi: false });
+  };
+
+  const removeQuestion = (id) => {
+    setQuestions(prev => ({ ...prev, [stage]: prev[stage].filter(q => q.id !== id) }));
+  };
+
+  const addOption = (opt) => {
+    if (!opt.trim()) return;
+    setDraftQ(prev => ({ ...prev, options: [...prev.options, opt] }));
+  };
+
+  return (
+    <div>
+      <section className="bg-gradient-to-br from-green-50 to-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+          <div className="text-xs font-bold uppercase tracking-widest text-green-700 mb-2">SURVEY BUILDER · ADMIN VIEW</div>
+          <h1 className="heading-display text-2xl mb-1">สร้างแบบสอบถามให้โปรแกรม</h1>
+          <p className="text-sm text-gray-600">ออกแบบคำถาม 3 ระยะ (A · B · C) สำหรับโปรแกรมของคุณ</p>
+
+          {/* Info banner: when is this created */}
+          <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-start gap-2 max-w-2xl">
+            <span className="text-lg flex-shrink-0">ℹ️</span>
+            <div className="text-xs text-blue-900 leading-relaxed">
+              <strong>แบบประเมินสร้างเมื่อไหร่?</strong> Brand สร้างพร้อมตอนลงโปรแกรมใหม่ใน MetaLab — ผู้ทดสอบจะเห็นแบบประเมินตอนรับสินค้าแล้วเท่านั้น
+            </div>
+          </div>
+
+          {/* Mode toggle */}
+          <div className="mt-4 flex gap-2 flex-wrap">
+            <button onClick={() => setMode('builder')}
+              className={`px-4 py-2 rounded-full text-sm font-bold border-2 transition-all flex items-center gap-2 ${
+                mode === 'builder' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-200 hover:border-green-400'
+              }`}>
+              🛠 สร้างด้วย Builder ของระบบ
+            </button>
+            <button onClick={() => setMode('gform')}
+              className={`px-4 py-2 rounded-full text-sm font-bold border-2 transition-all flex items-center gap-2 ${
+                mode === 'gform' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-200 hover:border-green-400'
+              }`}>
+              📄 ใช้ Google Form แทน
+            </button>
+          </div>
+
+          <div className={`mt-3 text-xs rounded-lg px-3 py-2 max-w-2xl ${mode === 'builder' ? 'bg-green-50 text-green-900 border border-green-200' : 'bg-amber-50 text-amber-900 border border-amber-200'}`}>
+            {mode === 'builder' ? (
+              <>✓ <strong>ข้อดี:</strong> ระบบเก็บข้อมูลให้ + วิเคราะห์อัตโนมัติ + แสดงในรายงาน Brand ได้</>
+            ) : (
+              <>⚠ <strong>ข้อจำกัด:</strong> ระบบจะไม่เก็บข้อมูล survey เอง · Brand ต้องเข้า Google Sheet ดูเอง · แสดงคะแนนรวมใน dashboard ไม่ได้</>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Stage tabs */}
+      <section className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex gap-2 overflow-x-auto">
+            <button onClick={() => setStage('A')}
+              className={`stage-tab ${stage === 'A' ? 'active' : 'todo'}`}>
+              <span>Stage A</span><span className="text-[10px] opacity-70">ก่อนใช้ · {questions.A.length} ข้อ</span>
+            </button>
+            <button onClick={() => setStage('B')}
+              className={`stage-tab ${stage === 'B' ? 'active' : 'todo'}`}>
+              <span>Stage B</span><span className="text-[10px] opacity-70">ระหว่างใช้ · {questions.B.length} ข้อ</span>
+            </button>
+            <button onClick={() => setStage('C')}
+              className={`stage-tab ${stage === 'C' ? 'active' : 'todo'}`}>
+              <span>Stage C</span><span className="text-[10px] opacity-70">หลังจบ · {questions.C.length} ข้อ</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Google Form mode */}
+      {mode === 'gform' && (
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-2xl">📄</div>
+              <div>
+                <h2 className="heading-display text-xl">วาง Google Form Link</h2>
+                <p className="text-xs text-gray-500">วาง URL ของ Google Form แต่ละ stage</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {['A', 'B', 'C'].map(s => {
+                const label = { A: 'ก่อนใช้ (Day 0)', B: 'ระหว่างใช้ (Day กลางๆ)', C: 'หลังจบ (วันสุดท้าย)' }[s];
+                return (
+                  <div key={s}>
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5 block">
+                      Stage {s} · <span className="text-gray-700 normal-case font-semibold">{label}</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        value={gformLinks[s]}
+                        onChange={e => setGformLinks(prev => ({ ...prev, [s]: e.target.value }))}
+                        placeholder="https://docs.google.com/forms/d/e/..."
+                        className="flex-1 px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 text-sm font-mono" />
+                      {gformLinks[s] && (
+                        <a href={gformLinks[s]} target="_blank"
+                          className="px-3 py-2.5 rounded-xl bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold text-xs flex items-center gap-1">
+                          ↗ Preview
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6 text-xs text-amber-900 space-y-1.5">
+              <div className="font-bold flex items-center gap-1">💡 วิธีสร้าง Google Form</div>
+              <ol className="list-decimal list-inside space-y-1 ml-1">
+                <li>เปิด <a href="https://forms.google.com" target="_blank" className="underline font-semibold">forms.google.com</a> → สร้างฟอร์มใหม่</li>
+                <li>ตั้งค่า: Settings → Responses → <strong>"Collect email addresses"</strong> → "Verified"</li>
+                <li>กด Send → Copy link → วางที่ช่องด้านบน</li>
+                <li>ทำซ้ำ 3 ฟอร์ม (A / B / C) แล้วกดบันทึก</li>
+              </ol>
+            </div>
+
+            <button className="mt-5 w-full py-3 rounded-full bg-green-600 hover:bg-green-700 text-white font-bold">
+              บันทึก Google Form Links
+            </button>
+          </div>
+        </main>
+      )}
+
+      {/* Builder mode */}
+      {mode === 'builder' && (
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-[1fr,360px] gap-6">
+
+        {/* Question list */}
+        <section>
+          <h2 className="heading-display text-xl mb-4">คำถามใน Stage {stage}</h2>
+
+          {questions[stage].length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+              <div className="text-5xl mb-2">📝</div>
+              <div className="font-bold text-gray-700">ยังไม่มีคำถาม</div>
+              <div className="text-xs text-gray-500 mt-1">เพิ่มคำถามแรกในแผงด้านขวา</div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {questions[stage].map((q, idx) => (
+                <div key={q.id} className="bg-white border border-gray-200 rounded-2xl p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold text-sm flex-shrink-0">{idx + 1}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                        <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded uppercase">
+                          {q.kind === 'text' ? '📝 Text' : q.kind === 'choice' ? (q.multi ? '☑ Multi' : '◯ Single') : '⭐ Rating'}
+                        </span>
+                      </div>
+                      <div className="font-semibold">{q.q}</div>
+                      {q.options && q.options.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {q.options.map((o, i) => (
+                            <span key={i} className="text-[11px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">{o}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <button onClick={() => removeQuestion(q.id)} className="text-gray-400 hover:text-red-500 text-lg">✕</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Add question panel */}
+        <aside className="lg:sticky lg:top-32 lg:self-start">
+          <div className="bg-white border border-gray-200 rounded-2xl p-5">
+            <h3 className="font-bold mb-4">➕ เพิ่มคำถาม</h3>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5 block">ประเภท</label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[
+                    { v: 'text', l: '📝 Text' },
+                    { v: 'choice', l: '☑ Choice' },
+                    { v: 'rating', l: '⭐ Rate' },
+                  ].map(k => (
+                    <button key={k.v} onClick={() => setDraftQ(prev => ({ ...prev, kind: k.v }))}
+                      className={`px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all ${
+                        draftQ.kind === k.v ? 'bg-green-600 text-white border-green-600' : 'bg-white border-gray-200 text-gray-600'
+                      }`}>{k.l}</button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5 block">คำถาม</label>
+                <textarea value={draftQ.q} onChange={e => setDraftQ(prev => ({ ...prev, q: e.target.value }))}
+                  placeholder="เช่น รสชาติเป็นยังไงบ้าง?"
+                  className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-green-500 text-sm min-h-[60px] resize-none" />
+              </div>
+
+              {draftQ.kind === 'choice' && (
+                <>
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="checkbox" checked={draftQ.multi}
+                      onChange={e => setDraftQ(prev => ({ ...prev, multi: e.target.checked }))}
+                      className="w-4 h-4 accent-green-600" />
+                    <span>เลือกได้หลายข้อ (multi-select)</span>
+                  </label>
+
+                  <div>
+                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5 block">ตัวเลือก</label>
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {draftQ.options.map((o, i) => (
+                        <span key={i} className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+                          {o}
+                          <button onClick={() => setDraftQ(prev => ({ ...prev, options: prev.options.filter((_, x) => x !== i) }))}
+                            className="hover:text-red-500">×</button>
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex gap-1.5">
+                      <input id="opt-input" placeholder="เพิ่มตัวเลือก..."
+                        onKeyDown={e => { if (e.key === 'Enter') { addOption(e.target.value); e.target.value = ''; }}}
+                        className="flex-1 px-3 py-1.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 text-sm" />
+                      <button onClick={() => { const el = document.getElementById('opt-input'); addOption(el.value); el.value = ''; }}
+                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-bold">+</button>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <button onClick={addQuestion} disabled={!draftQ.q.trim()}
+                className={`w-full py-2.5 rounded-full font-bold ${draftQ.q.trim() ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}>
+                + เพิ่มคำถามลง Stage {stage}
+              </button>
+            </div>
+          </div>
+
+          {/* Templates */}
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mt-4">
+            <div className="text-xs font-bold uppercase tracking-wider text-amber-800 mb-2">💡 Templates สำเร็จรูป</div>
+            <div className="space-y-1.5 text-xs">
+              <button className="w-full text-left bg-white rounded-lg px-3 py-2 hover:bg-amber-50 border border-amber-200">📋 Food & Beverage</button>
+              <button className="w-full text-left bg-white rounded-lg px-3 py-2 hover:bg-amber-50 border border-amber-200">🧴 Skincare</button>
+              <button className="w-full text-left bg-white rounded-lg px-3 py-2 hover:bg-amber-50 border border-amber-200">💊 Supplement</button>
+            </div>
+          </div>
+        </aside>
+      </main>
+      )}
+    </div>
+  );
+}
+
+/* ============================ APP ============================ */
+function App() {
+  const [view, setView] = useState('tester'); // tester | builder
+
+  return (
+    <div className="min-h-screen">
+      <Header />
+
+      {/* View toggle */}
+      <div className="bg-amber-50 border-b border-amber-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex items-center gap-3 text-xs">
+          <span className="font-bold text-amber-800">🎬 Demo:</span>
+          <button onClick={() => setView('tester')} className={`px-3 py-1 rounded-full font-semibold ${view === 'tester' ? 'bg-amber-600 text-white' : 'bg-white text-gray-600'}`}>หน้า Tester ตอบ Survey</button>
+          <button onClick={() => setView('builder')} className={`px-3 py-1 rounded-full font-semibold ${view === 'builder' ? 'bg-amber-600 text-white' : 'bg-white text-gray-600'}`}>หน้า Admin สร้าง Survey</button>
+        </div>
+      </div>
+
+      {view === 'tester' ? <TesterView /> : <BuilderView />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
